@@ -540,6 +540,19 @@ subtest configure_pflash => sub {
     my $res = $proc->configure_pflash(\%vars);
     my $expected_vars_path = path($vars_file)->to_abs->to_string;
     is_deeply \@flash, [['pflash-code', $code_file->to_string, 3], ['pflash-vars', $expected_vars_path, 3]], 'add_pflash_drive correctly called';
+
+    subtest 'UEFI_PFLASH_CERTS' => sub {
+        my @commands;
+        $mock_proc->redefine(runcmd => sub { push @commands, [@_] });
+        $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
+        $vars{UEFI_PFLASH_CERTS} = '/certs/foo.crt:/certs/bar.crt';
+        $proc->configure_pflash(\%vars);
+        my @expected_base_args = ('virt-fw-vars', '-i', '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin', '-o', "$dir/ovmf-x86_64-ms-4m-vars-adjusted.bin");
+        my @expected_commands = ([@expected_base_args, '--enroll-cert', '/certs/foo.crt', '--enroll-cert', '/certs/bar.crt']);
+        is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
+        $mock_proc->unmock('runcmd');
+    };
+
     %vars = (UEFI => 1, UEFI_PFLASH_VARS => 'vars');
     throws_ok { $proc->configure_pflash(\%vars) } qr{Need UEFI_PFLASH_CODE with UEFI_PFLASH_VARS}, 'Fatal UEFI_PFLASH_VARS without UEFI_PFLASH_CODE';
 };

@@ -260,6 +260,13 @@ sub configure_pflash ($self, $vars) {
 
         $fw = path($vars->{UEFI_PFLASH_VARS})->to_abs;
         die 'Need UEFI_PFLASH_VARS with UEFI_PFLASH_CODE' unless $fw;
+
+        my @cert_args = map { ('--enroll-cert' => $_) } split qr/:/, $vars->{UEFI_PFLASH_CERTS} // '';
+        if (@cert_args) {
+            my $fw_adjusted = path($fw->basename('.bin') . '-adjusted.bin')->to_abs;
+            runcmd('virt-fw-vars', '-i', $fw->to_string, '-o', $fw_adjusted->to_string, @cert_args);
+            $fw = $fw_adjusted;
+        }
         $bdc->add_pflash_drive('pflash-vars', $fw, $self->get_img_size($fw))
           ->unit(1);
     }
