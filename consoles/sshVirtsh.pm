@@ -325,12 +325,14 @@ sub _create_disk ($self, $args, $vmware_openqa_datastore, $file, $name, $basedir
     if ($self->vmm_family eq 'vmware') {
         my $vmware_disk_path = $vmware_openqa_datastore . $file;
         # Power VM off, delete it's disk image, and create it again.
-        # Than wait for some time for the VM to *really* turn off.
+        # Poll the power state until the VM is *really* turned off.
         my $cmd =
           "( set -x; vmid=\$(vim-cmd vmsvc/getallvms | awk \'/$name/ { print \$1 }\');" .
           'if [ $vmid ]; then ' .
           'vim-cmd vmsvc/power.off $vmid;' .
+          'for i in $(seq 1 10); do vim-cmd vmsvc/power.getstate $vmid | grep -q "Powered off" && break; sleep 1; done;' .
           'vim-cmd vmsvc/destroy $vmid;' .
+          "else rm -f $name*;" .
           'fi;' .
           "vmkfstools -v1 -U $vmware_disk_path;" .
           "vmkfstools -v1 -c $size --diskformat thin $vmware_disk_path; sleep 10 ) 2>&1";
