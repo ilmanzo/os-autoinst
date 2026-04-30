@@ -85,6 +85,7 @@ sub become_root ($self) {
     testapi::enter_cmd('test $(id -u) -eq 0 && echo "imroot" > /dev/' . $testapi::serialdev, 0);
     testapi::wait_serial('imroot') || die 'Root prompt not there';
     testapi::enter_cmd('cd /tmp');
+    $self->invalidate_serial_marker_hook();
 }
 
 =head 2 disable_key_repeat
@@ -449,12 +450,49 @@ sub install_serial_marker_hook ($self, $level) {
     my $marker_match = 'OA:START';
     my $hook_cmd = "for f in ~/.bashrc ~/.profile; do grep -q '$marker_match' \"\$f\" 2>/dev/null || cat <<'EOF' >> \"\$f\"\n$pc\nEOF\ndone\n";
     testapi::type_string $hook_cmd;
-    my $console = testapi::current_console() // 'sut';
+    my $console = testapi::current_console();
+    return undef unless defined $console;
     $self->{_serial_marker_hook_installed}->{$console} = 1;
 }
 
-sub reset_console_cache ($self, $console) {
+=head2 reset_serial_marker
+
+  reset_serial_marker([$console])
+
+Perform a full reset of the serial marker state for the given C<$console> (or
+the current console if omitted). This clears both the detected shell capability
+level and the hook installation status, forcing a complete re-detection and
+re-installation on the next command.
+
+Useful when the console environment has fundamentally changed, such as after
+a reboot or when switching to a different OS/shell.
+
+=cut
+
+sub reset_serial_marker ($self, $console = undef) {
+    $console //= testapi::current_console();
+    return undef unless defined $console;
     delete $self->{_serial_marker_level}->{$console};
+    $self->invalidate_serial_marker_hook($console);
+}
+
+=head2 invalidate_serial_marker_hook
+
+  invalidate_serial_marker_hook([$console])
+
+Invalidate the synchronization hook (e.g. C<PROMPT_COMMAND>) for the given
+C<$console> (or the current console if omitted). Unlike L</reset_serial_marker>,
+this preserves the detected shell capability level.
+
+Useful when switching users within the same shell (e.g. via C<sudo> or C<su>),
+where we know the shell still supports the same level of markers, but the
+environment-specific hook needs to be re-installed for the new user.
+
+=cut
+
+sub invalidate_serial_marker_hook ($self, $console = undef) {
+    $console //= testapi::current_console();
+    return undef unless defined $console;
     delete $self->{_serial_marker_hook_installed}->{$console};
 }
 
@@ -471,7 +509,8 @@ Returns:
 =cut
 
 sub _detect_serial_marker_capability ($self) {
-    my $console = testapi::current_console() // 'sut';
+    my $console = testapi::current_console();
+    return 1 unless defined $console;
     if (my $level = $self->{_serial_marker_level}->{$console}) {
         return $level if $level < 2 || $self->{_serial_marker_hook_installed}->{$console};
 
