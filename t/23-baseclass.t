@@ -616,7 +616,33 @@ subtest 'requesting full screen update' => sub {
 
 is($baseclass->get_wait_still_screen_on_here_doc_input({}), 0, 'wait_still_screen on here doc is off by default!');
 
+subtest 'clear_serial_buffer' => sub {
+    my $serialfile = tempfile;
+    $serialfile->spew('initial content');
+    local $baseclass->{serialfile} = $serialfile->to_string;
+
+    subtest 'with screen supporting clear_buffer' => sub {
+        my $mock_screen = Test::MockObject->new();
+        $mock_screen->mock('clear_buffer', sub { pass 'clear_buffer called on screen' });
+        local $baseclass->{current_screen} = $mock_screen;
+        $baseclass->clear_serial_buffer();
+        $mock_screen->called_ok('clear_buffer');
+    };
+
+    subtest 'without current_screen' => sub {
+        local $baseclass->{current_screen} = undef;
+        lives_ok { $baseclass->clear_serial_buffer() } 'works without current_screen';
+    };
+
+    subtest 'with screen without clear_buffer' => sub {
+        my $mock_screen = Test::MockObject->new();
+        local $baseclass->{current_screen} = $mock_screen;
+        lives_ok { $baseclass->clear_serial_buffer() } 'works with screen without clear_buffer';
+    };
+};
+
 subtest 'corner cases of do_capture/run_capture_loop' => sub {
+
     # note: This test covers a few corner cases of do_capture that are not otherwise covered anyways:
     #       using external video encoder, stall detection, screen update request, unresponsive console
 
