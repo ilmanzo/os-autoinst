@@ -294,7 +294,7 @@ static unsigned char quant_uv[64] = {
     0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06
 };
 
-static void idctqtab(unsigned char* qin, PREC* qout, double scale)
+static void idctqtab(unsigned char* qin, PREC* qout, float scale)
 {
     int i, j;
 
@@ -354,9 +354,9 @@ void decode_ast2100(cv::Mat* pic, const unsigned char* data, size_t datal)
     dec_makehuff(&hu_dc_uv, hufftbl_dc_uv);
     dec_makehuff(&hu_ac_uv, hufftbl_ac_uv);
 
-    idctqtab(quant_y, qt[0], 1.);
-    idctqtab(quant_uv, qt[1], 1.);
-    idctqtab(quant_uv, qt[2], 1.);
+    idctqtab(quant_y, qt[0], 1.f);
+    idctqtab(quant_uv, qt[1], 1.f);
+    idctqtab(quant_uv, qt[2], 1.f);
 
     int subsamp = data[2] << 8 | data[3];
     if (subsamp != 444 || data[0] != 11 || data[1] != 11) {
