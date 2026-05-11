@@ -4,6 +4,7 @@
 
 package distribution;
 use Mojo::Base -strict, -signatures;
+use Mojo::Util 'scope_guard';
 
 use testapi ();
 use log 'fctwarn';
@@ -16,6 +17,8 @@ sub new ($class, @) {
     $self->{autoinst_failures} = [];
     $self->{_serial_marker_level} = {};
     $self->{_serial_marker_hook_installed} = {};
+    $self->{_serial_marker_hook_persistent} = {};
+    $self->{_pretty_serial_marker} = undef;
 
 =head2 serial_term_prompt
 
@@ -447,12 +450,16 @@ sub install_serial_marker_hook ($self, $level) {
         $pc = "PROMPT_COMMAND='if [ -n \"\$__OA_MARK\" ]; then echo \"\${__OA_MARK}-\$?-\" > $dev; unset __OA_MARK; fi; echo \"OA:START\" > $dev'";
     }
     testapi::type_string "$pc\n";
-    my $marker_match = 'OA:START';
-    my $hook_cmd = "for f in ~/.bashrc ~/.profile; do grep -q '$marker_match' \"\$f\" 2>/dev/null || cat <<'EOF' >> \"\$f\"\n$pc\nEOF\ndone\n";
-    testapi::type_string $hook_cmd;
     my $console = testapi::current_console();
     return undef unless defined $console;
     $self->{_serial_marker_hook_installed}->{$console} = 1;
+
+    # Only append to config files once per console to avoid redundant typing
+    return if $self->{_serial_marker_hook_persistent}->{$console};
+    my $marker_match = 'OA:START';
+    my $hook_cmd = "for f in ~/.bashrc ~/.profile; do grep -q '$marker_match' \"\$f\" 2>/dev/null || cat <<'EOF' >> \"\$f\"\n$pc\nEOF\ndone\n";
+    testapi::type_string $hook_cmd;
+    $self->{_serial_marker_hook_persistent}->{$console} = 1;
 }
 
 =head2 reset_serial_marker
@@ -496,6 +503,65 @@ sub invalidate_serial_marker_hook ($self, $console = undef) {
     delete $self->{_serial_marker_hook_installed}->{$console};
 }
 
+=head2 get_pretty_serial_marker
+
+    get_pretty_serial_marker()
+
+Return the current C<PRETTY_SERIAL_MARKER> state. Falls back to the test variable.
+
+=cut
+
+sub get_pretty_serial_marker ($self) {
+    return $self->{_pretty_serial_marker} // testapi::get_var('PRETTY_SERIAL_MARKER');
+}
+
+=head2 set_pretty_serial_marker
+
+    set_pretty_serial_marker($value)
+
+Set C<PRETTY_SERIAL_MARKER> to C<$value> and reset the cached marker state.
+
+=cut
+
+sub set_pretty_serial_marker ($self, $value) {
+    my $old_value = $self->get_pretty_serial_marker();
+    return if defined $old_value && $old_value eq $value;
+
+    bmwqemu::log_call(value => $value);
+    $self->{_pretty_serial_marker} = $value;
+
+    # If we are turning it OFF, we MUST tell the SUT to stop sending markers
+    # to avoid polluting the fallback mode.
+    testapi::type_string "unset PROMPT_COMMAND\n" if !$value;
+
+    $self->reset_serial_marker();
+}
+
+=head2 pretty_serial_marker_guard
+
+    pretty_serial_marker_guard($value)
+
+Return a RAII guard to temporarily set C<PRETTY_SERIAL_MARKER> to C<$value>.
+Restores the original value when the guard goes out of scope.
+
+Example:
+    sub run ($self) {
+        # Disable pretty markers for this module
+        $self->{marker_guard} = $testapi::distri->pretty_serial_marker_guard(0);
+        ...
+    }
+
+=cut
+
+sub pretty_serial_marker_guard ($self, $value) {
+    my $old_value = $self->get_pretty_serial_marker();
+    $self->set_pretty_serial_marker($value);
+
+    return scope_guard(sub {
+            $self->set_pretty_serial_marker($old_value);
+    });
+}
+
 =head2 _detect_serial_marker_capability
 
     _detect_serial_marker_capability()
@@ -519,7 +585,7 @@ sub _detect_serial_marker_capability ($self) {
     }
 
     my $level = 1;
-    my $pretty = testapi::get_var('PRETTY_SERIAL_MARKER');
+    my $pretty = $self->get_pretty_serial_marker();
     my $serial_term = testapi::is_serial_terminal();
     return $self->{_serial_marker_level}->{$console} = $level if !$pretty || $serial_term;
 

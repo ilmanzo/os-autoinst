@@ -208,48 +208,30 @@ subtest 'reboot_safety' => sub {
 
 subtest 'sut_marker' => sub {
     my $d = distribution->new;
-    is $d->sut_marker('ls -la /tmp'), 'OA:ls -11/tmp', 'sut_marker for normal command';
-    is $d->sut_marker('  ls  '), 'OA:ls2ls', 'sut_marker trims and handles short command';
-    is $d->sut_marker('a'), 'OA:a1a', 'sut_marker for very short command';
+    my @test_cases = (
+        {cmd => 'ls -la /tmp', expected => 'OA:ls -11/tmp', msg => 'normal command'},
+        {cmd => '  ls  ', expected => 'OA:ls2ls', msg => 'trims and handles short command'},
+        {cmd => 'a', expected => 'OA:a1a', msg => 'very short command'},
+    );
+    for my $case (@test_cases) {
+        is $d->sut_marker($case->{cmd}), $case->{expected}, "sut_marker: $case->{msg}";
+    }
 };
 
 subtest 'set expected serial and autoinst failures' => sub {
     my $d = distribution->new;
-    # Define the expected failures data
     my @failures = (
         {type => 'Soft', message => '%s Failure Message 1', pattern => 'Test Pattern1'},
         {type => 'Hard', message => '%s Failure Message 2', pattern => 'Test Pattern2'},
     );
-    # Subroutine to generate failure data with formatted messages
-    my sub _generate_failures ($type, %details) {
-        return [
-            map {
-                {
-                    message => sprintf($details{message}, $type),
-                    pattern => qr/$details{pattern}/
-                }
-            } @failures
-        ];
-    }
-    my %soft_failure = (
-        message => "$failures[0]->{message}",
-        pattern => "$failures[0]->{pattern}"
-    );
-    # Set and test Soft failures
-    $d->set_expected_serial_failures(_generate_failures('Soft', %soft_failure));
-    is_deeply($d->{serial_failures}, _generate_failures('Soft', %soft_failure), 'Expected Soft serial_failures matched');
-    $d->set_expected_autoinst_failures(_generate_failures('Soft', %soft_failure));
-    is_deeply($d->{autoinst_failures}, _generate_failures('Soft', %soft_failure), 'Expected Soft autoinst_failures matched');
 
-    my %hard_failure = (
-        message => "$failures[1]->{message}",
-        pattern => "$failures[1]->{pattern}"
-    );
-    # Set and test Hard failures
-    $d->set_expected_serial_failures(_generate_failures('Hard', %hard_failure));
-    is_deeply($d->{serial_failures}, _generate_failures('Hard', %hard_failure), 'Expected Hard serial_failures matched');
-    $d->set_expected_autoinst_failures(_generate_failures('Hard', %hard_failure));
-    is_deeply($d->{autoinst_failures}, _generate_failures('Hard', %hard_failure), 'Expected Hard autoinst_failures matched');
+    for my $f (@failures) {
+        my $expected = [{message => sprintf($f->{message}, $f->{type}), pattern => qr/$f->{pattern}/}];
+        $d->set_expected_serial_failures($expected);
+        is_deeply $d->{serial_failures}, $expected, "set_expected_serial_failures: $f->{type}";
+        $d->set_expected_autoinst_failures($expected);
+        is_deeply $d->{autoinst_failures}, $expected, "set_expected_autoinst_failures: $f->{type}";
+    }
 };
 
 subtest 'disable_key_repeat' => sub {
@@ -259,6 +241,74 @@ subtest 'disable_key_repeat' => sub {
     $mock_testapi->noop('type_string');
     distribution->new->disable_key_repeat;
     like "@called", qr/kbdrate/, 'disable_key_repeat calls kbdrate';
+};
+
+subtest 'pretty_serial_marker_helpers' => sub {
+    my $d = distribution->new;
+    my $mock_testapi = Test::MockModule->new('testapi');
+    my $mock_bmwqemu = Test::MockModule->new('bmwqemu');
+    my %vars;
+    $mock_testapi->redefine(get_var => sub { $vars{$_[0]} });
+    $mock_testapi->redefine(set_var => sub { $vars{$_[0]} = $_[1] });
+    $mock_testapi->redefine(current_console => sub { 'test-console' });
+    my $typed = '';
+    $mock_testapi->redefine(type_string => sub { $typed .= $_[0] });
+    my $log_called = 0;
+    $mock_bmwqemu->redefine(log_call => sub { $log_called++ });
+
+    # set_pretty_serial_marker
+    $d->{_serial_marker_level}->{'test-console'} = 3;
+    $vars{PRETTY_SERIAL_MARKER} = 1;
+    $d->set_pretty_serial_marker(1);
+    is $d->get_pretty_serial_marker(), 1, 'get_pretty_serial_marker returns 1';
+    is $vars{PRETTY_SERIAL_MARKER}, 1, 'PRETTY_SERIAL_MARKER var still 1';
+    is $log_called, 0, 'no log_call if state matches fallback';
+
+    $d->set_pretty_serial_marker(0);
+    is $d->get_pretty_serial_marker(), 0, 'get_pretty_serial_marker returns 0 after override';
+    is $vars{PRETTY_SERIAL_MARKER}, 1, 'PRETTY_SERIAL_MARKER var UNCHANGED (no pollution)';
+    is $log_called, 1, 'log_call invoked when state changes';
+    ok !exists $d->{_serial_marker_level}->{'test-console'}, 'marker level reset';
+    $log_called = 0;
+
+    $d->set_pretty_serial_marker(0);
+    is $log_called, 0, 'no-op if value is the same';
+
+    $typed = '';
+    $d->{_pretty_serial_marker} = 1;    # Force state change for test
+    $d->set_pretty_serial_marker(0);
+    like $typed, qr/unset PROMPT_COMMAND/, 'unset PROMPT_COMMAND typed when turning off';
+
+    # pretty_serial_marker_guard
+    $vars{PRETTY_SERIAL_MARKER} = 1;
+    $d->{_pretty_serial_marker} = undef;
+    {
+        my $guard = $d->pretty_serial_marker_guard(0);
+        is $d->get_pretty_serial_marker(), 0, 'Value changed by guard';
+        is $vars{PRETTY_SERIAL_MARKER}, 1, 'Global var remains unchanged';
+    }
+    is $d->get_pretty_serial_marker(), 1, 'Value restored after guard scope';
+};
+
+subtest 'serial_marker_hook_persistence' => sub {
+    my $d = distribution->new;
+    my $mock_testapi = Test::MockModule->new('testapi');
+    $mock_testapi->redefine(current_console => sub { 'test-console' });
+    my $typed = '';
+    $mock_testapi->redefine(type_string => sub { $typed .= $_[0] });
+
+    # First install
+    $d->install_serial_marker_hook(3);
+    like $typed, qr/PROMPT_COMMAND=/, 'Types PROMPT_COMMAND';
+    like $typed, qr/\.bashrc/, 'Appends to .bashrc';
+    ok $d->{_serial_marker_hook_persistent}->{'test-console'}, 'Persistence marked';
+
+    # Invalidate hook but keep persistence
+    $d->invalidate_serial_marker_hook('test-console');
+    $typed = '';
+    $d->install_serial_marker_hook(3);
+    like $typed, qr/PROMPT_COMMAND=/, 'Types PROMPT_COMMAND again';
+    unlike $typed, qr/\.bashrc/, 'Does NOT append to .bashrc again';
 };
 
 done_testing;
