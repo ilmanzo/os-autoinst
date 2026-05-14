@@ -8,6 +8,7 @@ use FindBin '$Bin';
 use lib "$Bin/../external/os-autoinst-common/lib";
 use OpenQA::Test::TimeLimit '5';
 use consoles::serial_screen;
+use File::Temp ();
 
 my $screen = consoles::serial_screen->new('read', 'write');
 is($screen->{fd_write}, 'write', 'Check if channel was set for write fd');
@@ -23,5 +24,18 @@ dies_ok { $screen->release_key } 'release_key dies with error';
 dies_ok { $screen->send_key({key => 'space'}) } 'send_key dies for most keys';
 is $screen->current_screen, 0, 'no current screen';
 is $screen->request_screen_update, undef, 'can call request_screen_update';
+my ($fh_read, $filename) = File::Temp::tempfile();
+print $fh_read 'some data';
+seek $fh_read, 0, 0;
+$screen = consoles::serial_screen->new($fh_read);
+$screen->{carry_buffer} = 'stale data';
+$screen->clear_buffer();
+is $screen->{carry_buffer}, '', 'carry_buffer is cleared (with data)';
+my $res = sysread $fh_read, my $buf, 4096;
+is $res, 0, 'socket/fh is drained';
+seek $fh_read, 0, 2;
+$screen->{carry_buffer} = 'more stale data';
+$screen->clear_buffer();
+is $screen->{carry_buffer}, '', 'carry_buffer is cleared (without data)';
 
 done_testing;
