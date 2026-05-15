@@ -843,9 +843,6 @@ previous test's serial output. Call this before you start doing something new
 =cut
 
 sub clear_serial_buffer ($self, @) {
-    if (my $screen = $self->{current_screen}) {
-        $screen->clear_buffer() if $screen->can('clear_buffer');
-    }
     $self->{serial_offset} = -s $self->{serialfile};
     return $self->{serial_offset};
 }
