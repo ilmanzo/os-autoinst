@@ -293,20 +293,6 @@ sub peak ($self, %nargs) {
     return $self->{carry_buffer};
 }
 
-=head2 clear_buffer
-
-Drain any pending data from the non-blocking socket and empty the internal carry buffer.
-
-=cut
-
-sub clear_buffer ($self) {
-    my $buf;
-    while (sysread $self->{fd_read}, $buf, SOCKET_READ_BUFFER_SIZE) {
-        # Drain the non-blocking socket
-    }
-    $self->{carry_buffer} = '';
-}
-
 sub current_screen ($self) { 0 }
 
 sub request_screen_update ($self, @) { }
