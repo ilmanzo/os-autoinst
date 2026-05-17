@@ -311,6 +311,53 @@ subtest 'serial_marker_hook_persistence' => sub {
     unlike $typed, qr/\.bashrc/, 'Does NOT append to .bashrc again';
 };
 
+subtest 'serial_terminal_redirection_guard' => sub {
+    my $d = distribution->new;
+    my $mock_testapi = Test::MockModule->new('testapi');
+    my $mock_bmwqemu = Test::MockModule->new('bmwqemu');
+    my %vars = (PRETTY_SERIAL_MARKER => 1);
+    $mock_testapi->redefine(get_var => sub { $vars{$_[0]} });
+    $mock_testapi->redefine(set_var => sub { $vars{$_[0]} = $_[1] });
+    $mock_testapi->redefine(current_console => sub { 'test-console' });
+    $mock_testapi->redefine(is_serial_terminal => sub { 1 });
+    $mock_testapi->redefine(backend_get_wait_still_screen_on_here_doc_input => sub { 0 });
+    my $typed = '';
+    $mock_testapi->redefine(type_string => sub { $typed .= $_[0] });
+    $mock_testapi->redefine(query_isotovideo => sub { });
+    $mock_bmwqemu->redefine(diag => sub { });
+    $mock_bmwqemu->redefine(log_call => sub { });
+    $mock_testapi->redefine(wait_serial => sub {
+            my ($regexp) = @_;
+            return 'BASH:4.4:' if ref($regexp) eq 'Regexp' && 'BASH:4.4:' =~ $regexp;
+            return 'FC:OK:' if ref($regexp) eq 'Regexp' && 'FC:OK:' =~ $regexp;
+            return 'OA:DONE-abcd-0-';
+    });
+
+    my @cases = (
+        {cmd => 'foo', guard => 0, msg => 'normal command without serial redirection does not trigger the guard'},
+        {cmd => 'foo | tee /dev/ttyS0', guard => 1, msg => 'piping to the serial terminal triggers the guard'},
+        {cmd => 'bar > /dev/ttyS0', guard => 1, msg => 'redirection to the serial terminal triggers the guard'},
+        {cmd => 'baz >> /dev/ttyS0', guard => 1, msg => 'appending to the serial terminal triggers the guard'},
+    );
+
+    for my $case (@cases) {
+        $typed = '';
+        $vars{PRETTY_SERIAL_MARKER} = 1;
+        $d->{_serial_marker_level}->{'test-console'} = 3;
+        $testapi::serialdev = 'ttyS0';
+        $d->{serial_term_prompt} = '# ';
+
+        $d->script_run($case->{cmd});
+        if ($case->{guard}) {
+            like $typed, qr/unset PROMPT_COMMAND/, $case->{msg};
+        }
+        else {
+            unlike $typed, qr/unset PROMPT_COMMAND/, $case->{msg};
+        }
+        is $vars{PRETTY_SERIAL_MARKER}, 1, "PRETTY_SERIAL_MARKER is active again after '$case->{cmd}'";
+    }
+};
+
 done_testing;
 
 1;

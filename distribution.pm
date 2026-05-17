@@ -156,6 +156,13 @@ sub script_run ($self, $cmd, @args) {
           if $cmd =~ qr/(?<!\\)&$/;
 
         my $level = $self->_detect_serial_marker_capability();
+        my $guard;
+        # Automatically protect against manual serial redirections corrupting pretty markers
+        if ($level > 1 && $cmd =~ m{(?:>|>>|\btee)\s+(?:-a\s+)?/dev/\Q$testapi::serialdev\E\b}) {
+            bmwqemu::diag('Temporarily disabling PRETTY_SERIAL_MARKER to prevent corruption with serial terminal redirection');
+            $guard = $self->pretty_serial_marker_guard(0);
+            $level = $self->_detect_serial_marker_capability();
+        }
         my ($str, $wait_pattern);
         if ($level == 3) {
             testapi::query_isotovideo('backend_clear_serial_buffer', {});
