@@ -148,7 +148,7 @@ subtest 'serial_marker_reinstall_cached_level' => sub {
     $d->invalidate_serial_marker_hook('test-console');
 
     is $d->_detect_serial_marker_capability(), 2, 'Returns cached level 2';
-    like $typed, qr/grep -q __oa_prompt.*PROMPT_COMMAND=__oa_prompt/, 'Calls install_serial_marker_hook (types consolidated setup)';
+    like $typed, qr/grep -q __oa_prompt.*\. ~\/\.bashrc/, 'Calls install_serial_marker_hook (types consolidated setup with sourcing)';
     ok $d->{_serial_marker_hook_installed}->{'test-console'}, 'Hook marked as installed';
 };
 
@@ -175,7 +175,7 @@ subtest 'reboot_safety' => sub {
     });
 
     $d->script_run('foo');
-    like $typed_string, qr/grep -q __oa_prompt.*__oa_prompt\(\).*PROMPT_COMMAND=__oa_prompt.*OA:DONE/s, 'Initial install';
+    like $typed_string, qr/grep -q __oa_prompt.*__oa_prompt\(\).*OA:DONE.*\. ~\/\.bashrc/s, 'Initial install';
     $typed_string = '';
 
     # Simulate console selection (e.g. after reboot/login)
@@ -191,7 +191,7 @@ subtest 'reboot_safety' => sub {
     $d->reset_serial_marker('test-console');
     $typed_string = '';
     $d->script_run('baz');
-    like $typed_string, qr/grep -q __oa_prompt.*__oa_prompt\(\).*OA:DONE.*PROMPT_COMMAND=__oa_prompt/s, 'Re-detect and re-install after resetting the serial marker';
+    like $typed_string, qr/grep -q __oa_prompt.*__oa_prompt\(\).*OA:DONE.*\. ~\/\.bashrc/s, 'Re-detect and re-install after resetting the serial marker';
     like $typed_string, qr/baz\n/, 'Command typed after re-installation';
 
     # Case 3: select_console triggers reset
@@ -298,14 +298,14 @@ subtest 'serial_marker_hook_persistence' => sub {
 
     # First install
     $d->install_serial_marker_hook(3);
-    like $typed, qr/grep -q __oa_prompt.*PROMPT_COMMAND=__oa_prompt/, 'Types consolidated setup with persistence';
+    like $typed, qr/grep -q __oa_prompt.*\. ~\/\.bashrc/, 'Types consolidated setup with persistence and sourcing';
     ok $d->{_serial_marker_hook_persistent}->{'test-console'}, 'Persistence marked';
 
     # Invalidate hook but keep persistence
     $d->invalidate_serial_marker_hook('test-console');
     $typed = '';
     $d->install_serial_marker_hook(3);
-    like $typed, qr/PROMPT_COMMAND=__oa_prompt/, 'Types setup again when invalidated';
+    like $typed, qr/\. ~\/\.bashrc/, 'Types setup again (with sourcing) when invalidated';
 };
 
 subtest 'serial_terminal_redirection_guard' => sub {

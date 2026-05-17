@@ -453,15 +453,17 @@ sub install_serial_marker_hook ($self, $level) {
     my $dev = "/dev/$testapi::serialdev";
     my $func;
     if ($level == 3) {
-        $func = "__oa_prompt() { r=\$?; if [ -n \"\$OA_NO_MARKER\" ]; then unset OA_NO_MARKER; else c=\$(fc -ln -1 2>/dev/null); printf \"OA:DONE-%04x-%d-%s\\nOA:START\\n\" \$RANDOM \$r \"\${c#\${c%%[![:space:]]*}}\" > $dev; fi; }";
+        $func = qq{__oa_prompt() { r=\$?; if [ -n "\$OA_NO_MARKER" ]; then unset OA_NO_MARKER; else c=\$(fc -ln -1 2>/dev/null); printf "OA:DONE-%04x-%d-%s\\nOA:START\\n" \$RANDOM \$r "\${c#\${c%%[![:space:]]*}}" > $dev; fi; }};
     }
     else {
-        $func = "__oa_prompt() { r=\$?; if [ -n \"\$OA_NO_MARKER\" ]; then unset OA_NO_MARKER; elif [ -n \"\$__OA_MARK\" ]; then echo \"\${__OA_MARK}-\$r-\" > $dev; unset __OA_MARK; fi; echo \"OA:START\" > $dev; }";
+        $func = qq{__oa_prompt() { r=\$?; if [ -n "\$OA_NO_MARKER" ]; then unset OA_NO_MARKER; elif [ -n "\$__OA_MARK" ]; then echo "\${__OA_MARK}-\$r-" > $dev; unset __OA_MARK; fi; echo "OA:START" > $dev; }};
     }
     my $pc = 'PROMPT_COMMAND=__oa_prompt';
 
-    # Consolidate installation and persistence into a single typed line to minimize VNC overhead
-    testapi::type_string "grep -q __oa_prompt ~/.bashrc 2>/dev/null || { echo '$func; $pc' | tee -a ~/.bashrc >> ~/.profile; }; $func; $pc\n";
+    # Consolidate installation and persistence into a single typed line to minimize VNC overhead.
+    # We append to both ~/.bashrc and ~/.profile to cover both interactive and login shells.
+    # Sourcing ~/.bashrc then activates the hook in the current session.
+    testapi::type_string "grep -q __oa_prompt ~/.bashrc 2>/dev/null || { echo '$func; $pc' | tee -a ~/.bashrc ~/.profile >/dev/null; }; . ~/.bashrc\n";
 
     my $console = testapi::current_console();
     return undef unless defined $console;
