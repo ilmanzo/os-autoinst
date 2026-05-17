@@ -449,15 +449,16 @@ markers to serial.
 
 sub install_serial_marker_hook ($self, $level) {
     return if $level < 2;
-    my $pc;
     my $dev = "/dev/$testapi::serialdev";
+    my $func;
     if ($level == 3) {
-        $pc = "PROMPT_COMMAND='ret=\$?; cmd=\$(fc -ln -1 2>/dev/null); printf \"OA:DONE-%04x-%d-%s\\nOA:START\\n\" \$RANDOM \$ret \"\${cmd#\${cmd%%[![:space:]]*}}\" > $dev'";
+        $func = "__oa_prompt() { ret=\$?; cmd=\$(fc -ln -1 2>/dev/null); printf \"OA:DONE-%04x-%d-%s\\nOA:START\\n\" \$RANDOM \$ret \"\${cmd#\${cmd%%[![:space:]]*}}\" > $dev; }";
     }
     else {
-        $pc = "PROMPT_COMMAND='if [ -n \"\$__OA_MARK\" ]; then echo \"\${__OA_MARK}-\$?-\" > $dev; unset __OA_MARK; fi; echo \"OA:START\" > $dev'";
+        $func = "__oa_prompt() { if [ -n \"\$__OA_MARK\" ]; then echo \"\${__OA_MARK}-\$?-\" > $dev; unset __OA_MARK; fi; echo \"OA:START\" > $dev; }";
     }
-    testapi::type_string "$pc\n";
+    my $pc = 'PROMPT_COMMAND=__oa_prompt';
+    testapi::type_string "$func\n$pc\n";
     my $console = testapi::current_console();
     return undef unless defined $console;
     $self->{_serial_marker_hook_installed}->{$console} = 1;
@@ -465,7 +466,7 @@ sub install_serial_marker_hook ($self, $level) {
     # Only append to config files once per console to avoid redundant typing
     return if $self->{_serial_marker_hook_persistent}->{$console};
     my $marker_match = 'OA:START';
-    my $hook_cmd = "for f in ~/.bashrc ~/.profile; do grep -q '$marker_match' \"\$f\" 2>/dev/null || cat <<'EOF' >> \"\$f\"\n$pc\nEOF\ndone\n";
+    my $hook_cmd = "for f in ~/.bashrc ~/.profile; do grep -q '$marker_match' \"\$f\" 2>/dev/null || cat <<'EOF' >> \"\$f\"\n$func\n$pc\nEOF\ndone\n";
     testapi::type_string $hook_cmd;
     $self->{_serial_marker_hook_persistent}->{$console} = 1;
 }

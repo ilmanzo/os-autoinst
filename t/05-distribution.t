@@ -148,7 +148,7 @@ subtest 'serial_marker_reinstall_cached_level' => sub {
     $d->invalidate_serial_marker_hook('test-console');
 
     is $d->_detect_serial_marker_capability(), 2, 'Returns cached level 2';
-    like $typed, qr/PROMPT_COMMAND=/, 'Calls install_serial_marker_hook (types PROMPT_COMMAND)';
+    like $typed, qr/PROMPT_COMMAND=__oa_prompt/, 'Calls install_serial_marker_hook (types PROMPT_COMMAND)';
     ok $d->{_serial_marker_hook_installed}->{'test-console'}, 'Hook marked as installed';
 };
 
@@ -175,7 +175,7 @@ subtest 'reboot_safety' => sub {
     });
 
     $d->script_run('foo');
-    like $typed_string, qr/PROMPT_COMMAND=.*OA:DONE/, 'Initial install';
+    like $typed_string, qr/__oa_prompt\(\).*PROMPT_COMMAND=__oa_prompt.*OA:DONE/s, 'Initial install';
     like $typed_string, qr/\.bashrc/, 'Persistence added';
     $typed_string = '';
 
@@ -192,7 +192,7 @@ subtest 'reboot_safety' => sub {
     $d->reset_serial_marker('test-console');
     $typed_string = '';
     $d->script_run('baz');
-    like $typed_string, qr/PROMPT_COMMAND=.*OA:DONE/, 'Re-detect and re-install after resetting the serial marker';
+    like $typed_string, qr/__oa_prompt\(\).*OA:DONE.*PROMPT_COMMAND=__oa_prompt/s, 'Re-detect and re-install after resetting the serial marker';
     like $typed_string, qr/baz\n/, 'Command typed after re-installation';
 
     # Case 3: select_console triggers reset
@@ -299,7 +299,7 @@ subtest 'serial_marker_hook_persistence' => sub {
 
     # First install
     $d->install_serial_marker_hook(3);
-    like $typed, qr/PROMPT_COMMAND=/, 'Types PROMPT_COMMAND';
+    like $typed, qr/PROMPT_COMMAND=__oa_prompt/, 'Types PROMPT_COMMAND';
     like $typed, qr/\.bashrc/, 'Appends to .bashrc';
     ok $d->{_serial_marker_hook_persistent}->{'test-console'}, 'Persistence marked';
 
@@ -307,7 +307,7 @@ subtest 'serial_marker_hook_persistence' => sub {
     $d->invalidate_serial_marker_hook('test-console');
     $typed = '';
     $d->install_serial_marker_hook(3);
-    like $typed, qr/PROMPT_COMMAND=/, 'Types PROMPT_COMMAND again';
+    like $typed, qr/PROMPT_COMMAND=__oa_prompt/, 'Types PROMPT_COMMAND again';
     unlike $typed, qr/\.bashrc/, 'Does NOT append to .bashrc again';
 };
 
