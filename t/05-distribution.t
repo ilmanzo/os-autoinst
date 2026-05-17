@@ -322,9 +322,10 @@ subtest 'serial_terminal_redirection_guard' => sub {
     $mock_testapi->redefine(is_serial_terminal => sub { 1 });
     $mock_testapi->redefine(backend_get_wait_still_screen_on_here_doc_input => sub { 0 });
     my $typed = '';
+    my $diag_msg = '';
     $mock_testapi->redefine(type_string => sub { $typed .= $_[0] });
     $mock_testapi->redefine(query_isotovideo => sub { });
-    $mock_bmwqemu->redefine(diag => sub { });
+    $mock_bmwqemu->redefine(diag => sub { $diag_msg .= $_[0] });
     $mock_bmwqemu->redefine(log_call => sub { });
     $mock_testapi->redefine(wait_serial => sub {
             my ($regexp) = @_;
@@ -342,6 +343,7 @@ subtest 'serial_terminal_redirection_guard' => sub {
 
     for my $case (@cases) {
         $typed = '';
+        $diag_msg = '';
         $vars{PRETTY_SERIAL_MARKER} = 1;
         $d->{_serial_marker_level}->{'test-console'} = 3;
         $testapi::serialdev = 'ttyS0';
@@ -350,9 +352,11 @@ subtest 'serial_terminal_redirection_guard' => sub {
         $d->script_run($case->{cmd});
         if ($case->{guard}) {
             like $typed, qr/unset PROMPT_COMMAND/, $case->{msg};
+            like $diag_msg, qr/Manual redirection to \/dev\/ttyS0 is deprecated/, 'deprecation warning shown';
         }
         else {
             unlike $typed, qr/unset PROMPT_COMMAND/, $case->{msg};
+            unlike $diag_msg, qr/Manual redirection to \/dev\/ttyS0 is deprecated/, 'no deprecation warning for normal command';
         }
         is $vars{PRETTY_SERIAL_MARKER}, 1, "PRETTY_SERIAL_MARKER is active again after '$case->{cmd}'";
     }

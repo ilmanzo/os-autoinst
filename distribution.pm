@@ -160,6 +160,7 @@ sub script_run ($self, $cmd, @args) {
         # Automatically protect against manual serial redirections corrupting pretty markers
         if ($level > 1 && $cmd =~ m{(?:>|>>|\btee)\s+(?:-a\s+)?/dev/\Q$testapi::serialdev\E\b}) {
             bmwqemu::diag('Temporarily disabling PRETTY_SERIAL_MARKER to prevent corruption with serial terminal redirection');
+            bmwqemu::diag("Manual redirection to /dev/$testapi::serialdev is deprecated and might conflict with advanced serial markers. Use script_output() or use script_run() without the quiet parameter instead.");
             $guard = $self->pretty_serial_marker_guard(0);
             $level = $self->_detect_serial_marker_capability();
         }
