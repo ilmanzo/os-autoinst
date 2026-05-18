@@ -26,6 +26,8 @@ use needle;
 require bmwqemu;
 require tinycv;
 
+$bmwqemu::vars{WORKER_HOSTNAME} = 'localhost';
+
 ok(looks_like_number($OpenQA::Isotovideo::Interface::version), 'isotovideo version set (variable is considered part of test API)');
 
 my $cmds;
