@@ -228,8 +228,8 @@ sub current_test () {
 }
 
 sub update_line_number () {
-    return unless current_test;
-    return unless current_test->{script};
+    return unless my $current_test = current_test;
+    return unless $current_test->{script};
     my @out;
     my $casedir = $vars{CASEDIR} // '';
     for (my $i = 10; $i > 0; $i--) {
@@ -238,7 +238,9 @@ sub update_line_number () {
         $filename =~ s@$casedir/?@@;
         push @out, "$filename:$line called $subroutine";
     }
-    log::logger->debug(join ' -> ', @out);
+    my $step_info = sprintf '[step:%s,%s,%s]',
+      $current_test->{category} // '-', $current_test->{name} // '-', ($current_test->{test_count} // 0) + 1;
+    log::logger->debug("$step_info " . join ' -> ', @out);
     return;
 }
 
