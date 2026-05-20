@@ -268,6 +268,8 @@ rm t/28-signalblocker.t
 # https://progress.opensuse.org/issues/194359
 # https://progress.opensuse.org/issues/199940
 rm -f t/28-signalblocker.t
+# https://progress.opensuse.org/issues/200949
+rm -f t/26-video_stream.t
 %endif
 
 %build
