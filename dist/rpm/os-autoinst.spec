@@ -73,7 +73,7 @@ Source0:        %{name}-%{version}.tar.xz
 %else
 %bcond_with python_support
 %endif
-%if 0%{?is_opensuse} && (0%{?suse_version} >= 1600 || 0%{?sle_version} >= 150600)
+%if 0%{?is_opensuse} && 0%{?suse_version} >= 1600
 %bcond_without lua_support
 %else
 %bcond_with lua_support
