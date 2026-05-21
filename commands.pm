@@ -282,7 +282,7 @@ sub run_daemon ($port, $isotovideo) {
     app->log->info("cmdsrv: daemon reachable under http://*:$port/$bmwqemu::vars{JOBTOKEN}/");
     try { $daemon->run }
     catch ($e) {
-        print "cmdsrv: failed to run daemon $e\n";    # uncoverable statement
+        print "cmdsrv: failed to run daemon on port $port: $e\n";    # uncoverable statement
         _exit(1);    # uncoverable statement
     }
 }
