@@ -148,7 +148,7 @@ subtest 'serial_marker_reinstall_cached_level' => sub {
     $d->invalidate_serial_marker_hook('test-console');
 
     is $d->_detect_serial_marker_capability(), 2, 'Returns cached level 2';
-    like $typed, qr/PROMPT_COMMAND=/, 'Calls install_serial_marker_hook (types PROMPT_COMMAND)';
+    like $typed, qr/grep -q __oa_prompt.*\. ~\/\.bashrc/, 'Calls install_serial_marker_hook (types consolidated setup with sourcing)';
     ok $d->{_serial_marker_hook_installed}->{'test-console'}, 'Hook marked as installed';
 };
 
@@ -175,8 +175,7 @@ subtest 'reboot_safety' => sub {
     });
 
     $d->script_run('foo');
-    like $typed_string, qr/PROMPT_COMMAND=.*OA:DONE/, 'Initial install';
-    like $typed_string, qr/\.bashrc/, 'Persistence added';
+    like $typed_string, qr/grep -q __oa_prompt.*__oa_prompt\(\).*OA:DONE.*\. ~\/\.bashrc/s, 'Initial install';
     $typed_string = '';
 
     # Simulate console selection (e.g. after reboot/login)
@@ -192,7 +191,7 @@ subtest 'reboot_safety' => sub {
     $d->reset_serial_marker('test-console');
     $typed_string = '';
     $d->script_run('baz');
-    like $typed_string, qr/PROMPT_COMMAND=.*OA:DONE/, 'Re-detect and re-install after resetting the serial marker';
+    like $typed_string, qr/grep -q __oa_prompt.*__oa_prompt\(\).*OA:DONE.*\. ~\/\.bashrc/s, 'Re-detect and re-install after resetting the serial marker';
     like $typed_string, qr/baz\n/, 'Command typed after re-installation';
 
     # Case 3: select_console triggers reset
@@ -299,16 +298,14 @@ subtest 'serial_marker_hook_persistence' => sub {
 
     # First install
     $d->install_serial_marker_hook(3);
-    like $typed, qr/PROMPT_COMMAND=/, 'Types PROMPT_COMMAND';
-    like $typed, qr/\.bashrc/, 'Appends to .bashrc';
+    like $typed, qr/grep -q __oa_prompt.*\. ~\/\.bashrc/, 'Types consolidated setup with persistence and sourcing';
     ok $d->{_serial_marker_hook_persistent}->{'test-console'}, 'Persistence marked';
 
     # Invalidate hook but keep persistence
     $d->invalidate_serial_marker_hook('test-console');
     $typed = '';
     $d->install_serial_marker_hook(3);
-    like $typed, qr/PROMPT_COMMAND=/, 'Types PROMPT_COMMAND again';
-    unlike $typed, qr/\.bashrc/, 'Does NOT append to .bashrc again';
+    like $typed, qr/\. ~\/\.bashrc/, 'Types setup again (with sourcing) when invalidated';
 };
 
 subtest 'serial_terminal_redirection_guard' => sub {
@@ -322,9 +319,10 @@ subtest 'serial_terminal_redirection_guard' => sub {
     $mock_testapi->redefine(is_serial_terminal => sub { 1 });
     $mock_testapi->redefine(backend_get_wait_still_screen_on_here_doc_input => sub { 0 });
     my $typed = '';
+    my $diag_msg = '';
     $mock_testapi->redefine(type_string => sub { $typed .= $_[0] });
     $mock_testapi->redefine(query_isotovideo => sub { });
-    $mock_bmwqemu->redefine(diag => sub { });
+    $mock_bmwqemu->redefine(diag => sub { $diag_msg .= $_[0] });
     $mock_bmwqemu->redefine(log_call => sub { });
     $mock_testapi->redefine(wait_serial => sub {
             my ($regexp) = @_;
@@ -342,6 +340,7 @@ subtest 'serial_terminal_redirection_guard' => sub {
 
     for my $case (@cases) {
         $typed = '';
+        $diag_msg = '';
         $vars{PRETTY_SERIAL_MARKER} = 1;
         $d->{_serial_marker_level}->{'test-console'} = 3;
         $testapi::serialdev = 'ttyS0';
@@ -349,13 +348,22 @@ subtest 'serial_terminal_redirection_guard' => sub {
 
         $d->script_run($case->{cmd});
         if ($case->{guard}) {
-            like $typed, qr/unset PROMPT_COMMAND/, $case->{msg};
+            like $typed, qr/OA_NO_MARKER=1; /, $case->{msg};
+            like $diag_msg, qr/Manual redirection to \/dev\/ttyS0 is deprecated/, 'deprecation warning shown';
         }
         else {
-            unlike $typed, qr/unset PROMPT_COMMAND/, $case->{msg};
+            unlike $typed, qr/OA_NO_MARKER=1; /, $case->{msg};
+            unlike $diag_msg, qr/Manual redirection to \/dev\/ttyS0 is deprecated/, 'no deprecation warning for normal command';
         }
         is $vars{PRETTY_SERIAL_MARKER}, 1, "PRETTY_SERIAL_MARKER is active again after '$case->{cmd}'";
     }
+
+    $typed = '';
+    delete $d->{_serial_marker_hook_installed}->{'test-console'};
+    delete $d->{_serial_marker_hook_persistent}->{'test-console'};
+    $d->{_serial_marker_level}->{'test-console'} = 3;
+    $d->install_serial_marker_hook(3);
+    like $typed, qr/__oa_prompt\(\) \{ r=\$\?; if \[ -n "\$OA_NO_MARKER" \]/, '__oa_prompt must capture the exit status r=$? as the absolute first statement to prevent internal conditional checks from overwriting it';
 };
 
 done_testing;

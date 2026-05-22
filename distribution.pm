@@ -156,12 +156,13 @@ sub script_run ($self, $cmd, @args) {
           if $cmd =~ qr/(?<!\\)&$/;
 
         my $level = $self->_detect_serial_marker_capability();
-        my $guard;
+        my $skip_pretty = 0;
         # Automatically protect against manual serial redirections corrupting pretty markers
         if ($level > 1 && $cmd =~ m{(?:>|>>|\btee)\s+(?:-a\s+)?/dev/\Q$testapi::serialdev\E\b}) {
             bmwqemu::diag('Temporarily disabling PRETTY_SERIAL_MARKER to prevent corruption with serial terminal redirection');
-            $guard = $self->pretty_serial_marker_guard(0);
-            $level = $self->_detect_serial_marker_capability();
+            bmwqemu::diag("Manual redirection to /dev/$testapi::serialdev is deprecated and might conflict with advanced serial markers. Use script_output() or use script_run() without the quiet parameter instead.");
+            $level = 1;
+            $skip_pretty = 1;
         }
         my ($str, $wait_pattern);
         if ($level == 3) {
@@ -178,15 +179,16 @@ sub script_run ($self, $cmd, @args) {
         }
         else {
             my $marker = "; echo $str-\$?-" . ($args{output} ? "Comment: $args{output}" : '');
+            my $final_cmd = $skip_pretty ? "OA_NO_MARKER=1; $cmd" : $cmd;
             if (testapi::is_serial_terminal) {
-                testapi::type_string "$cmd", max_interval => $args{max_interval};
+                testapi::type_string "$final_cmd", max_interval => $args{max_interval};
                 testapi::type_string $marker, max_interval => $args{max_interval};
-                testapi::wait_serial($cmd . $marker, no_regex => 1, quiet => $args{quiet}, buffer_size => (length $cmd) + 128, internal_marker => 1)
-                  or _handle_cmd_typing_error($cmd, \%args);
+                testapi::wait_serial($final_cmd . $marker, no_regex => 1, quiet => $args{quiet}, buffer_size => (length $final_cmd) + 128, internal_marker => 1)
+                  or _handle_cmd_typing_error($final_cmd, \%args);
                 testapi::type_string "\n", max_interval => $args{max_interval};
             }
             else {
-                testapi::type_string "$cmd", max_interval => $args{max_interval};
+                testapi::type_string "$final_cmd", max_interval => $args{max_interval};
                 testapi::type_string "$marker > /dev/$testapi::serialdev\n", max_interval => $args{max_interval};
             }
         }
@@ -448,24 +450,24 @@ markers to serial.
 
 sub install_serial_marker_hook ($self, $level) {
     return if $level < 2;
-    my $pc;
     my $dev = "/dev/$testapi::serialdev";
+    my $func;
     if ($level == 3) {
-        $pc = "PROMPT_COMMAND='ret=\$?; cmd=\$(fc -ln -1 2>/dev/null); printf \"OA:DONE-%04x-%d-%s\\nOA:START\\n\" \$RANDOM \$ret \"\${cmd#\${cmd%%[![:space:]]*}}\" > $dev'";
+        $func = qq{__oa_prompt() { r=\$?; if [ -n "\$OA_NO_MARKER" ]; then unset OA_NO_MARKER; else c=\$(fc -ln -1 2>/dev/null); printf "OA:DONE-%04x-%d-%s\\nOA:START\\n" \$RANDOM \$r "\${c#\${c%%[![:space:]]*}}" > $dev; fi; }};
     }
     else {
-        $pc = "PROMPT_COMMAND='if [ -n \"\$__OA_MARK\" ]; then echo \"\${__OA_MARK}-\$?-\" > $dev; unset __OA_MARK; fi; echo \"OA:START\" > $dev'";
+        $func = qq{__oa_prompt() { r=\$?; if [ -n "\$OA_NO_MARKER" ]; then unset OA_NO_MARKER; elif [ -n "\$__OA_MARK" ]; then echo "\${__OA_MARK}-\$r-" > $dev; unset __OA_MARK; fi; echo "OA:START" > $dev; }};
     }
-    testapi::type_string "$pc\n";
+    my $pc = 'PROMPT_COMMAND=__oa_prompt';
+
+    # Consolidate installation and persistence into a single typed line to minimize VNC overhead.
+    # We append to both ~/.bashrc and ~/.profile to cover both interactive and login shells.
+    # Sourcing ~/.bashrc then activates the hook in the current session.
+    testapi::type_string "grep -q __oa_prompt ~/.bashrc 2>/dev/null || { echo '$func; $pc' | tee -a ~/.bashrc ~/.profile >/dev/null; }; . ~/.bashrc\n";
+
     my $console = testapi::current_console();
     return undef unless defined $console;
     $self->{_serial_marker_hook_installed}->{$console} = 1;
-
-    # Only append to config files once per console to avoid redundant typing
-    return if $self->{_serial_marker_hook_persistent}->{$console};
-    my $marker_match = 'OA:START';
-    my $hook_cmd = "for f in ~/.bashrc ~/.profile; do grep -q '$marker_match' \"\$f\" 2>/dev/null || cat <<'EOF' >> \"\$f\"\n$pc\nEOF\ndone\n";
-    testapi::type_string $hook_cmd;
     $self->{_serial_marker_hook_persistent}->{$console} = 1;
 }
 
