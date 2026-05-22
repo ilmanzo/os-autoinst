@@ -53,7 +53,7 @@ use Getopt::Long;
 use List::Util qw(max);
 use Mojo::File qw(path);
 use PPI;
-use Syntax::Keyword::Try;
+use Feature::Compat::Try;
 
 sub usage ($r) { require Pod::Usage; Pod::Usage::pod2usage($r) }
 
