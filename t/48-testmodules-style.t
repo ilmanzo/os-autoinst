@@ -6,7 +6,7 @@ use Test::Warnings qw(:report_warnings);
 use Test::Output qw(combined_like);
 use FindBin '$Bin';
 use YAML::PP qw(Load);
-use Syntax::Keyword::Try;
+use Feature::Compat::Try;
 
 my $script = "$Bin/../script/os-autoinst-testmodules-strict";
 require $script;
