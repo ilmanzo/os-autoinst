@@ -114,13 +114,23 @@ For more information on how to use openQA, please visit http://open.qa/documenta
 
 This subroutine is used to by several subroutines dealing with mouse clicks to calculate
 a clickpoint, when only the needle area is available. It takes the area coordinates and
-returns the center of that area. It is meant to be a helper subroutine not available
-to be used in tests.
+returns the configured clickpoint or else the center of that area. It is meant to be a
+helper subroutine not available to be used in tests.
 
 =cut
 
-sub _calculate_clickpoint ($needle_to_use, $needle_area = undef, $click_point = undef) {
-    # If there is no needle area defined, take it from the needle itself.
+sub _calculate_clickpoint ($needle_to_use, $point_id = undef) {
+
+    # determine click coordinates from the last area which has those explicitly specified
+    my $needle_area;
+    my $click_point;
+    for my $area (reverse @{$needle_to_use->{area}}) {
+        next unless ($click_point = $area->{click_point});
+        next if defined $point_id && $click_point->{id} ne $point_id;
+        $needle_area = $area;
+        last;
+    }
+    # If there is no area with a click point defined, use the last area.
     $needle_area ||= $needle_to_use->{area}->[-1];
     # If there is no clickpoint defined, or if it has been specifically defined as "center"
     # then calculate the click point as a central point of the specified area.
@@ -515,18 +525,8 @@ sub click_lastmatch (%args) {
 
     my $old_mouse_coords = query_isotovideo('backend_get_last_mouse_set');
 
-    # determine click coordinates from the last area which has those explicitly specified
-    my $relevant_area;
-    my $relative_click_point;
-    for my $area (reverse @{$last_matched_needle->{area}}) {
-        next unless ($relative_click_point = $area->{click_point});
-        next if defined $args{point_id} && $relative_click_point->{id} ne $args{point_id};
-        $relevant_area = $area;
-        last;
-    }
-
     # Calculate the absolute click point.
-    my ($x, $y) = _calculate_clickpoint($last_matched_needle, $relevant_area, $relative_click_point);
+    my ($x, $y) = _calculate_clickpoint($last_matched_needle, $args{point_id});
     bmwqemu::diag("clicking at $x/$y");
     mouse_set($x, $y);
     if ($args{dclick}) {
@@ -1582,7 +1582,7 @@ and C<$endpoint> by passing the name of the needle tag, i.e. the mouse drag happ
 the two needle areas. Alternatively, you can set all the coordinates explicitly with C<$startx>,
 C<$starty>, C<$endx>, and C<$endy>. You can also set one point using a needle and another one
 using coordinates.  If both the coordinates and the needle are provided, the coordinates
-will be used to set up the locations and the needle location will be overridden.
+will be used to set up the locations and the needle location will be ignored.
 
 =cut
 
@@ -1598,7 +1598,7 @@ sub mouse_drag (%args) {
         my $startmatch = $args{startpoint};
         # Check that the needle exists.
         my $start_matched_needle = assert_screen($startmatch, $args{timeout});
-        # Calculate the click point from the area defined by the needle (take the center of it)
+        # Calculate the click point from the area defined by the needle
         ($startx, $starty) = _calculate_clickpoint($start_matched_needle);
     }
     # If neither coordinates nor a needle is provided, report an error and quit.

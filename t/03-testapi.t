@@ -1042,30 +1042,46 @@ subtest '_calculate_clickpoint' => sub {
     my %fake_needle_area = (x => 100, y => 100, w => 50, h => 40);
     my %fake_click_point = (xpos => 20, ypos => 10);
 
-    # Everything is provided.
-    my ($x, $y) = testapi::_calculate_clickpoint(\%fake_needle, \%fake_needle_area, \%fake_click_point);
-    is $x, 120, 'clickpoint x';
-    is $y, 110, 'clickpoint y';
-
-    # Everything is provided but the click point is 'center'
-    ($x, $y) = testapi::_calculate_clickpoint(\%fake_needle, \%fake_needle_area, 'center');
-    is $x, 125, 'clickpoint x centered';
-    is $y, 120, 'clickpoint y centered';
-
-    # Just the area is provided and no click point.
-    ($x, $y) = testapi::_calculate_clickpoint(\%fake_needle, \%fake_needle_area);
-    is $x, 125, 'clickpoint x from area';
-    is $y, 120, 'clickpoint y from area';
-
-    # Just the needle is provided and no area and click point.
-    ($x, $y) = testapi::_calculate_clickpoint(\%fake_needle);
+    # A needle without click point.
+    my %simple_needle = (
+        area => [{x => 10, y => 10, w => 20, h => 30}],
+    );
+    my ($x, $y) = testapi::_calculate_clickpoint(\%simple_needle);
     is $x, 20, 'clickpoint x from needle';
     is $y, 25, 'clickpoint y from needle';
+
+    # A needle with an explicit click point.
+    my %explicit_clickpoint_needle = (
+        area => [{x => 10, y => 10, w => 20, h => 30, click_point => {xpos => 2, ypos => 3}}],
+    );
+    ($x, $y) = testapi::_calculate_clickpoint(\%explicit_clickpoint_needle);
+    is $x, 12, 'clickpoint x from area';
+    is $y, 13, 'clickpoint y from area';
+
+    # A needle with a centered click point.
+    my %centered_clickpoint_needle = (
+        area => [{x => 10, y => 10, w => 20, h => 30, click_point => 'center'}],
+    );
+    ($x, $y) = testapi::_calculate_clickpoint(\%centered_clickpoint_needle);
+    is $x, 20, 'clickpoint x from area';
+    is $y, 25, 'clickpoint y from area';
+
+    # A needle with many areas and an explicit click point.
+    my %full_clickpoint_needle = (
+        area => [
+            {x => 10, y => 10, w => 20, h => 30, click_point => {id => 'nr1', xpos => 2, ypos => 3}},
+            {x => 30, y => 40, w => 20, h => 30, click_point => {id => 'nr2', xpos => 2, ypos => 3}},
+            {x => 50, y => 80, w => 20, h => 30, click_point => {id => 'nr3', xpos => 2, ypos => 3}},
+        ],
+    );
+    ($x, $y) = testapi::_calculate_clickpoint(\%full_clickpoint_needle, 'nr2');
+    is $x, 32, 'clickpoint x from area nr2';
+    is $y, 43, 'clickpoint y from area nr2';
 };
 
 subtest 'mouse_drag' => sub {
     my $mock_testapi = Test::MockModule->new('testapi');
-    my @area = ({x => 100, y => 100, w => 20, h => 20});
+    my @area = ({x => 100, y => 100, w => 20, h => 20, click_point => {xpos => 2, ypos => 3}});
     $mock_testapi->redefine(assert_screen => {area => \@area});
 
     my ($startx, $starty) = (0, 0);
@@ -1077,8 +1093,8 @@ subtest 'mouse_drag' => sub {
     is_deeply($cmds, [
             {
                 cmd => 'backend_mouse_set',
-                x => 110,
-                y => 110
+                x => 102,
+                y => 103
             },
             {
                 bstate => 1,
@@ -1113,8 +1129,8 @@ subtest 'mouse_drag' => sub {
             },
             {
                 cmd => 'backend_mouse_set',
-                x => 110,
-                y => 110
+                x => 102,
+                y => 103
             },
             {
                 bstate => 0,
