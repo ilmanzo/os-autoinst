@@ -330,12 +330,12 @@ sub _receive_frame_ustreamer ($self) {
             $client_clock_offset = 112;
             $data_offset = 129;
             $meta_offset = 32;
-        } elsif ($version == 7) {
+        } elsif ($version == 7 or $version == 8) {
             $client_clock_offset = 32;
             $data_offset = 128;
             $meta_offset = 52;
         } else {
-            die "Unsupported ustreamer version '$version' (only versions 4 and 7 are supported)";
+            die "Unsupported ustreamer version '$version' (only versions 4, 7 and 8 are supported)";
         }
 
         # tell ustreamer we are reading, otherwise it won't write new frames
