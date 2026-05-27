@@ -43,6 +43,7 @@ path('vars.json')->spew(<<"EOV");
    "CDMODEL" : "ide-cd",
    "HDDMODEL" : "ide-hd",
    "VERSION" : "1",
+   "FAST_TYPING" : "@{[ $ENV{OS_AUTOINST_FAST_TYPING} // 0 ]}",
    "SSH_CONNECT_RETRY"  : "2",
    "SSH_CONNECT_RETRY_INTERVAL"  : ".001",
    "VNC_CONNECT_SLEEP" : "0",

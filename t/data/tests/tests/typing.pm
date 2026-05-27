@@ -23,9 +23,15 @@ RFB found a second and more enduring use when VNC was developed. VNC was release
 When ORL was closed in 2002 some of the key people behind VNC and RFB formed [[RealVNC]], Ltd., in order to continue development of VNC and to maintain the RFB protocol. The current RFB protocol is published on the RealVNC website.
 END
 
+    my $md5 = '924095f2cb4d622a8796de66a5e0a44a';
+    if (get_var('FAST_TYPING')) {
+        $text = "==Description==\nShort text for fast typing.\n";
+        $md5 = 'e5e578ebcb49c765134bcfa1640b3821';
+    }
+
     type_string $text;
     type_string "\nEOF\n";
-    script_run "echo '924095f2cb4d622a8796de66a5e0a44a  text' > text.md5";
+    script_run "echo '$md5  text' > text.md5";
     assert_script_run 'md5sum -c text.md5';
 
     # TinyCore busybox sh acts as bash but does not provide it so we do here
