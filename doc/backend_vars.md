@@ -62,7 +62,7 @@ Supported variables per backend
 | _HIDE_SECRETS_REGEX | string |  | If set, any test variables whose **NAME** (key) matches the specified regular expression, in addition to the default '^_SECRET_' and '_PASSWORD', are excluded from being saved into vars.json or further processing. For example, to hide all variables starting with 'SCC_REGCODE', use '^SCC_REGCODE'. |
 | STORAGE_KEEP_FREE_RATIO | float | 0.2 | Ratio of total storage space to keep free (e.g. 0.2 for 20%). If the total requested HDD size exceeds the available space while keeping this ratio of total storage size free, the job is aborted early with "incomplete" status. Set to 0 to disable this check. Automatically disabled in CI environments (if `CI` or `GITHUB_ACTIONS` is set in the environment). |
 | STORAGE_KEEP_FREE_GB | integer | 50 | Absolute free space threshold in GiB. If the total requested HDD size leaves less than this amount of free space, the job can only run if the relative check (`STORAGE_KEEP_FREE_RATIO`) is also satisfied. Set to 0 to disable the absolute threshold. Automatically disabled in CI environments (if `CI` or `GITHUB_ACTIONS` is set in the environment). |
-| FAIL_ON_ALWAYS_ROLLBACK_NOT_SUPPORTED | boolean | 0 | Fail explicitly if a test module is scheduled with the `always_rollback` flag but snapshots are not supported by the backend. |
+| FAIL_ON_ALWAYS_ROLLBACK_NOT_SUPPORTED | boolean | 1 | Fail explicitly if a test module is scheduled with the `always_rollback` flag but snapshots are not supported by the backend. |
 |  |
 
 ## ZVM backend
