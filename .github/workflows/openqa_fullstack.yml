@@ -20,7 +20,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     container:
-      image: registry.opensuse.org/devel/openqa/containers/opensuse/openqa_devel:latest
+      image: registry.opensuse.org/devel/openqa/containers/opensuse/openqa_ci:latest
     steps:
       - uses: actions/checkout@v6
       - name: Create additional user to avoid initdb error "cannot be run as root"

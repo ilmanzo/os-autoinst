@@ -21,7 +21,7 @@ use Fcntl;
 use Net::DBus;
 use bmwqemu qw(diag);
 require IPC::System::Simple;
-use osutils qw(find_bin qv run_diag runcmd);
+use osutils qw(find_bin qv run_diag runcmd port_details);
 use List::Util qw(first max);
 use Data::Dumper;
 use Mojo::IOLoop::ReadWriteProcess::Session 'session';
@@ -1074,7 +1074,7 @@ sub start_qemu ($self) {
     my $ret = $self->select_console({testapi_console => 'sut'});
 
     if ($ret->{error}) {
-        bmwqemu::fctinfo("VNC port details:\n" . _port_details($vncport));
+        bmwqemu::fctinfo("VNC port details:\n" . port_details($vncport));
         die $ret->{error};
     }
     if ($vars->{NICTYPE} eq 'tap') {
@@ -1230,12 +1230,6 @@ sub check_socket ($self, $fh, $write = undef) {
 
 sub _extract_hostfwd_ports ($args) { return $args =~ /hostfwd=(?:tcp|udp)::(\d+)-/g; }
 
-sub _port_details ($port) {
-    my @ss_output = qx{ss -tlnp 2>/dev/null};
-    my @port_info = grep { /\b$port\b/ } @ss_output;
-    return @port_info ? join('', @port_info) : 'no details found';
-}
-
 sub _assert_port_availability ($port, $service) {
     bmwqemu::fctinfo("checking $port port availability");
     my $sock = IO::Socket::IP->new(
@@ -1246,7 +1240,7 @@ sub _assert_port_availability ($port, $service) {
     );
     if ($sock) {
         $sock->close;
-        die "Port $port ($service) is already in use\n" . _port_details($port);
+        die "Port $port ($service) is already in use\n" . port_details($port);
     }
     return 0;
 }

@@ -21,6 +21,7 @@ our @EXPORT_OK = qw(
   run
   run_diag
   attempt
+  port_details
 );
 
 # An helper to lookup into a folder and find an executable file between given candidates
@@ -106,6 +107,12 @@ sub attempt {    # no:style:signatures
     }
     $or->() if $or && !$condition->();
     bmwqemu::diag "Finished after $attempts attempts";
+}
+
+sub port_details ($port) {
+    my @ss_output = qx{ss -tlnp 2>/dev/null};
+    my @port_info = grep { /\b$port\b/ } @ss_output;
+    return @port_info ? join('', @port_info) : 'no details found';
 }
 
 1;

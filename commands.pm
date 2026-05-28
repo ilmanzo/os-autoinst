@@ -15,6 +15,7 @@ use Mojo::JSON 'to_json';
 use Mojo::File 'path';
 use myjsonrpc;
 use bmwqemu;
+use osutils qw(port_details);
 use testapi ();
 
 BEGIN {
@@ -283,6 +284,7 @@ sub run_daemon ($port, $isotovideo) {
     try { $daemon->run }
     catch ($e) {
         print "cmdsrv: failed to run daemon on port $port: $e\n";    # uncoverable statement
+        print port_details($port) if $e =~ /already in use/i;    # uncoverable statement
         _exit(1);    # uncoverable statement
     }
 }
