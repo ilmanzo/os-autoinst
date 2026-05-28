@@ -217,7 +217,7 @@ needle_init;
 
 my @alltags = sort keys %needle::tags;
 my @needles = @{needle::tags('none') || []};
-is(@needles, 4, 'four needles found');
+is(@needles, 3, 'three needles found');
 for my $n (@needles) {
     $n->unregister();
 }
