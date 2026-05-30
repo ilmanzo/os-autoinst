@@ -241,6 +241,14 @@ subtest 'starting VMware console' => sub {
     _check_vmware_cmds(\@cmds);
 };
 
+subtest 'starting VMware console with a specified hardware version' => sub {
+    local $bmwqemu::vars{VMWARE_VM_HWVERSION} = '13';
+    my (@cmds, @ssh_cmds);
+    my $mocks = _mock_svirt_vmware(\@cmds, \@ssh_cmds);
+    $svirt_console->define_and_start;
+    _check_vmware_cmds(\@cmds, [qq{sed -i 's/^virtualHW.version = ".*"/virtualHW.version = "$bmwqemu::vars{VMWARE_VM_HWVERSION}"/' /vmfs/volumes/datastore1/openQA/openQA-SUT-1.vmx}]);
+};
+
 subtest 'test config encoding' => sub {
     $bmwqemu::vars{GUESTINFO_COMBUSTION} = 'someTestScript';
     my $test_script_dir = path(File::Temp->newdir('testXXXX'));
