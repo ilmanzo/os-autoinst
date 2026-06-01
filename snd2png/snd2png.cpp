@@ -27,7 +27,7 @@ static double imabs(fftw_complex cpx)
 // boring linear interpolation
 double valueForFreq(double* points, int bin, double ratio)
 {
-   if (bin == 0)
+    if (bin == 0)
         return points[0];
 
     double next_value = points[bin];
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     }
 
     fprintf(stderr, "snd2png: %d channels, samplerate %d Hz, %ld frames (%.2f seconds)\n", info_in.channels,
-            info_in.samplerate, info_in.frames, (float)(info_in.frames)/info_in.samplerate);
+        info_in.samplerate, info_in.frames, (float)(info_in.frames) / info_in.samplerate);
 
     float* infile_data = (float*)fftw_malloc(sizeof(float) * info_in.frames * info_in.channels);
     if (!infile_data) {
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
     // https://en.wikipedia.org/wiki/Voice_frequency
     double max_freq = 3200.;
     double fft_max_freq = info_in.samplerate / 2.0;
-    int last_bin = std::min(int(1 + ceil(max_freq / fft_max_freq * (nDftSamples/2.0))), int(1 + nDftSamples/2.0));
+    int last_bin = std::min(int(1 + ceil(max_freq / fft_max_freq * (nDftSamples / 2.0))), int(1 + nDftSamples / 2.0));
     double fft_bw = fft_max_freq / (nDftSamples / 2.0);
 
     double** points = (double**)malloc(sizeof(double*) * times);
@@ -182,8 +182,8 @@ int main(int argc, char* argv[])
     fprintf(stderr, "silences: %d %d\n", first_non_silence, last_non_silence);
     for (int i = 1; i < freqs; ++i) {
         double freq = i * max_freq / freqs;
-        int bin = ceil(freq/fft_bw);
-        double ratio = bin - (freq/fft_bw);
+        int bin = ceil(freq / fft_bw);
+        double ratio = bin - (freq / fft_bw);
 
         for (int TimePos = first_non_silence; TimePos < last_non_silence; TimePos++) {
             double value = valueForFreq(points[TimePos], bin, ratio);

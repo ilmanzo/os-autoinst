@@ -272,7 +272,7 @@ find_program(CLANG_FORMAT_PATH clang-format)
 add_custom_target(
     tidy-cpp
     COMMENT "Formatting C++ source code"
-    COMMAND sh -c "'${CLANG_FORMAT_PATH}" "--style=WebKit" "-i" "$$(find" "." "-name" "\*.h" "-o" "-name" "\*.cc" "-o" "-name" "\*.cpp)'"
+    COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/tools/check-cpp-style" "${CLANG_FORMAT_PATH}" --fix
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 

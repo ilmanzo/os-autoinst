@@ -1,0 +1,14 @@
+#!/bin/sh -e
+# fall back to find if there is no git, e.g. in package builds
+# shellcheck disable=SC2046
+CLANG_FORMAT="${1:-clang-format}"
+shift
+if [ "$1" = "--fix" ]; then
+    FIX="-i"
+    shift
+else
+    FIX="--dry-run --Werror"
+fi
+# shellcheck disable=SC2046,SC2086
+set -- $FIX $(git ls-files "*.h" "*.cc" "*.cpp" 2> /dev/null || find . -name '*.h' -o -name '*.cc' -o -name '*.cpp')
+"$CLANG_FORMAT" --style=WebKit "$@"
