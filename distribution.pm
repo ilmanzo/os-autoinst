@@ -181,8 +181,7 @@ sub script_run ($self, $cmd, @args) {
             my $marker = "; echo $str-\$?-" . ($args{output} ? "Comment: $args{output}" : '');
             my $final_cmd = $skip_pretty ? "OA_NO_MARKER=1; $cmd" : $cmd;
             if (testapi::is_serial_terminal) {
-                testapi::type_string "$final_cmd", max_interval => $args{max_interval};
-                testapi::type_string $marker, max_interval => $args{max_interval};
+                testapi::type_string "$final_cmd$marker", max_interval => $args{max_interval};
                 testapi::wait_serial($final_cmd . $marker, no_regex => 1, quiet => $args{quiet}, buffer_size => (length $final_cmd) + 128, internal_marker => 1)
                   or _handle_cmd_typing_error($final_cmd, \%args);
                 testapi::type_string "\n", max_interval => $args{max_interval};
