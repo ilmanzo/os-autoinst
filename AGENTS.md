@@ -13,7 +13,8 @@ test scripts.
 ## Conventions
 
 - Code style: Run `tools/tidyall --all` (or `tools/tidyall --git` for changed
-  files only).
+  files only). This MUST be done before every commit and before claiming
+  completion.
 - Linter: Always run `make test-perl-testsuite TESTS="xt/01-style.t xt/02-perlcritic.t"`
   for Perl changes before claiming completion.
 - Testing: Always add tests for new features or bug fixes in `t/`. Prefer
