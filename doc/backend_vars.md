@@ -243,6 +243,7 @@ Supported variables per backend
 | VMWARE_REMOTE_VMM | string |  | Set the vmware Virtual Machine Manager |
 | VMWARE_VNC_OVER_WS | boolean | 0 | Whether to use VNC over WebSockets (instead of raw VNC connection) |
 | VMWARE_VNC_OVER_WS_INSECURE | boolean | 0 | Do not require a valid TLS certificate for VNC over WebSockets |
+| VMWARE_VM_HWVERSION | integer |  | VM hardware version |
 | GUESTINFO_COMBUSTION | string |  | Set the location of combustion's bash script file among the data folder |
 | GUESTINFO_IGNITION | string |  | Set the location of ignition's config file formated in json, among the data folder |
 | GUESTINFO_CLOUD_INIT | string |  | Set the location of user-data and meta-data files, separated by a comma in data folder |

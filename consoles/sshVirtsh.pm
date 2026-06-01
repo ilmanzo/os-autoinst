@@ -624,6 +624,10 @@ __END'
         my $nvram_path = sprintf '/vmfs/volumes/%s/openQA/%s', $bmwqemu::vars{VMWARE_DATASTORE} // 'datastore1', $nvram;
         $ret = $self->run_cmd("test -e $nvram_path", domain => 'sshVMwareServer');
         $self->run_cmd(qq{echo 'nvram = "$nvram"' >> $vmx}, domain => 'sshVMwareServer') unless ($ret);
+        # set virtual hardware version if specified
+        if ($bmwqemu::vars{VMWARE_VM_HWVERSION}) {
+            $self->run_cmd(qq{sed -i 's/^virtualHW.version = ".*"/virtualHW.version = "$bmwqemu::vars{VMWARE_VM_HWVERSION}"/' $vmx}, domain => 'sshVMwareServer');
+        }
 
         my $fb_tool = $bmwqemu::vars{GUESTINFO_CONFIG};
 
