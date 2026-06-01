@@ -310,7 +310,8 @@ static void setpalette(int* co, int cy, int cb, int cr)
     co[2] = cr - 128;
 }
 
-static inline int clamp(int x) { return x > 255 ? 255 : x < 0 ? 0 : x; }
+static inline int clamp(int x) { return x > 255 ? 255 : x < 0 ? 0
+                                                              : x; }
 
 void decode_ast2100(cv::Mat* pic, const unsigned char* data, size_t datal)
 {
