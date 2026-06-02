@@ -322,9 +322,11 @@ Reset gathered coverage data: `make coverage-reset`
 
 Install files for packaging: `make install DESTDIR=…`
 
-Automatically tidy all perl files: `tools/tidyall`
+Automatically tidy all perl files: `make tidy-perl`
 
 Tidy all changed perl files: `tools/tidyall --git`
+
+Tidy all files (C++, Python, Perl): `make tidy`
 
 Further notes:
 

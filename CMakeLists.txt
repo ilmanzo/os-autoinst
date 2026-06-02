@@ -285,3 +285,18 @@ add_custom_target(
     COMMAND "${RUFF_PATH}" check --fix .
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+# add target for formatting Perl source code
+add_custom_target(
+    tidy-perl
+    COMMENT "Formatting Perl source code"
+    COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/tools/tidyall" --all
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+# unified tidy target
+add_custom_target(
+    tidy
+    COMMENT "Formatting all source code"
+    DEPENDS tidy-cpp tidy-python tidy-perl
+)
