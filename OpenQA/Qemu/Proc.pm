@@ -240,6 +240,35 @@ sub configure_blockdevs ($self, $bootfrom, $basedir, $vars) {
     return $self;
 }
 
+=head3 _make_resolution_hex_data
+
+Returns a hexadecimal representation for the specified width and height.
+
+pack("VV", ...): packs two 32-bit unsigned integers in little-endian byte order
+unpack("H*", ...): converts those raw bytes into a hexadecimal string
+
+=cut
+
+sub _make_resolution_hex_data ($width, $height) { unpack 'H*', pack 'VV', $width, $height }
+
+=head3 _make_resolution_configuration
+
+Makes JSON configuration for the specified resolution setting and returns arguments
+to use it via `virt-fw-vars`.
+
+=cut
+
+sub _make_resolution_configuration ($resolution) {
+    return () unless $resolution;
+    die "Specified UEFI_PFLASH_RES is invalid; it must be e.g. 800x600\n" unless $resolution =~ m/(?<width>\d+)x(?<height>\d+)/i;
+
+    my $data = _make_resolution_hex_data($+{width}, $+{height});
+    my %vars = (name => 'PlatformConfig', guid => '7235c51c-0c80-4cab-87ac-3b084a6304b1', attr => 7, data => $data);
+    my %json = (version => 2, variables => [\%vars]);
+    my $json_path = path('resolution-fw-conf.json')->spurt(encode_json(\%json));
+    return ('--set-json' => $json_path->to_abs->to_string);
+}
+
 =head3 configure_pflash
 
 Configure a pair of pflash drives which contain the UEFI firmware code and
@@ -262,9 +291,10 @@ sub configure_pflash ($self, $vars) {
         die 'Need UEFI_PFLASH_VARS with UEFI_PFLASH_CODE' unless $fw;
 
         my @cert_args = map { ('--enroll-cert' => $_) } split qr/:/, $vars->{UEFI_PFLASH_CERTS} // '';
-        if (@cert_args) {
+        my @res_args = _make_resolution_configuration($vars->{UEFI_PFLASH_RES});
+        if (@cert_args || @res_args) {
             my $fw_adjusted = path($fw->basename('.bin') . '-adjusted.bin')->to_abs;
-            runcmd('virt-fw-vars', '-i', $fw->to_string, '-o', $fw_adjusted->to_string, @cert_args);
+            runcmd('virt-fw-vars', '-i', $fw->to_string, '-o', $fw_adjusted->to_string, @cert_args, @res_args);
             $fw = $fw_adjusted;
         }
         $bdc->add_pflash_drive('pflash-vars', $fw, $self->get_img_size($fw))

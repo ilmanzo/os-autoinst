@@ -541,15 +541,33 @@ subtest configure_pflash => sub {
     my $expected_vars_path = path($vars_file)->to_abs->to_string;
     is_deeply \@flash, [['pflash-code', $code_file->to_string, 3], ['pflash-vars', $expected_vars_path, 3]], 'add_pflash_drive correctly called';
 
+    my @expected_base_args = ('virt-fw-vars', '-i', '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin', '-o', "$dir/ovmf-x86_64-ms-4m-vars-adjusted.bin");
     subtest 'UEFI_PFLASH_CERTS' => sub {
         my @commands;
         $mock_proc->redefine(runcmd => sub { push @commands, [@_] });
         $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
         $vars{UEFI_PFLASH_CERTS} = '/certs/foo.crt:/certs/bar.crt';
         $proc->configure_pflash(\%vars);
-        my @expected_base_args = ('virt-fw-vars', '-i', '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin', '-o', "$dir/ovmf-x86_64-ms-4m-vars-adjusted.bin");
         my @expected_commands = ([@expected_base_args, '--enroll-cert', '/certs/foo.crt', '--enroll-cert', '/certs/bar.crt']);
         is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
+        $mock_proc->unmock('runcmd');
+    };
+    subtest 'UEFI_PFLASH_RES' => sub {
+        my @commands;
+        $mock_proc->redefine(runcmd => sub { push @commands, [@_] });
+        $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
+        $vars{UEFI_PFLASH_CERTS} = '';
+        $vars{UEFI_PFLASH_RES} = '800x600';
+        $proc->configure_pflash(\%vars);
+        my @expected_commands = ([@expected_base_args, '--set-json']);
+        my $json_path = pop @{$commands[0]};
+        my $json_data = decode_json(path($json_path)->slurp);
+        my $json_vars = $json_data->{variables}->[0];
+        is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
+        is ref $json_vars, 'HASH', 'JSON data looks valid' or always_explain $json_data;
+        is $json_vars->{guid}, '7235c51c-0c80-4cab-87ac-3b084a6304b1', 'JSON data looks relevant';
+        is $json_vars->{data}, '2003000058020000', 'hex value correctly computed for 800x600';
+        is OpenQA::Qemu::Proc::_make_resolution_hex_data(1024, 768), '0004000000030000', 'hex value correctly computed for 1024x768';
         $mock_proc->unmock('runcmd');
     };
 
