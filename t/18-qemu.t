@@ -546,7 +546,7 @@ subtest configure_pflash => sub {
         my @commands;
         $mock_proc->redefine(runcmd => sub { push @commands, [@_] });
         $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
-        $vars{UEFI_PFLASH_CERTS} = '/certs/foo.crt:/certs/bar.crt';
+        $vars{UEFI_PFLASH_CERTS} = '/certs/foo.crt;/certs/bar.crt';
         $proc->configure_pflash(\%vars);
         my @expected_commands = ([@expected_base_args, '--enroll-cert', '/certs/foo.crt', '--enroll-cert', '/certs/bar.crt']);
         is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;

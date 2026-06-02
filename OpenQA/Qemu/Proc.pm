@@ -290,7 +290,7 @@ sub configure_pflash ($self, $vars) {
         $fw = path($vars->{UEFI_PFLASH_VARS})->to_abs;
         die 'Need UEFI_PFLASH_VARS with UEFI_PFLASH_CODE' unless $fw;
 
-        my @cert_args = map { ('--enroll-cert' => $_) } split qr/:/, $vars->{UEFI_PFLASH_CERTS} // '';
+        my @cert_args = map { ('--enroll-cert' => $_) } split qr/;/, $vars->{UEFI_PFLASH_CERTS} // '';
         my @res_args = _make_resolution_configuration($vars->{UEFI_PFLASH_RES});
         if (@cert_args || @res_args) {
             my $fw_adjusted = path($fw->basename('.bin') . '-adjusted.bin')->to_abs;
