@@ -138,6 +138,7 @@ subtest 'test always_rollback flag' => sub {
         $mock_basetest->redefine(test_flags => {always_rollback => 1, milestone => 1});
         $mock_autotest->redefine(query_isotovideo => 0);
         $mock_autotest->redefine(load_snapshot => sub { $reverts_done++; });
+        local $bmwqemu::vars{FAIL_ON_ALWAYS_ROLLBACK_NOT_SUPPORTED} = 0;
         stderr_like { autotest::run_all } qr/finished/, 'run_all outputs status on stderr';
         ($died, $completed) = get_tests_done;
         is $died, 0, 'start+next+start should not die when always_rollback flag is set';
@@ -233,14 +234,12 @@ subtest 'test always_rollback flag' => sub {
         is $reverts_done, 0, 'no snapshots loaded after fatal failure';
         is $snapshots_made, 0, 'no snapshots made after fatal failure';
     };
-    snapshot_subtest 'fails if snapshots are not supported and FAIL_ON_ALWAYS_ROLLBACK_NOT_SUPPORTED is set' => sub {
+    snapshot_subtest 'fails by default if snapshots are not supported and always_rollback is requested' => sub {
         $mock_basetest->redefine(test_flags => {always_rollback => 1});
         $mock_autotest->redefine(query_isotovideo => sub { 0 });
-        $bmwqemu::vars{FAIL_ON_ALWAYS_ROLLBACK_NOT_SUPPORTED} = 1;
         my $w;
         stderr_like { $w = warning { autotest::run_all } } qr/Snapshots are not supported/, 'run_all outputs on stderr';
         like $w, qr/always_rollback requested but snapshots are not supported by the backend/, 'fails with explicit error message';
-        delete $bmwqemu::vars{FAIL_ON_ALWAYS_ROLLBACK_NOT_SUPPORTED};
     };
     $mock_basetest->unmock($_) for qw(runtest test_flags);
     $mock_autotest->unmock($_) for qw(load_snapshot make_snapshot query_isotovideo);
