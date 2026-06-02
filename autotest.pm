@@ -27,6 +27,7 @@ our @EXPORT_OK = qw(loadtest $selected_console $last_milestone_console query_iso
 
 our %tests;    # scheduled or run tests
 our @testorder;    # for keeping them in order
+our %scheduled_basenames;    # keep track of scheduled basenames to their script path
 our $isotovideo;
 our $process;
 our $tests_running = 0;
@@ -288,6 +289,13 @@ sub loadtest ($script, %args) {
     no utf8;    # Inline Python fails on utf8, so let's exclude it here
     my $script_path = find_script($script);
     my ($name, $category) = parse_test_path($script_path);
+
+    my $abs_path = path($script_path)->to_abs->to_string;
+    if (exists $scheduled_basenames{$name} && $scheduled_basenames{$name} ne $abs_path) {
+        die "The test module basename '$name' is already used by '$scheduled_basenames{$name}', but you tried to load it from '$abs_path'. Using the same basename from different directories is not supported.\n";
+    }
+    $scheduled_basenames{$name} = $abs_path;
+
     my ($test, $is_python);
     my $fullname = "$category-$name";
     state %loaded;    # keep track of loaded packages

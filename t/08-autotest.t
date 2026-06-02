@@ -198,6 +198,7 @@ subtest 'test always_rollback flag' => sub {
     snapshot_subtest 'always_run flag ensures execution after fatal failure' => sub {
         local %autotest::tests = ();
         local @autotest::testorder = ();
+        local %autotest::scheduled_basenames = ();
         local $autotest::last_milestone = undef;
         local $autotest::last_milestone_active_consoles = [];
         local $autotest::activated_consoles = [];
@@ -224,7 +225,7 @@ subtest 'test always_rollback flag' => sub {
         $vm_stopped = 0;
         my $output = combined_from { autotest::run_all };
         like $output, qr/skipping tests-start#?[0-9]* \(after fatal failure\)/, 'skipped normal test';
-        like $output, qr/starting next tests\/next\.pm/, 'executed always_run cleanup test';
+        like $output, qr{starting next tests/next\.pm}, 'executed always_run cleanup test';
         ($died, $completed) = get_tests_done;
         is $died, 0, 'tests not considered died';
         is $completed, 0, 'tests did not complete successfully';
@@ -356,6 +357,7 @@ is(@{$autotest::tests{'tests-fatal'}}{@opts}, @{$autotest::tests{'tests-fatal' .
 subtest 'scheduling rules' => sub {
     %autotest::tests = ();
     @autotest::testorder = ();
+    %autotest::scheduled_basenames = ();
 
     $bmwqemu::vars{EXCLUDE_MODULES} = 'start';
     autotest::loadtest('tests/start.pm');
@@ -388,6 +390,7 @@ subtest 'test scheduling test modules at test runtime' => sub {
     $autotest::tests_running = 0;
     @autotest::testorder = ();
     %autotest::tests = ();
+    %autotest::scheduled_basenames = ();
 
     my %json_data;
     my $json_filename = bmwqemu::result_dir . '/test_order.json';
@@ -430,6 +433,8 @@ subtest python => sub {
     } qr{Using python version.*scheduling pythontest tests/pythontest}s, 'python pythontest module referenced';
 
     %autotest::tests = ();
+    %autotest::scheduled_basenames = ();
+
     loadtest 'pythontest.py';
     loadtest 'morepython.py';
     my $p1 = $autotest::tests{'tests-pythontest'};
@@ -449,6 +454,7 @@ subtest 'python run_args' => sub {
     plan skip_all => 'Inline::Python is not available' unless $has_python;
 
     %autotest::tests = ();
+    %autotest::scheduled_basenames = ();
     my $targs = OpenQA::Test::RunArgs->new();
     $targs->{data} = 23;
 
@@ -459,6 +465,7 @@ subtest 'python with bad run method' => sub {
     plan skip_all => 'Inline::Python is not available' unless $has_python;
 
     %autotest::tests = ();
+    %autotest::scheduled_basenames = ();
     my $targs = OpenQA::Test::RunArgs->new();
     $targs->{data} = 23;
 
@@ -565,6 +572,32 @@ subtest croak => sub {
 subtest 'test skipping tests' => sub {
     $bmwqemu::vars{SKIPTO} = 'pythontest.py';
     stderr_like { autotest::runalltests } qr/skipping/, 'Skipping Test Run';
+};
+
+subtest 'modules with same filename' => sub {
+    local %autotest::tests = ();
+    local @autotest::testorder = ();
+    local %autotest::scheduled_basenames = ();
+    local $bmwqemu::vars{CASEDIR} = "$Bin/data/collision";
+    stderr_like { autotest::loadtest('tests/dir1/collision.pm') } qr{scheduling collision tests/dir1/collision\.pm}, 'dir1/collision.pm scheduled';
+    throws_ok { autotest::loadtest('tests/dir2/collision.pm') } qr{The test module basename 'collision' is already used by '.*tests/dir1/collision\.pm', but you tried to load it from '.*tests/dir2/collision\.pm'}, 'collision detected';
+
+    ok exists $autotest::tests{'dir1-collision'}, 'dir1/collision scheduled';
+    ok !exists $autotest::tests{'dir2-collision'}, 'dir2/collision not scheduled after collision';
+};
+
+subtest 'python modules with same filename' => sub {
+    plan skip_all => 'Inline::Python is not available' unless $has_python;
+
+    local %autotest::tests = ();
+    local @autotest::testorder = ();
+    local %autotest::scheduled_basenames = ();
+    local $bmwqemu::vars{CASEDIR} = "$Bin/data/collision";
+    stderr_like { autotest::loadtest('pythontests/dir1/collision.py') } qr{scheduling collision pythontests/dir1/collision\.py}, 'dir1/collision.py scheduled';
+    throws_ok { autotest::loadtest('pythontests/dir2/collision.py') } qr{The test module basename 'collision' is already used by '.*pythontests/dir1/collision\.py', but you tried to load it from '.*pythontests/dir2/collision\.py'}, 'collision detected';
+
+    ok exists $autotest::tests{'dir1-collision'}, 'dir1/collision.py scheduled';
+    ok !exists $autotest::tests{'dir2-collision'}, 'dir2/collision.py not scheduled after collision';
 };
 
 subtest 'start_process' => sub {
