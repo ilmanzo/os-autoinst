@@ -382,12 +382,7 @@ subtest 'script_run' => sub {
     is(assert_script_run('true', max_interval => 1), undef, 'nothing happens on success (slow typing)');
     is_deeply($cmds, [
             {
-                text => 'true',
-                cmd => 'backend_type_string',
-                max_interval => 1
-            },
-            {
-                text => '; echo XXX-$?-',
+                text => 'true; echo XXX-$?-',
                 cmd => 'backend_type_string',
                 max_interval => 1
             },
@@ -599,12 +594,7 @@ subtest 'upload_logs' => sub {
     upload_logs '/var/log/messages';
     is_deeply($cmds, [
             {
-                text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages http://localhost:4243/LookAtMeImAToken/uploadlog/messages',
-                cmd => 'backend_type_string',
-                max_interval => 250
-            },
-            {
-                text => '; echo XXX-$?-',
+                text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages http://localhost:4243/LookAtMeImAToken/uploadlog/messages; echo XXX-$?-',
                 cmd => 'backend_type_string',
                 max_interval => 250
             },
@@ -618,12 +608,7 @@ subtest 'upload_logs' => sub {
     upload_logs '/var/log/messages', failok => 1;
     is_deeply($cmds, [
             {
-                text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages --max-time 90 http://localhost:4243/LookAtMeImAToken/uploadlog/messages',
-                cmd => 'backend_type_string',
-                max_interval => 250
-            },
-            {
-                text => '; echo XXX-$?-',
+                text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages --max-time 90 http://localhost:4243/LookAtMeImAToken/uploadlog/messages; echo XXX-$?-',
                 cmd => 'backend_type_string',
                 max_interval => 250
             },
