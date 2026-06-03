@@ -197,6 +197,7 @@ main_requires:
   git-core:
   openssh-clients:
   virt-firmware:
+  util-linux:  # for uuidgen
   perl(Cwd):
   perl(B::Deparse):
   perl(Carp):

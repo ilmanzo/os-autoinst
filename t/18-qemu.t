@@ -548,8 +548,20 @@ subtest configure_pflash => sub {
         $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
         $vars{UEFI_PFLASH_CERTS} = '/certs/foo.crt;/certs/bar.crt';
         $proc->configure_pflash(\%vars);
-        my @expected_commands = ([@expected_base_args, '--enroll-cert', '/certs/foo.crt', '--enroll-cert', '/certs/bar.crt']);
-        is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
+        my @cert_args = splice @{$commands[0]}, scalar @expected_base_args;
+        my $uuid_regex = qr/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+        is_deeply \@commands, [\@expected_base_args], 'virt-fw-vars called' or always_explain \@commands;
+        my $check_cert = sub ($number, $path) {
+            my $offset = ($number - 1) * 6;
+            is $cert_args[0 + $offset], '--add-db', "cert $number added to db";
+            like $cert_args[1 + $offset], $uuid_regex, "UUID for cert $number created";
+            is $cert_args[2 + $offset], $path, "path of cert $number specified";
+            is $cert_args[3 + $offset], '--add-kek', "cert $number added to KEK";
+            is $cert_args[4 + $offset], $cert_args[1 + $offset], "UUID for cert $number specified for KEK as well";
+            is $cert_args[5 + $offset], $cert_args[2 + $offset], "path of cert $number specified for KEK as well";
+        };
+        $check_cert->(1, '/certs/foo.crt');
+        $check_cert->(2, '/certs/bar.crt');
         $mock_proc->unmock('runcmd');
     };
     subtest 'UEFI_PFLASH_RES' => sub {
