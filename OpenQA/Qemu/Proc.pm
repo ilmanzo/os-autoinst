@@ -269,6 +269,18 @@ sub _make_resolution_configuration ($resolution) {
     return ('--set-json' => $json_path->to_abs->to_string);
 }
 
+=head3 _make_secure_boot_configuration
+
+=cut
+
+sub _make_secure_boot_configuration ($enable_or_disable_secure_boot) {
+    return () unless defined $enable_or_disable_secure_boot;
+    return (
+        $enable_or_disable_secure_boot ? '--set-true' : '--set-false' => 'SecureBootEnable',
+        !$enable_or_disable_secure_boot ? '--set-true' : '--set-false' => 'CustomMode',
+    );
+}
+
 =head3 _uuid
 
 Generate random UUID for use with `virt-fw-vars`.
@@ -299,13 +311,14 @@ sub configure_pflash ($self, $vars) {
         $fw = path($vars->{UEFI_PFLASH_VARS})->to_abs;
         die 'Need UEFI_PFLASH_VARS with UEFI_PFLASH_CODE' unless $fw;
 
+        my @secureboot_args = _make_secure_boot_configuration($vars->{UEFI_PFLASH_SECURE_BOOT});
         my @certs = split qr/;/, $vars->{UEFI_PFLASH_CERTS} // '';
         my @cert_args = map { ('--enroll-cert' => $_) } shift @certs // ();
         push @cert_args, map { my $uuid = _uuid; ('--add-db', $uuid, $_, '--add-kek', $uuid, $_) } @certs;
         my @res_args = _make_resolution_configuration($vars->{UEFI_PFLASH_RES});
-        if (@cert_args || @res_args) {
+        if (@secureboot_args || @cert_args || @res_args) {
             my $fw_adjusted = path($fw->basename('.bin') . '-adjusted.bin')->to_abs;
-            runcmd('virt-fw-vars', '-i', $fw->to_string, '-o', $fw_adjusted->to_string, @cert_args, @res_args);
+            runcmd('virt-fw-vars', '-i', $fw->to_string, '-o', $fw_adjusted->to_string, @secureboot_args, @cert_args, @res_args);
             $fw = $fw_adjusted;
         }
         $bdc->add_pflash_drive('pflash-vars', $fw, $self->get_img_size($fw))

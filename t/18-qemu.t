@@ -542,13 +542,14 @@ subtest configure_pflash => sub {
     is_deeply \@flash, [['pflash-code', $code_file->to_string, 3], ['pflash-vars', $expected_vars_path, 3]], 'add_pflash_drive correctly called';
 
     my @expected_base_args = ('virt-fw-vars', '-i', '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin', '-o', "$dir/ovmf-x86_64-ms-4m-vars-adjusted.bin");
-    subtest 'UEFI_PFLASH_CERTS' => sub {
+    subtest 'UEFI_PFLASH_CERTS and UEFI_PFLASH_SECURE_BOOT' => sub {
         my @commands;
         $mock_proc->redefine(runcmd => sub { push @commands, [@_] });
         $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
         $vars{UEFI_PFLASH_CERTS} = '/certs/foo.crt;/certs/bar.crt';
+        $vars{UEFI_PFLASH_SECURE_BOOT} = 1;
         $proc->configure_pflash(\%vars);
-        my @expected_commands = ([@expected_base_args, '--enroll-cert', '/certs/foo.crt']);
+        my @expected_commands = ([@expected_base_args, '--set-true', 'SecureBootEnable', '--set-false', 'CustomMode', '--enroll-cert', '/certs/foo.crt']);
         my @cert_args = splice @{$commands[0]}, scalar @{$expected_commands[0]};
         my $uuid_regex = qr/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
         is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
@@ -566,6 +567,7 @@ subtest configure_pflash => sub {
         $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
         $vars{UEFI_PFLASH_CERTS} = '';
         $vars{UEFI_PFLASH_RES} = '800x600';
+        $vars{UEFI_PFLASH_SECURE_BOOT} = undef;
         $proc->configure_pflash(\%vars);
         my @expected_commands = ([@expected_base_args, '--set-json']);
         my $json_path = pop @{$commands[0]};
