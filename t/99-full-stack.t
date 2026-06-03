@@ -40,6 +40,7 @@ path('vars.json')->spew(<<"EOV");
    "QEMU_NO_FDC_SET" : "1",
    "CASEDIR" : "$casedir",
    "ISO" : "$data_dir/Core-7.2.iso",
+   "PRETTY_SERIAL_MARKER" : "1",
    "CDMODEL" : "ide-cd",
    "HDDMODEL" : "ide-hd",
    "VERSION" : "1",

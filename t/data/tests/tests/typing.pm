@@ -34,8 +34,6 @@ END
     script_run "echo '$md5  text' > text.md5";
     assert_script_run 'md5sum -c text.md5';
 
-    # TinyCore busybox sh acts as bash but does not provide it so we do here
-    script_run 'alias bash=sh', 0;
     my $out = script_output('mount');
     die "mount does not show any mount points? output: $out" unless $out =~ /.*\/.*on/;
     die "^rootfs not found. output: $out" unless $out =~ qr{^rootfs};
