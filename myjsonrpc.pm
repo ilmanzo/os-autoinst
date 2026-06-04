@@ -15,7 +15,7 @@ use constant DEBUG_JSON => $ENV{PERL_MYJSONRPC_DEBUG} || 0;
 use constant READ_BUFFER => $ENV{PERL_MYJSONRPC_BYTES} || 8_000_000;
 
 # hash for keeping state
-our $sockets;
+my $sockets;
 
 sub _syswrite ($to_fd, $json, $length = undef, $offset = undef) { syswrite $to_fd, $json, $length, $offset }
 

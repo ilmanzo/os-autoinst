@@ -20,7 +20,7 @@ our $retry_count = $ENV{OS_AUTOINST_MMAPI_RETRY_COUNT} // 30;
 our $retry_interval = $ENV{OS_AUTOINST_MMAPI_RETRY_INTERVAL} // 10;
 our $poll_interval = $ENV{OS_AUTOINST_MMAPI_POLL_INTERVAL} // 1;
 
-our $url;
+my $url;
 
 # private ua
 my $ua;
