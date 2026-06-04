@@ -84,10 +84,10 @@ sub process_file ($filename) {
             say '     style="fill:#000000;fill-opacity:0.5;stroke:#808080;stroke-width:2;stroke-opacity:0.75"';
         }
         printf "     id=\"rect%d\"\n", $area_counter;
-        printf "     width=\"%d\"\n",  $area->{width};
+        printf "     width=\"%d\"\n", $area->{width};
         printf "     height=\"%d\"\n", $area->{height};
-        printf "     x=\"%d\"\n",      $area->{xpos};
-        printf "     y=\"%d\" />\n",   $area->{ypos};
+        printf "     x=\"%d\"\n", $area->{xpos};
+        printf "     y=\"%d\" />\n", $area->{ypos};
         if ($area->{click_point}) {
             say '  <circle';
             say '     style="fill:#ffffff;fill-opacity:0.5;stroke:#ffffff;stroke-width:2;stroke-opacity:0.75"';
@@ -113,7 +113,7 @@ my %options;
 sub usage ($r)
 {
     require Pod::Usage;
-    Pod::Usage::pod2usage($r)
+    Pod::Usage::pod2usage($r);
 }
 
 GetOptions(\%options, 'help|h|?') or usage(1);

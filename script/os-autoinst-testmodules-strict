@@ -65,6 +65,7 @@ unless (caller) {
     usage(1) unless @ARGV;
     $rc = main(\%options, @ARGV);
 }
+
 END {
     $? = 2 if $rc;
 }
