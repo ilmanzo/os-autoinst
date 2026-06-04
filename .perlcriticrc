@@ -43,3 +43,6 @@ severity = 5
 # -- Superfluous use strict/warning.
 [OpenQA::RedundantStrictWarning]
 equivalent_modules = Test::Most
+
+[Variables::ProhibitPackageVars]
+add_packages = autotest bmwqemu log needle testapi Carp OpenQA::Isotovideo::Interface

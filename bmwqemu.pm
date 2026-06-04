@@ -32,28 +32,29 @@ sub mydie;
 $| = 1;
 
 
-our $default_timeout = 30;    # assert timeout, 0 is a valid timeout
-our $openqa_default_share = '/var/lib/openqa/share';
+# assert timeout, 0 is a valid timeout
+our $default_timeout = 30;    ## no critic (Variables::ProhibitPackageVars)
+our $openqa_default_share = '/var/lib/openqa/share';    ## no critic (Variables::ProhibitPackageVars)
 
 my @ocrrect;
 
-our $screenshotpath = 'qemuscreenshot';
+our $screenshotpath = 'qemuscreenshot';    ## no critic (Variables::ProhibitPackageVars)
 
 # global vars
 
 # Known locations of OVMF (UEFI) firmware: first is openSUSE, second is
 # the kraxel.org nightly packages, third is Fedora's edk2-ovmf package,
 # fourth is Debian's ovmf package.
-our @ovmf_locations_no_secure_boot = (
+our @ovmf_locations_no_secure_boot = (    ## no critic (Variables::ProhibitPackageVars)
     '/usr/share/qemu/ovmf-x86_64-4m-code.bin', '/usr/share/qemu/ovmf-x86_64-ms-code.bin',
 );
-our @ovmf_locations = (
+our @ovmf_locations = (    ## no critic (Variables::ProhibitPackageVars)
     '/usr/share/qemu/ovmf-x86_64-ms-4m-code.bin', '/usr/share/qemu/ovmf-x86_64-ms-code.bin',
     '/usr/share/edk2.git/ovmf-x64/OVMF_CODE-pure-efi.fd',
     '/usr/share/edk2/ovmf/OVMF_CODE.fd', '/usr/share/OVMF/OVMF_CODE.fd'
 );
 
-our %vars;
+our %vars;    ## no critic (Variables::ProhibitPackageVars)
 tie %vars, 'bmwqemu::tiedvars', %vars;
 
 sub ovmf_locations () { ($vars{UEFI_SECURE_BOOT} // 1) ? \@ovmf_locations : \@ovmf_locations_no_secure_boot }
@@ -125,7 +126,7 @@ sub save_vars (%args) {
 }
 
 # set from isotovideo during initialization
-our $topdir;
+our $topdir;    ## no critic (Variables::ProhibitPackageVars)
 
 sub init () {
     load_vars();
@@ -216,7 +217,7 @@ sub ensure_valid_vars () {
 
 # local vars
 
-our $backend;
+our $backend;    ## no critic (Variables::ProhibitPackageVars)
 
 # local vars end
 

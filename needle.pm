@@ -18,9 +18,9 @@ require IPC::System::Simple;
 use OpenQA::Benchmark::Stopwatch;
 use OpenQA::Isotovideo::Utils 'checkout_git_refspec';
 
-our %needles;
-our %tags;
-our $cleanuphandler;
+our %needles;    ## no critic (Variables::ProhibitPackageVars)
+our %tags;    ## no critic (Variables::ProhibitPackageVars)
+our $cleanuphandler;    ## no critic (Variables::ProhibitPackageVars)
 
 my $needles_dir;
 

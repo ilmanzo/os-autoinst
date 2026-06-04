@@ -14,8 +14,8 @@ use Term::ANSIColor;
 use Exporter 'import';
 our @EXPORT_OK = qw(logger init_logger diag fctres fctinfo fctwarn modstate);
 
-our $logger;
-our $direct_output;
+our $logger;    ## no critic (Variables::ProhibitPackageVars)
+our $direct_output;    ## no critic (Variables::ProhibitPackageVars)
 
 sub logger () { $logger //= Mojo::Log->new(level => 'debug', format => \&log_format_callback) }
 
