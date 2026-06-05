@@ -9,14 +9,14 @@ use Mojo::Base -strict, -signatures;
 # -> increment on every change of such APIs
 # -> never move that variable to another place (when refactoring)
 #    because it may be accessed by the tests itself
-our $version = 56;
+our $version = 56;    ## no critic (Variables::ProhibitPackageVars)
 
 # major version of the (web socket) API relevant to the developer mode
 # -> increment when making non-backward compatible changes to that API
-our $developer_mode_major_version = 1;
+our $developer_mode_major_version = 1;    ## no critic (Variables::ProhibitPackageVars)
 # minor version of the (web socket) API relevant to the developer mode
 # -> reset to 0 when making non-backward compatible changes to that API
 # -> increment when making backward compatible changes to that API
-our $developer_mode_minor_version = 1;
+our $developer_mode_minor_version = 1;    ## no critic (Variables::ProhibitPackageVars)
 
 1;

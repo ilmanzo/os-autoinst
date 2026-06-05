@@ -42,7 +42,7 @@ use constant DEFAULT_FFMPEG_CMD => FFMPEG_BIN . ' -y -hide_banner -nostats -r 24
 use constant SSH_SERIAL_READ_BUFFER_SIZE => 4096;
 
 # should be a singleton - and only useful in backend process
-our $backend;
+our $backend;    ## no critic (Variables::ProhibitPackageVars)
 
 has [qw(
       update_request_interval last_update_request screenshot_interval

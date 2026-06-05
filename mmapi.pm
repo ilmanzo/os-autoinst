@@ -16,11 +16,11 @@ require bmwqemu;
 use Mojo::UserAgent;
 use Mojo::URL;
 
-our $retry_count = $ENV{OS_AUTOINST_MMAPI_RETRY_COUNT} // 30;
-our $retry_interval = $ENV{OS_AUTOINST_MMAPI_RETRY_INTERVAL} // 10;
-our $poll_interval = $ENV{OS_AUTOINST_MMAPI_POLL_INTERVAL} // 1;
+use constant RETRY_COUNT => $ENV{OS_AUTOINST_MMAPI_RETRY_COUNT} // 30;
+use constant RETRY_INTERVAL => $ENV{OS_AUTOINST_MMAPI_RETRY_INTERVAL} // 10;
+use constant POLL_INTERVAL => $ENV{OS_AUTOINST_MMAPI_POLL_INTERVAL} // 1;
 
-our $url;
+my $url;
 
 # private ua
 my $ua;
@@ -67,14 +67,14 @@ sub api_call_2 ($method, $action, $params = undef, $expected_codes = undef) {
     $ua_url->path($action);
     $ua_url->query($params) if $params;
 
-    my $tries = $retry_count;
+    my $tries = RETRY_COUNT;
     my ($tx, $res);
     while ($tries--) {
         $tx = $ua->$method($ua_url);
         $res = $tx->res;
         last if $res->code && ($expected_codes // $CODES_EXPECTED_BY_DEFAULT)->{$res->code};
-        bmwqemu::diag("api_call_2 failed, retries left: $tries of $retry_count");
-        sleep $retry_interval;
+        bmwqemu::diag("api_call_2 failed, retries left: $tries of " . RETRY_COUNT);
+        sleep RETRY_INTERVAL;
     }
     return $tx;
 }
@@ -238,7 +238,7 @@ sub wait_for_children () {
 
         bmwqemu::diag("Waiting for $n jobs to finish");
         last unless $n;
-        sleep $poll_interval;
+        sleep POLL_INTERVAL;
     }
 }
 
@@ -261,7 +261,7 @@ sub wait_for_children_to_start () {
 
         bmwqemu::diag("Waiting for $n jobs to start");
         last unless $n;
-        sleep $poll_interval;
+        sleep POLL_INTERVAL;
     }
 }
 

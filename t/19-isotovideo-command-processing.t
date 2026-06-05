@@ -52,7 +52,7 @@ package FakeBackend {
 }    # uncoverable statement
 
 package bmwqemu {
-    our $backend = FakeBackend->new();
+    our $backend = FakeBackend->new();    ## no critic (Variables::ProhibitPackageVars)
 }
 
 # setup a CommandHandler instance using the fake file descriptors

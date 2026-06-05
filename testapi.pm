@@ -73,16 +73,16 @@ our @EXPORT = qw(
 );
 our @EXPORT_OK = qw(is_serial_terminal);
 
-our %cmd;
+our %cmd;    ## no critic (Variables::ProhibitPackageVars)
 
-our $distri;
+our $distri;    ## no critic (Variables::ProhibitPackageVars)
 
-our $realname = 'Bernhard M. Wiedemann';
-our $username;
-our $password;
+our $realname = 'Bernhard M. Wiedemann';    ## no critic (Variables::ProhibitPackageVars)
+our $username;    ## no critic (Variables::ProhibitPackageVars)
+our $password;    ## no critic (Variables::ProhibitPackageVars)
 
-our $last_matched_needle;
-our $serialdev;
+our $last_matched_needle;    ## no critic (Variables::ProhibitPackageVars)
+our $serialdev;    ## no critic (Variables::ProhibitPackageVars)
 
 sub check_screen;
 sub enter_cmd;
@@ -1670,7 +1670,7 @@ I<The implementation is distribution specific and not always available.>
 =cut
 
 require backend::console_proxy;
-our %testapi_console_proxies;
+our %testapi_console_proxies;    ## no critic (Variables::ProhibitPackageVars)
 
 =head2 select_console
 

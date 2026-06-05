@@ -21,7 +21,7 @@ my $args_common = {
 };
 
 my ($accept_callback, @log_messages);
-our ($ws_on_text, $ws_on_binary, $ws_on_finish);
+our ($WS_ON_TEXT, $WS_ON_BINARY, $WS_ON_FINISH);
 
 my $mock_log = Test::MockModule->new('Mojo::Log');
 $mock_log->redefine(info => sub ($self, $msg) { push @log_messages, $msg });
@@ -65,9 +65,9 @@ $mock_ua->mock(start => sub ($ua, $tx, $cb) {
     sub req ($self, @args) { bless {}, 'MockTxGenericReq' }
 
     sub on ($self, $event, $cb) {
-        if ($event eq 'text') { $main::ws_on_text = $cb }
-        elsif ($event eq 'binary') { $main::ws_on_binary = $cb }
-        elsif ($event eq 'finish') { $main::ws_on_finish = $cb }
+        if ($event eq 'text') { $main::WS_ON_TEXT = $cb }
+        elsif ($event eq 'binary') { $main::WS_ON_BINARY = $cb }
+        elsif ($event eq 'finish') { $main::WS_ON_FINISH = $cb }
     }
     sub send ($self, @args) { }
     sub finish ($self) { }
@@ -164,11 +164,11 @@ subtest 'WebSocket handshake succeeds' => sub {
     ok(grep(/WebSocket connection established/, @log_messages),
         'WebSocket connection established');
 
-    $ws_on_text->(undef, 'dummy text message');
+    $WS_ON_TEXT->(undef, 'dummy text message');
     pass('Text message received via WebSocket');
-    $ws_on_binary->(undef, 'dummy binary data');
+    $WS_ON_BINARY->(undef, 'dummy binary data');
     pass('Binary message received via WebSocket');
-    $ws_on_finish->(undef, 1000, 'Normal closure');
+    $WS_ON_FINISH->(undef, 1000, 'Normal closure');
     ok(grep(/WebSocket closed with status 1000/, @log_messages),
         'WebSocket closed as expected');
 };

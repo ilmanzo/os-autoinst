@@ -27,12 +27,15 @@ use constant FAIL_ON_ALWAYS_ROLLBACK_NOT_SUPPORTED => 1;
 
 our @EXPORT_OK = qw(loadtest $selected_console $last_milestone_console query_isotovideo);
 
-our %tests;    # scheduled or run tests
-our @testorder;    # for keeping them in order
-our %scheduled_basenames;    # keep track of scheduled basenames to their script path
-our $isotovideo;
-our $process;
-our $tests_running = 0;
+# scheduled or run tests
+our %tests;    ## no critic (Variables::ProhibitPackageVars)
+# for keeping them in order
+our @testorder;    ## no critic (Variables::ProhibitPackageVars)
+# keep track of scheduled basenames to their script path
+our %scheduled_basenames;    ## no critic (Variables::ProhibitPackageVars)
+our $isotovideo;    ## no critic (Variables::ProhibitPackageVars)
+our $process;    ## no critic (Variables::ProhibitPackageVars)
+our $tests_running = 0;    ## no critic (Variables::ProhibitPackageVars)
 
 =head1 Introduction
 
@@ -354,12 +357,12 @@ sub loadtest ($script, %args) {
     bmwqemu::diag("scheduling $test->{name} $script");
 }
 
-our $current_test;
-our $selected_console;
-our $last_milestone;
-our $last_milestone_active_consoles = [];
-our $activated_consoles = [];
-our $last_milestone_console;
+our $current_test;    ## no critic (Variables::ProhibitPackageVars)
+our $selected_console;    ## no critic (Variables::ProhibitPackageVars)
+our $last_milestone;    ## no critic (Variables::ProhibitPackageVars)
+our $last_milestone_active_consoles = [];    ## no critic (Variables::ProhibitPackageVars)
+our $activated_consoles = [];    ## no critic (Variables::ProhibitPackageVars)
+our $last_milestone_console;    ## no critic (Variables::ProhibitPackageVars)
 
 sub parse_test_path ($script_path) {
     unless ($script_path =~ m,(\w+)/([^/]+)\.(p[my]|lua)$,) {

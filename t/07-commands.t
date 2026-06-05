@@ -29,7 +29,7 @@ use File::Which;
 use Data::Dumper;
 use POSIX '_exit';
 
-our $mojoport = Mojo::IOLoop::Server->generate_port;
+my $mojoport = Mojo::IOLoop::Server->generate_port;
 my $base_url = "http://localhost:$mojoport";
 my $job = 'Hallo';
 my $toplevel_dir = path(__FILE__)->dirname->realpath;
