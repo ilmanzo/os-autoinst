@@ -33,6 +33,18 @@ else ()
     message(STATUS "Set YAMLLINT_PATH to the path of the yamllint executable to enable YAML syntax checks.")
 endif ()
 
+# add test for C++ code style
+find_program(CLANG_FORMAT_PATH clang-format)
+if (CLANG_FORMAT_PATH)
+    add_test(
+        NAME test-local-cpp-style
+        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/tools/check-cpp-style" "${CLANG_FORMAT_PATH}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+else ()
+    message(STATUS "Set CLANG_FORMAT_PATH to the path of the clang-format executable to enable C++ style checks.")
+endif ()
+
 # add test for python code style
 find_program(RUFF_PATH ruff)
 if (RUFF_PATH)

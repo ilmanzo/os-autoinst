@@ -1,19 +1,19 @@
 // Copyright SUSE LLC
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <byteswap.h>
 #include <condition_variable>
-#include <functional>
-#include <mutex>
-#include <exception>
-#include <iostream>
 #include <cstdint>
 #include <cstdio>
+#include <exception>
+#include <functional>
+#include <iostream>
+#include <mutex>
 #include <sys/time.h>
-#include <byteswap.h>
 
 #include <algorithm> // std::min
-#include <vector>
 #include <cmath> // std::isnan
+#include <vector>
 
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
@@ -159,8 +159,8 @@ std::vector<int> search_TEMPLATE(const Image* scene, const Image* object,
     long x, long y, long width, long height,
     long margin, double& similarity)
 {
-// cvSetErrMode(CV_ErrModeParent);
-// cvRedirectError(MyErrorHandler);
+    // cvSetErrMode(CV_ErrModeParent);
+    // cvRedirectError(MyErrorHandler);
 
 #if DEBUG
     struct timeval tv1, tv2;
@@ -304,14 +304,18 @@ double getPSNR(const Mat& I1, const Mat& I2)
     return 10.0 * log10(signal / (noise * noise));
 }
 
-using OpenCVParallelFunction = std::function<void(const Range &)>;
+using OpenCVParallelFunction = std::function<void(const Range&)>;
 #if defined(CV_VERSION_MAJOR) && (CV_VERSION_MAJOR >= 4)
 using RunFunctionInParallel = OpenCVParallelFunction;
 #else
 class RunFunctionInParallel : public ParallelLoopBody {
 public:
-    explicit RunFunctionInParallel(OpenCVParallelFunction &&functor) : functor(std::move(functor)) {}
-    void operator() (const Range &range) const override { functor(range); }
+    explicit RunFunctionInParallel(OpenCVParallelFunction&& functor)
+        : functor(std::move(functor))
+    {
+    }
+    void operator()(const Range& range) const override { functor(range); }
+
 private:
     OpenCVParallelFunction functor;
 };
@@ -363,7 +367,7 @@ void create_opencv_threads(int thread_count)
     std::mutex m;
     std::condition_variable cv;
     int threads_spawned = 0;
-    parallel_for_(Range(0, thread_count), RunFunctionInParallel([&] (const Range &) {
+    parallel_for_(Range(0, thread_count), RunFunctionInParallel([&](const Range&) {
         // keep the thread idling until the expected number of threads has been spawned
         std::unique_lock<std::mutex> lock(m);
         if (++threads_spawned >= thread_count) {
@@ -583,7 +587,8 @@ public:
 
     Vec3b read_cpixel(const unsigned char* data, size_t& offset);
     Vec3b read_pixel(const unsigned char* data, size_t& offset);
-    const Vec3b &get_colour(unsigned int index) const {
+    const Vec3b& get_colour(unsigned int index) const
+    {
         assert(index < 256);
         return colourMap[index];
     }
@@ -597,7 +602,7 @@ public:
 
 std::tuple<long, long, long> image_get_vnc_color(VNCInfo* info, unsigned int index)
 {
-    const auto &color = info->get_colour(index);
+    const auto& color = info->get_colour(index);
     return std::make_tuple(color[0], color[1], color[2]);
 }
 
@@ -622,7 +627,7 @@ VNCInfo* image_vncinfo(bool do_endian_conversion, bool true_colour,
  * Fill given rectangle with pixel value read from 'data' and interpreted
  * according to 'info'. Number of bytes read from 'data' depends on 'info'.
  */
-void image_fill_pixel(Image* a, const unsigned char *data, VNCInfo* info,
+void image_fill_pixel(Image* a, const unsigned char* data, VNCInfo* info,
     long x, long y, long width, long height)
 {
     size_t offset = 0;
@@ -673,9 +678,9 @@ void image_map_raw_data_uyvy(Image* a, const unsigned char* data)
     for (int y = 0; y < a->img.rows; y++) {
         for (int x = 0; x < a->img.cols; x += 2) {
             int offset = (y * a->img.cols + x) * 2;
-            int u  = data[offset + 0];
+            int u = data[offset + 0];
             int y1 = data[offset + 1];
-            int v  = data[offset + 2];
+            int v = data[offset + 2];
             int y2 = data[offset + 3];
 
             y1 -= 16;
@@ -741,9 +746,7 @@ Vec3b VNCInfo::read_pixel(const unsigned char* data, size_t& offset)
         if (!true_colour)
             return colourMap[pixel];
     } else if (bytes_per_pixel == 3) {
-        pixel = *(data + offset++) |
-                *(data + offset++) << 8 |
-                *(data + offset++) << 16;
+        pixel = *(data + offset++) | *(data + offset++) << 8 | *(data + offset++) << 16;
     } else {
         // just fail miserably for unsupported bytes per pixel
         abort();
@@ -806,7 +809,7 @@ long image_map_raw_data_zrle(Image* a, long x, long y, long w, long h,
     VNCInfo* info, unsigned char* data, size_t bytes)
 {
     /* ZRLE implementation is described pretty straight forward in the RFB 3.8
-   * protocol */
+     * protocol */
 
     size_t offset = 0;
     int orig_w = w;

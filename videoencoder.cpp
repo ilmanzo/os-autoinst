@@ -45,8 +45,8 @@ video.
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <theora/theoraenc.h>
 #include <ogg/ogg.h>
+#include <theora/theoraenc.h>
 
 #include <getopt.h>
 #include <sys/stat.h>
@@ -100,7 +100,6 @@ static int theora_write_frame(th_ycbcr_buffer ycbcr, int last)
             fwrite(og.header, og.header_len, 1, ogg_fp);
             fwrite(og.body, og.body_len, 1, ogg_fp);
         }
-
     }
 }
 
@@ -205,7 +204,7 @@ int main(int argc, char* argv[])
         ogg_fp = fopen(option_output, "wb");
         if (!ogg_fp) {
             fprintf(stderr, "%s: error: %s\n", option_output,
-                    "couldn't open output file");
+                "couldn't open output file");
             return 1;
         }
     }
@@ -393,7 +392,6 @@ int main(int argc, char* argv[])
             symlink(basename(path), "qemuscreenshot/last.png");
             last_frame_converted = true;
         }
-
     }
 
     // send last frame
