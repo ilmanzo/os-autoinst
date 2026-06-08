@@ -35,7 +35,7 @@ subtest 'Main package' => sub {
     my $mock_main = Test::MockModule->new('main');
     $mock_main->redefine(run_dbus => 1);
     my $result = main::main();
-    is($result, 1, 'main::main() should return 1');
+    is $result, 1, 'main::main() should return 1';
 };
 
 subtest 'OVS package' => sub {
@@ -74,17 +74,17 @@ subtest 'OVS package' => sub {
         $mock_ovs->redefine(_ovs_check => sub { return (0, 1) });
         $mock_ovs->redefine(_cmd => sub { return (0, '', '') });
         $mock_ovs->redefine(_set_ip => sub { return (0, '', '') });
-        is(($ovs->set_vlan('tap0', 1))[0], 0, 'can call set_vlan');
+        is +($ovs->set_vlan('tap0', 1))[0], 0, 'can call set_vlan';
     };
 
     $mock_ovs->redefine(_ovs_check => sub { return (1, 'error') });
-    combined_like { is(($ovs->unset_vlan('tap0', 1))[0], 1, 'unset_vlan handles error'); } qr/error/, 'no unexpected log output from resultset';
+    combined_like { is +($ovs->unset_vlan('tap0', 1))[0], 1, 'unset_vlan handles error'; } qr/error/, 'no unexpected log output from resultset';
     $mock_ovs->redefine(_ovs_check => sub { return (0, 'error') });
     $mock_ovs->redefine(_cmd => sub { return (0, '', '') });
-    is(($ovs->unset_vlan('tap0', 1))[0], 0, 'can call unset_vlan');
+    is +($ovs->unset_vlan('tap0', 1))[0], 0, 'can call unset_vlan';
 
     $mock_ovs->redefine(_ovs_show => 1);
-    is(($ovs->show())[0], 1, 'can call show');
+    is +($ovs->show())[0], 1, 'can call show';
 
     $mock_ovs->unmock($_) for qw(_cmd _ovs_check);
 };
