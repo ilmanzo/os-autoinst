@@ -23,6 +23,6 @@ my $pc = Pod::Coverage->new(
     package => 'testapi',
     pod_from => 'testapi.pm',
 );
-is($pc->coverage, 1, 'Everything in testapi covered') or diag('Uncovered: ', join(', ', $pc->uncovered), "\n");
+is $pc->coverage, 1, 'Everything in testapi covered' or diag 'Uncovered: ', join(', ', $pc->uncovered), "\n";
 diag $pc->why_unrated unless defined $pc->coverage;
 done_testing();
