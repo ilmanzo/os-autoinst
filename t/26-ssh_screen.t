@@ -16,8 +16,8 @@ use Test::Output qw(combined_like);
 use Net::SSH2 'LIBSSH2_ERROR_EAGAIN';
 
 my $screen = consoles::ssh_screen->new(ssh_connection => 'My_Con', ssh_channel => 'My_Chan');
-is($screen->{fd_read}, 'My_Chan', 'SSH channel is used for reading');
-is($screen->{fd_write}, 'My_Chan', 'SSH channel is used for writing');
+is $screen->{fd_read}, 'My_Chan', 'SSH channel is used for reading';
+is $screen->{fd_write}, 'My_Chan', 'SSH channel is used for writing';
 
 subtest 'Correct message when type_string timeouts' => sub {
     my $mock_screenconsole = Test::MockModule->new('consoles::serial_screen');
