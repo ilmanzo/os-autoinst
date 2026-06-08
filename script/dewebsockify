@@ -6,7 +6,7 @@ use Mojo::Base -strict, -signatures;
 
 use Getopt::Long;
 use FindBin;
-use lib "$FindBin::Bin/.."; # Ensure OpenQA namespace is in @INC
+use lib "$FindBin::Bin/..";    # Ensure OpenQA namespace is in @INC
 use OpenQA::Isotovideo::Dewebsockify;
 
 OpenQA::Isotovideo::Dewebsockify::main(parse_args()) unless caller;
@@ -30,7 +30,7 @@ END_USAGE
 sub parse_args () {
     my %options;
     GetOptions(\%options, 'websocketurl=s', 'listenport=s', 'cookie=s', 'loglevel=s', 'insecure', 'help|h|?')
-        or usage;
+      or usage;
     usage if $options{help};
     return \%options;
 }

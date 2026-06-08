@@ -1,4 +1,4 @@
 [PerlTidy]
-select = **/*.{pl,pm,t} script/check_qemu_oom script/imgsearch script/isotovideo script/os-autoinst-openvswitch
+select = **/*.{pl,pm,t} script/check_qemu_oom script/dewebsockify script/imgsearch script/isotovideo script/os-autoinst-generate-needle-preview script/os-autoinst-openvswitch script/os-autoinst-testmodules-strict script/vnctest
 ignore = external/**/*
 argv = --profile=$ROOT/.perltidyrc
