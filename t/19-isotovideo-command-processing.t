@@ -31,13 +31,13 @@ my $rpc_mock = Test::MockModule->new('myjsonrpc');
 $rpc_mock->redefine(send_json => sub {
         my ($fd, $cmd) = @_;
         if (!defined($fd) || ($fd != $cmd_srv_fd && $fd != $backend_fd && $fd != $answer_fd)) {
-            fail('invalid file descriptor passed to send_json: ' . ($fd ? $fd : 'undef'));    # uncoverable statement
+            fail 'invalid file descriptor passed to send_json: ' . ($fd ? $fd : 'undef');    # uncoverable statement
             return;    # uncoverable statement
         }
         $last_received_msg_by_fd[$fd] = $cmd;
 });
 $rpc_mock->redefine(read_json => sub {
-        fail('we do not expect anything to be read here');    # uncoverable statement
+        fail 'we do not expect anything to be read here';    # uncoverable statement
 });
 
 # mock bmwqemu/backend
@@ -76,7 +76,7 @@ subtest set_current_test => sub {
             name => 'welcome',
             full_name => 'installation-welcome',
     });
-    is($command_handler->status, 'running', 'Status == running');
+    is $command_handler->status, 'running', 'Status == running';
 };
 
 
@@ -84,19 +84,19 @@ subtest status => sub {
     $command_handler->tags([qw(foo bar)]);
     $command_handler->pause_test_name('foo');
     $command_handler->process_command($answer_fd, {cmd => 'status'});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {
-            tags => [qw(foo bar)],
-            running => 'welcome',
-            current_test_full_name => 'installation-welcome',
-            current_api_function => undef,
-            pause_test_name => 'foo',
-            pause_on_screen_mismatch => Mojo::JSON->false,
-            pause_on_next_command => 0,
-            pause_on_failure => 0,
-            test_execution_paused => 0,
-            devel_mode_major_version => $OpenQA::Isotovideo::Interface::developer_mode_major_version,
-            devel_mode_minor_version => $OpenQA::Isotovideo::Interface::developer_mode_minor_version,
-    }, 'status returned as expected');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {
+        tags => [qw(foo bar)],
+        running => 'welcome',
+        current_test_full_name => 'installation-welcome',
+        current_api_function => undef,
+        pause_test_name => 'foo',
+        pause_on_screen_mismatch => Mojo::JSON->false,
+        pause_on_next_command => 0,
+        pause_on_failure => 0,
+        test_execution_paused => 0,
+        devel_mode_major_version => $OpenQA::Isotovideo::Interface::developer_mode_major_version,
+        devel_mode_minor_version => $OpenQA::Isotovideo::Interface::developer_mode_minor_version,
+    }, 'status returned as expected';
 };
 
 subtest 'set pause at test' => sub {
@@ -105,9 +105,9 @@ subtest 'set pause at test' => sub {
     stderr_like {
         $command_handler->process_command($answer_fd, {cmd => 'set_pause_at_test', name => 'some test'})
     } qr/paused.*some test/, 'log for pause';
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 1}, 'answer received');
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {set_pause_at_test => 'some test'}, 'broadcasted via command server');
-    is($command_handler->pause_test_name, 'some test', 'test to pause at set');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 1}, 'answer received';
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {set_pause_at_test => 'some test'}, 'broadcasted via command server';
+    is $command_handler->pause_test_name, 'some test', 'test to pause at set';
 
     stderr_unlike {
         $command_handler->process_command($answer_fd, {cmd => 'set_current_test', name => 'foo', full_name => 'foo'})
@@ -125,9 +125,9 @@ subtest 'set pause at test' => sub {
     stderr_like {
         $command_handler->process_command($answer_fd, {cmd => 'set_pause_at_test', name => undef});
     } qr/no longer.*paused/, 'log for unpause';
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 1}, 'answer received');
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {set_pause_at_test => undef}, 'broadcasted via command server');
-    is($command_handler->pause_test_name, undef, 'test to pause at unset');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 1}, 'answer received';
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {set_pause_at_test => undef}, 'broadcasted via command server';
+    is $command_handler->pause_test_name, undef, 'test to pause at unset';
 };
 
 subtest 'report timeout, set pause on assert/check screen timeout' => sub {
@@ -136,23 +136,23 @@ subtest 'report timeout, set pause on assert/check screen timeout' => sub {
 
     # report timeout when not supposted to pause
     $command_handler->process_command($answer_fd, {cmd => 'is_configured_to_pause_on_timeout', check => 0});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not configured to pause on assert_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not configured to pause on assert_screen';
     $command_handler->process_command($answer_fd, {cmd => 'is_configured_to_pause_on_timeout', check => 1});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not configured to pause on check_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not configured to pause on check_screen';
     $command_handler->process_command($answer_fd, \%basic_report_timeout_cmd);
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not supposed to pause');
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], undef, 'nothing sent to cmd srv');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not supposed to pause';
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], undef, 'nothing sent to cmd srv';
 
     # enable pause on assert_screen timeout
     $command_handler->process_command($answer_fd, {cmd => 'set_pause_on_screen_mismatch', pause_on => 'assert_screen'});
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            set_pause_on_screen_mismatch => 'assert_screen',
-    }, 'event passed cmd srv');
-    is($command_handler->pause_on_screen_mismatch, 'assert_screen', 'enabling pause on assert_screen timeout');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        set_pause_on_screen_mismatch => 'assert_screen',
+    }, 'event passed cmd srv';
+    is $command_handler->pause_on_screen_mismatch, 'assert_screen', 'enabling pause on assert_screen timeout';
     $command_handler->process_command($answer_fd, {cmd => 'is_configured_to_pause_on_timeout', check => 0});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 1}, 'configured to pause on assert_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 1}, 'configured to pause on assert_screen';
     $command_handler->process_command($answer_fd, {cmd => 'is_configured_to_pause_on_timeout', check => 1});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not configured to pause on check_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not configured to pause on check_screen';
 
     # report timeout when supposed to pause
     stderr_like {
@@ -160,83 +160,83 @@ subtest 'report timeout, set pause on assert/check screen timeout' => sub {
     } qr/pausing.*on timeout/, 'log pause on timeout';
     # note: $last_received_msg_by_fd[$answer_fd] does not contain {ret => 1} because answer has
     #       been postponed
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            paused => \%basic_report_timeout_cmd,
-            reason => $basic_report_timeout_cmd{msg},
-    }, 'event passed cmd srv');
-    is($command_handler->postponed_answer_fd, $answer_fd, 'postponed answer fd set');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        paused => \%basic_report_timeout_cmd,
+        reason => $basic_report_timeout_cmd{msg},
+    }, 'event passed cmd srv';
+    is $command_handler->postponed_answer_fd, $answer_fd, 'postponed answer fd set';
 
     # timeout on check screen still won't pause
     $command_handler->process_command($answer_fd, {%basic_report_timeout_cmd, check => 1});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not supposed to pause on check_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 0}, 'not supposed to pause on check_screen';
 
     # enable pause on check_screen timeout
     $command_handler->process_command($answer_fd, {cmd => 'set_pause_on_screen_mismatch', pause_on => 'check_screen'});
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            set_pause_on_screen_mismatch => 'check_screen',
-    }, 'event passed cmd srv');
-    is($command_handler->pause_on_screen_mismatch, 'check_screen', 'enabling pause on check_screen timeout');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        set_pause_on_screen_mismatch => 'check_screen',
+    }, 'event passed cmd srv';
+    is $command_handler->pause_on_screen_mismatch, 'check_screen', 'enabling pause on check_screen timeout';
     $command_handler->process_command($answer_fd, {cmd => 'is_configured_to_pause_on_timeout', check => 0});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 1}, 'configured to pause on assert_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 1}, 'configured to pause on assert_screen';
     $command_handler->process_command($answer_fd, {cmd => 'is_configured_to_pause_on_timeout', check => 1});
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 1}, 'configured to pause on check_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 1}, 'configured to pause on check_screen';
     stderr_like {
         $command_handler->process_command($answer_fd, \%basic_report_timeout_cmd);
     } qr/pausing.*on timeout/, 'log pause on timeout';
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 1}, 'supposed to pause on check_screen');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 1}, 'supposed to pause on check_screen';
 
     # disabling pause on assert_screen timeout disables pause on check_screen timeout as well
     $command_handler->process_command($answer_fd, {cmd => 'set_pause_on_screen_mismatch', pause_on => undef});
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            set_pause_on_screen_mismatch => 0,
-    }, 'event passed cmd srv');
-    is($command_handler->pause_on_screen_mismatch, undef, 'pause on assert_screen/check_screen timeout disabled');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        set_pause_on_screen_mismatch => 0,
+    }, 'event passed cmd srv';
+    is $command_handler->pause_on_screen_mismatch, undef, 'pause on assert_screen/check_screen timeout disabled';
 
     $command_handler->reason_for_pause(undef);
 };
 
 subtest 'set_pause_on_next_command, postponing command, resuming' => sub {
     # enable pausing on next command
-    is($command_handler->pause_on_next_command, 0, 'pause on next command disabled by default');
+    is $command_handler->pause_on_next_command, 0, 'pause on next command disabled by default';
     $command_handler->process_command($answer_fd, {cmd => 'set_pause_on_next_command', flag => 1});
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            set_pause_on_next_command => 1,
-    }, 'event passed cmd srv');
-    is($command_handler->pause_on_next_command, 1, 'pause on next command enabled');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        set_pause_on_next_command => 1,
+    }, 'event passed cmd srv';
+    is $command_handler->pause_on_next_command, 1, 'pause on next command enabled';
 
     # check whether the next command gets postponed and the test paused
     stderr_like {
         $command_handler->process_command($answer_fd, {cmd => 'check_screen'});
     } qr/paused,.*not passing check_screen/, 'log on pause before check_screen';
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            paused => {cmd => 'check_screen'},
-            reason => 'reached check_screen and pause on next command enabled',
-    }, 'check_screen postponed');
-    is_deeply($command_handler->postponed_command, {cmd => 'check_screen'}, 'postponed command set');
-    is($command_handler->postponed_answer_fd, $answer_fd, 'answer fd for postponed command set');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        paused => {cmd => 'check_screen'},
+        reason => 'reached check_screen and pause on next command enabled',
+    }, 'check_screen postponed';
+    is_deeply $command_handler->postponed_command, {cmd => 'check_screen'}, 'postponed command set';
+    is $command_handler->postponed_answer_fd, $answer_fd, 'answer fd for postponed command set';
 
     # disable pausing on next command again
     $command_handler->process_command($answer_fd, {cmd => 'set_pause_on_next_command', flag => 0});
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            set_pause_on_next_command => 0,
-    }, 'event passed cmd srv');
-    is($command_handler->pause_on_next_command, 0, 'pause on next command disabled');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        set_pause_on_next_command => 0,
+    }, 'event passed cmd srv';
+    is $command_handler->pause_on_next_command, 0, 'pause on next command disabled';
 
     # resume postponed command
     stderr_like {
         $command_handler->process_command($answer_fd, {cmd => 'resume_test_execution'});
     } qr/resuming, continue/, 'log on resuming';
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            check_screen => {
-                check => undef,
-                mustmatch => undef,
-                timeout => undef,
-            },
-            current_api_function => 'assert_screen',
-    }, 'check_screen resumed');
-    is($command_handler->postponed_command, undef, 'no command postponed anymore');
-    is($command_handler->postponed_answer_fd, undef, 'postponed answer_fd cleared');
-    is($command_handler->reason_for_pause, 0, 'test no longer paused');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        check_screen => {
+            check => undef,
+            mustmatch => undef,
+            timeout => undef,
+        },
+        current_api_function => 'assert_screen',
+    }, 'check_screen resumed';
+    is $command_handler->postponed_command, undef, 'no command postponed anymore';
+    is $command_handler->postponed_answer_fd, undef, 'postponed answer_fd cleared';
+    is $command_handler->reason_for_pause, 0, 'test no longer paused';
 
     # resume without previously postponed command
     # note: The check for relevant early return is provided by mock function of send_json which is defined
@@ -253,11 +253,11 @@ subtest 'set_pause_on_next_command, postponing command, resuming' => sub {
         stderr_unlike {
             $command_handler->process_command($answer_fd, {cmd => 'resume_test_execution'});
         } qr/resuming, continue/, 'Correct output';
-        is_deeply($last_received_msg_by_fd[$backend_fd], {
-                new_needles => undef,
-                ret => 1,
-        }, 'Correct data received');
-        is_deeply(\@set_answer_fd, [undef, undef]);
+        is_deeply $last_received_msg_by_fd[$backend_fd], {
+            new_needles => undef,
+            ret => 1,
+        }, 'Correct data received';
+        is_deeply \@set_answer_fd, [undef, undef];
     };
 
 };
@@ -291,16 +291,16 @@ subtest 'assert_screen' => sub {
         check => 0,
     );
     $command_handler->process_command($answer_fd, {cmd => 'check_screen', %args});
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            check_screen => \%args,
-            current_api_function => 'assert_screen',
-    }, 'response for assert_screen');
-    is_deeply($bmwqemu::backend->{messages}->[-1], {
-            cmd => 'set_tags_to_assert',
-            arguments => \%args,
-    }, 'set_tags_to_assert passed to backend');
-    is_deeply($command_handler->tags, [qw(some fake tags)], 'tags assigned');
-    is($command_handler->current_api_function, 'assert_screen');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        check_screen => \%args,
+        current_api_function => 'assert_screen',
+    }, 'response for assert_screen';
+    is_deeply $bmwqemu::backend->{messages}->[-1], {
+        cmd => 'set_tags_to_assert',
+        arguments => \%args,
+    }, 'set_tags_to_assert passed to backend';
+    is_deeply $command_handler->tags, [qw(some fake tags)], 'tags assigned';
+    is $command_handler->current_api_function, 'assert_screen';
 };
 
 subtest 'check_screen' => sub {
@@ -310,15 +310,15 @@ subtest 'check_screen' => sub {
         check => 1,
     );
     $command_handler->process_command($answer_fd, {cmd => 'check_screen', %args});
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            check_screen => \%args,
-            current_api_function => 'check_screen',
-    }, 'response for check_screen');
-    is_deeply($bmwqemu::backend->{messages}->[-1], {
-            cmd => 'set_tags_to_assert',
-            arguments => \%args,
-    }, 'set_tags_to_assert passed to backend');
-    is($command_handler->current_api_function, 'check_screen');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        check_screen => \%args,
+        current_api_function => 'check_screen',
+    }, 'response for check_screen';
+    is_deeply $bmwqemu::backend->{messages}->[-1], {
+        cmd => 'set_tags_to_assert',
+        arguments => \%args,
+    }, 'set_tags_to_assert passed to backend';
+    is $command_handler->current_api_function, 'check_screen';
 };
 
 subtest 'set_assert_screen_timeout' => sub {
@@ -326,14 +326,14 @@ subtest 'set_assert_screen_timeout' => sub {
             cmd => 'set_assert_screen_timeout',
             timeout => 43,
     });
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            set_assert_screen_timeout => 43,
-    }, 'response for set_assert_screen_timeout');
-    is_deeply($bmwqemu::backend->{messages}->[-1], {
-            cmd => 'set_assert_screen_timeout',
-            arguments => 43,
-    }, 'timeout passed to backend');
-    is_deeply($last_received_msg_by_fd[$answer_fd], {ret => 1}, 'response for set_assert_screen_timeout');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        set_assert_screen_timeout => 43,
+    }, 'response for set_assert_screen_timeout';
+    is_deeply $bmwqemu::backend->{messages}->[-1], {
+        cmd => 'set_assert_screen_timeout',
+        arguments => 43,
+    }, 'timeout passed to backend';
+    is_deeply $last_received_msg_by_fd[$answer_fd], {ret => 1}, 'response for set_assert_screen_timeout';
 };
 
 subtest version => sub {
@@ -342,11 +342,11 @@ subtest version => sub {
     $command_handler->process_command($answer_fd, {
             cmd => 'version',
     });
-    is_deeply($last_received_msg_by_fd[$answer_fd], {
-            version => $OpenQA::Isotovideo::Interface::version,
-            test_git_hash => 'coffee',
-            needles_git_hash => 'coffee',
-    }, 'response for version');
+    is_deeply $last_received_msg_by_fd[$answer_fd], {
+        version => $OpenQA::Isotovideo::Interface::version,
+        test_git_hash => 'coffee',
+        needles_git_hash => 'coffee',
+    }, 'response for version';
 };
 
 subtest 'send_clients' => sub {
@@ -355,10 +355,10 @@ subtest 'send_clients' => sub {
             set_current_test => 'FOO',
             current_test_full_name => 'FOO/BAR',
     });
-    is_deeply($last_received_msg_by_fd[$cmd_srv_fd], {
-            set_current_test => 'FOO',
-            current_test_full_name => 'FOO/BAR',
-    }, 'response for send_clients');
+    is_deeply $last_received_msg_by_fd[$cmd_srv_fd], {
+        set_current_test => 'FOO',
+        current_test_full_name => 'FOO/BAR',
+    }, 'response for send_clients';
 };
 
 subtest 'invalid command' => sub {
@@ -379,7 +379,7 @@ subtest '_is_configured_to_pause_on_timeout' => sub {
 
 subtest check_asserted_screen => sub {
     $command_handler->check_asserted_screen;
-    ok($command_handler->timeout, 'Timeout was set');
+    ok $command_handler->timeout, 'Timeout was set';
 };
 
 subtest signalhandler => sub {
@@ -391,25 +391,25 @@ subtest signalhandler => sub {
     stderr_like {
         $runner->_signal_handler('TERM');
     } qr/isotovideo received signal TERM/, 'Signal logged';
-    is($runner->loop, 0, 'Loop was stopped');
-    is($last_signal, undef, 'No event emitted');
+    is $runner->loop, 0, 'Loop was stopped';
+    is $last_signal, undef, 'No event emitted';
 
     stderr_like {
         $runner->_signal_handler('INT');
     } qr/isotovideo received signal INT/, 'Signal logged';
-    is($last_signal, 'INT', 'Event emitted');
+    is $last_signal, 'INT', 'Event emitted';
 };
 subtest token_echo => sub {
     reset_state();
     my $token = 'echo-test-token';
     $command_handler->process_command($answer_fd, {cmd => 'status', json_cmd_token => $token});
-    is($last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token, 'json_cmd_token echoed back in status response');
+    is $last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token, 'json_cmd_token echoed back in status response';
 
     reset_state();
     $token = 'backend-token';
     $command_handler->process_command($answer_fd, {cmd => 'backend_some_cmd', json_cmd_token => $token});
     $command_handler->send_to_backend_requester({ret => 1});
-    is($last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token, 'json_cmd_token echoed back in backend response (auto-injected)');
+    is $last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token, 'json_cmd_token echoed back in backend response (auto-injected)';
 
     subtest 'interleaved commands' => sub {
         reset_state();
@@ -417,10 +417,10 @@ subtest token_echo => sub {
         my $token2 = 'token-2';
         $command_handler->process_command($answer_fd, {cmd => 'backend_cmd1', json_cmd_token => $token1});
         $command_handler->process_command($answer_fd, {cmd => 'status', json_cmd_token => $token2});
-        is($last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token2, 'interleaved command gets correct token');
+        is $last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token2, 'interleaved command gets correct token';
 
         $command_handler->send_to_backend_requester({ret => 1});
-        is($last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token1, 'deferred backend response gets correct token');
+        is $last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token1, 'deferred backend response gets correct token';
     };
 };
 
@@ -433,14 +433,14 @@ subtest 'Check exit_code_from_test_results' => sub {
     subtest 'no test scheduled' => sub {
         my $path_mock = Test::MockModule->new('Mojo::File');
         $path_mock->redefine(path => 0);
-        is($runner->exit_code_from_test_results(), 100, 'EXIT_STATUS_ERR_NO_TESTS returns if no results');
+        is $runner->exit_code_from_test_results(), 100, 'EXIT_STATUS_ERR_NO_TESTS returns if no results';
     };
 
     subtest 'tests scheduled' => sub {
         path('testresults/')->make_path;
         my $json = encode_json({result => 'failing'});
         my $resfile = path('testresults/result-failed_module.json')->spew($json);
-        is($runner->exit_code_from_test_results(), 101, 'EXIT_STATUS_ERR_FROM_TEST_RESULTS returns if test failed');
+        is $runner->exit_code_from_test_results(), 101, 'EXIT_STATUS_ERR_FROM_TEST_RESULTS returns if test failed';
         path('testresults/')->remove_tree;
         like $diags[0], qr/result-failed_module.json.*failing/;
         @diags = ();
@@ -450,7 +450,7 @@ subtest 'Check exit_code_from_test_results' => sub {
         path('testresults/')->make_path;
         my $json = encode_json({result => 'softfail'});
         my $resfile = path('testresults/result-softfailed_module.json')->spew($json);
-        is($runner->exit_code_from_test_results(), 0, 'EXIT_STATUS_OK returns if test is not failed');
+        is $runner->exit_code_from_test_results(), 0, 'EXIT_STATUS_OK returns if test is not failed';
         like $diags[0], qr/result-softfailed_module.json.*softfail/;
         @diags = ();
         path('testresults/')->remove_tree;
@@ -467,7 +467,7 @@ subtest 'No readable JSON' => sub {
     stderr_like {
         $runner->_read_response(undef, $readable);
     } qr/THERE IS NOTHING TO READ/, 'no response';
-    is($runner->loop, 0, 'Loop was stopped');
+    is $runner->loop, 0, 'Loop was stopped';
 };
 
 subtest 'shutdown handling' => sub {
