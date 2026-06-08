@@ -62,23 +62,23 @@ sub run_isotovideo (@args) {
 subtest qemu_append_option => sub {
     # print version and also measure time of startup and shutdown: call isotovideo with QEMU_APPEND
     my $time = timeit(1, sub { run_isotovideo(QEMU_ONLY_EXEC => 1, QEMU_WAIT_FINISH => 1, QEMU_APPEND => 'version') });
-    like($log, qr/-version/, '-version option added');
-    like($log, qr/QEMU emulator version/, 'QEMU version printed');
-    like($log, qr/Fabrice Bellard and the QEMU Project developers/, 'Copyright printed');
-    like($log, qr/Not connecting to QEMU as requested by QEMU_ONLY_EXEC/, 'QEMU_ONLY_EXEC option has effect');
-    unlike($log, qr/\: invalid option/, 'no invalid option detected');
-    cmp_ok($time->[0], '<', $ENV{EXPECTED_ISOTOVIDEO_RUNTIME}, "execution time of isotovideo ($time->[0] s) within reasonable limits");
+    like $log, qr/-version/, '-version option added';
+    like $log, qr/QEMU emulator version/, 'QEMU version printed';
+    like $log, qr/Fabrice Bellard and the QEMU Project developers/, 'Copyright printed';
+    like $log, qr/Not connecting to QEMU as requested by QEMU_ONLY_EXEC/, 'QEMU_ONLY_EXEC option has effect';
+    unlike $log, qr/\: invalid option/, 'no invalid option detected';
+    cmp_ok $time->[0], '<', $ENV{EXPECTED_ISOTOVIDEO_RUNTIME}, "execution time of isotovideo ($time->[0] s) within reasonable limits";
 
     # multiple options added, only version will be effective
     # test whether QMP connection attempts are aborted when QEMU exists: unset QEMU_QMP_CONNECT_ATTEMPTS temporarily
     my $qmp_connect_attempts = delete $ENV{QEMU_QMP_CONNECT_ATTEMPTS};
     run_isotovideo(@common_options, QEMU_APPEND => 'version -M ?');
-    like($log, qr/-M \?/, '-M ? option added');
-    like($log, qr/-version/, '-version option added');
-    like($log, qr/QEMU emulator version/, 'QEMU version printed');
-    unlike($log, qr/Supported machines are\:/, 'Supported machines not listed');
-    unlike($log, qr/\: invalid option/, 'no invalid option detected');
-    like($log, qr/QEMU terminated before QMP connection could be established/, 'connecting to QMP socket aborted');
+    like $log, qr/-M \?/, '-M ? option added';
+    like $log, qr/-version/, '-version option added';
+    like $log, qr/QEMU emulator version/, 'QEMU version printed';
+    unlike $log, qr/Supported machines are\:/, 'Supported machines not listed';
+    unlike $log, qr/\: invalid option/, 'no invalid option detected';
+    like $log, qr/QEMU terminated before QMP connection could be established/, 'connecting to QMP socket aborted';
     $ENV{QEMU_QMP_CONNECT_ATTEMPTS} = $qmp_connect_attempts;
 };
 
