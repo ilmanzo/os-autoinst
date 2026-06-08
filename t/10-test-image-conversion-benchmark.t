@@ -38,7 +38,7 @@ foreach my $img_src (@all_images) {
     if ($image) {
         $image->write($filename);
     }
-    ok(-e $filename, "Passed $filename");
+    ok -e $filename, "Passed $filename";
     $watch->lap("$img_src");
 }
 
