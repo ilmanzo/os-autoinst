@@ -34,7 +34,7 @@ my $img1 = tinycv::read(needle::needles_dir() . '/bootmenu.test.png');
 my $needle = needle->new('bootmenu-ocr.ref.json');
 my $res;
 $res = $img1->search($needle);
-ok(defined $res, 'ocr match 1');
+ok defined $res, 'ocr match 1';
 
 my $ocr;
 for my $area (@{$res->{needle}->{area}}) {
@@ -43,7 +43,7 @@ for my $area (@{$res->{needle}->{area}}) {
 }
 
 ok defined $ocr, 'OCR area found' and
-  ok($ocr =~ /Memory Test.*Video Mode/s, 'multiple OCR regions');
+  ok $ocr =~ /Memory Test.*Video Mode/s, 'multiple OCR regions';
 
 done_testing;
 
