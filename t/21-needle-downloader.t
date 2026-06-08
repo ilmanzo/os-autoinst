@@ -24,26 +24,26 @@ $user_agent_mock->redefine(get => sub ($self, $url) {
 
 # setup needle directory
 my $needles_dir = path(tempdir, 'needles_dir');
-ok(make_path($needles_dir), 'create test needle dir under ' . $needles_dir);
+ok make_path($needles_dir), 'create test needle dir under ' . $needles_dir;
 needle::set_needles_dir($needles_dir);
 
 subtest 'deduce URL for needle download from test variable OPENQA_URL' => sub {
     $bmwqemu::vars{OPENQA_URL} = 'https://openqa1-opensuse';
-    is(OpenQA::Isotovideo::NeedleDownloader->new()->openqa_url, 'https://openqa1-opensuse', 'existing scheme not overridden');
+    is + (OpenQA::Isotovideo::NeedleDownloader->new())->openqa_url, 'https://openqa1-opensuse', 'existing scheme not overridden';
     $bmwqemu::vars{OPENQA_URL} = 'not/a/proper/hostname';
-    is(OpenQA::Isotovideo::NeedleDownloader->new()->openqa_url, 'http:not/a/proper/hostname', 'hostname not present');
+    is + (OpenQA::Isotovideo::NeedleDownloader->new())->openqa_url, 'http:not/a/proper/hostname', 'hostname not present';
     $bmwqemu::vars{OPENQA_HOSTNAME} = 'openqa1-opensuse';
-    is(OpenQA::Isotovideo::NeedleDownloader->new()->openqa_url, 'http://openqa1-opensuse', 'hostname taken from OPENQA_HOSTNAME if not present');
+    is + (OpenQA::Isotovideo::NeedleDownloader->new())->openqa_url, 'http://openqa1-opensuse', 'hostname taken from OPENQA_HOSTNAME if not present';
     $bmwqemu::vars{OPENQA_URL} = 'openqa';
-    is(OpenQA::Isotovideo::NeedleDownloader->new()->openqa_url, 'http://openqa', 'domain is treated as host (and not relative path)');
+    is + (OpenQA::Isotovideo::NeedleDownloader->new())->openqa_url, 'http://openqa', 'domain is treated as host (and not relative path)';
     $bmwqemu::vars{OPENQA_URL} = 'localhost:9526';
-    is(OpenQA::Isotovideo::NeedleDownloader->new()->openqa_url, 'http://localhost:9526', 'domain:port is treated as host + port (and not protocol + path)');
+    is + (OpenQA::Isotovideo::NeedleDownloader->new())->openqa_url, 'http://localhost:9526', 'domain:port is treated as host + port (and not protocol + path)';
 };
 
 # setup a NeedleDownloader instance
 $bmwqemu::vars{OPENQA_URL} = 'openqa';
 my $downloader = OpenQA::Isotovideo::NeedleDownloader->new;
-is($downloader->download_limit, 150, 'by default limited to 150 downloads');
+is $downloader->download_limit, 150, 'by default limited to 150 downloads';
 
 subtest 'add relevant downloads' => sub {
     my @new_needles = (
@@ -96,29 +96,29 @@ subtest 'add relevant downloads' => sub {
     stderr_like { $downloader->add_relevant_downloads(\@new_needles) }
     qr/.*skipping downloading new needle: $needles_dir\/foo\.png seems already up-to-date.*/,
       'skipped downloads logged';
-    is_deeply($downloader->files_to_download, \@expected_downloads, 'downloads added')
+    is_deeply $downloader->files_to_download, \@expected_downloads, 'downloads added'
       or always_explain $downloader->files_to_download;
 
     subtest 'limit applied' => sub {
         $downloader->download_limit(3);
         $downloader->add_relevant_downloads(\@new_needles);
-        is_deeply($downloader->files_to_download, \@expected_downloads, 'no more downloads added')
+        is_deeply $downloader->files_to_download, \@expected_downloads, 'no more downloads added'
           or always_explain $downloader->files_to_download;
     };
 };
 
 subtest 'download added URLs' => sub {
-    is_deeply(\@queried_urls, [], 'no URLs queried so far');
+    is_deeply \@queried_urls, [], 'no URLs queried so far';
 
     stderr_like { $downloader->download() }
     qr/.*download new needle.*\n.*(failed to download.*server returned 404|internal error occurred).*/,
       'errors logged';
 
-    is_deeply(\@queried_urls, [
-            'http://openqa/needles/1/json',
-            'http://openqa/needles/2/json',
-            'http://openqa/needles/2/image',
-    ], 'right URLs queried');
+    is_deeply \@queried_urls, [
+        'http://openqa/needles/1/json',
+        'http://openqa/needles/2/json',
+        'http://openqa/needles/2/image',
+    ], 'right URLs queried';
 };
 
 subtest '_download_file' => sub {
@@ -181,7 +181,7 @@ subtest 'sync assets hook used at the right time' => sub {
     stderr_like {
         $downloader->download_missing_needles(\@new_needles)
     } qr /Running SYNC_ASSETS_HOOK/, 'sync asset hook executed';
-    is_deeply($downloader->files_to_download, \@expected_downloads, 'download skipped')
+    is_deeply $downloader->files_to_download, \@expected_downloads, 'download skipped'
       or always_explain $downloader->files_to_download;
 };
 
