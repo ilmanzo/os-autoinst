@@ -44,9 +44,9 @@ subtest 'error handling when loading test schedule' => sub {
         $bmwqemu::vars{CASEDIR} = $bmwqemu::vars{PRODUCTDIR} = $dir;
         throws_ok { load_test_schedule } qr/'SCHEDULE' not set and/, 'error logged';
         my $state = decode_json($base_state->slurp);
-        if (is(ref $state, 'HASH', 'state file contains object')) {
-            is($state->{component}, 'tests', 'state file contains component message');
-            like($state->{msg}, qr/unable to load main\.pm/, 'state file contains error message');
+        if (is ref $state, 'HASH', 'state file contains object') {
+            is $state->{component}, 'tests', 'state file contains component message';
+            like $state->{msg}, qr/unable to load main\.pm/, 'state file contains error message';
         }
     };
     subtest 'unable to load test module' => sub {
@@ -57,9 +57,9 @@ subtest 'error handling when loading test schedule' => sub {
             warning { throws_ok { load_test_schedule } qr/Can't locate $module\.pm/, 'error logged' }
         } qr/Can't locate $module\.pm/, 'debug message logged';
         my $state = decode_json($base_state->slurp);
-        if (is(ref $state, 'HASH', 'state file contains object')) {
-            is($state->{component}, 'tests', 'state file contains component');
-            like($state->{msg}, qr/Missing Perl module while loading foo\/bar\.pm/, 'state file contains error message');
+        if (is ref $state, 'HASH', 'state file contains object') {
+            is $state->{component}, 'tests', 'state file contains component';
+            like $state->{msg}, qr/Missing Perl module while loading foo\/bar\.pm/, 'state file contains error message';
         }
     };
     subtest 'invalid productdir' => sub {
