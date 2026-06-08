@@ -283,11 +283,12 @@ sub _make_secure_boot_configuration ($enable_or_disable_secure_boot) {
 
 =head3 _uuid
 
-Generate random UUID for use with `virt-fw-vars`.
+Generates a new UUID for use with `virt-fw-vars`. Expects a well-known UUID as "namespace"
+to be able to produce consistent UUIDs.
 
 =cut
 
-sub _uuid () { (runcmd_out('uuidgen', '-r'))[1] }
+sub _uuid ($ns, $name) { (runcmd_out('uuidgen', '--sha1', '--namespace', $ns, '--name', $name))[1] }
 
 
 =head3 configure_pflash
@@ -314,7 +315,8 @@ sub configure_pflash ($self, $vars) {
         my @secureboot_args = _make_secure_boot_configuration($vars->{UEFI_PFLASH_SECURE_BOOT});
         my @certs = split qr/;/, $vars->{UEFI_PFLASH_CERTS} // '';
         my @cert_args = map { ('--enroll-cert' => $_) } shift @certs // ();
-        push @cert_args, map { my $uuid = _uuid; ('--add-db', $uuid, $_, '--add-kek', $uuid, $_) } @certs;
+        my ($ns, $count) = ('37adf63d-93fb-4af5-9901-12f8767d3841', 0);    # fixed "well-known" UUID to generate predictable/fixed sequence of UUIDs
+        push @cert_args, map { my $uuid = _uuid($ns, ++$count); ('--add-db', $uuid, $_, '--add-kek', $uuid, $_) } @certs;
         my @res_args = _make_resolution_configuration($vars->{UEFI_PFLASH_RES});
         if (@secureboot_args || @cert_args || @res_args) {
             my $fw_adjusted = path($fw->basename('.bin') . '-adjusted.bin')->to_abs;
