@@ -41,27 +41,27 @@ my @gcmdl;
 $bdc = OpenQA::Qemu::BlockDevConf->new();
 $bdc->add_new_drive('hd1', 'virtio-blk', '10G');
 @gcmdl = $bdc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for single new drive');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for single new drive';
 
 $cmdl[-1] .= ',logical_block_size=4096,physical_block_size=4096';
 $bdc = OpenQA::Qemu::BlockDevConf->new();
 $bdc->add_new_drive('hd1', 'virtio-blk', '10G', undef, '4096');
 @gcmdl = $bdc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for drive with 4k sector size');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for drive with 4k sector size';
 
 @cmdl = [qw(create -f qcow2 raid/hd1 10G)];
 @gcmdl = $bdc->gen_qemu_img_cmdlines();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img command line for single new drive');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img command line for single new drive';
 
 my $compress = 1;
 @cmdl = (['convert', '-c', '-W', '-O', 'qcow2', 'raid/hd1', 'images/hd1.qcow2']);
 @gcmdl = $bdc->gen_qemu_img_convert(qr/^hd/, 'images', 'hd1.qcow2', $compress);
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img convert for single new drive');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img convert for single new drive';
 
 $compress = 0;
 @cmdl = (['convert', '-O', 'qcow2', 'raid/hd1', 'images/hd1.qcow2']);
 @gcmdl = $bdc->gen_qemu_img_convert(qr/^hd/, 'images', 'hd1.qcow2', $compress);
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img convert for single new drive, without compression');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img convert for single new drive, without compression';
 
 my %vars;
 my $proc;
@@ -76,7 +76,7 @@ my $proc;
 $proc = qemu_proc('-foo', \%vars);
 @cmdl = ([qw(create -f qcow2 -F vmdk -b), "$Bin/data/test-image-disk.vmdk", qw(raid/hd0-overlay0 42G)]);
 @gcmdl = $proc->blockdev_conf->gen_qemu_img_cmdlines();
-is_deeply(\@gcmdl, \@cmdl, 'qemu-img create call for a vmdk disk image');
+is_deeply \@gcmdl, \@cmdl, 'qemu-img create call for a vmdk disk image';
 
 @cmdl = ('-blockdev', 'driver=file,node-name=hd1-file,filename=raid/hd1,cache.no-flush=on',
     '-blockdev', 'driver=qcow2,node-name=hd1,file=hd1-file,cache.no-flush=on,discard=unmap',
@@ -88,16 +88,16 @@ $bdc = OpenQA::Qemu::BlockDevConf->new();
 $bdc->add_new_drive('hd1', 'virtio-blk', '10G');
 $bdc->add_new_drive('hd2', 'scsi-blk', '12G');
 @gcmdl = $bdc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for multiple new drives');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for multiple new drives';
 
 @cmdl = qw(raid/hd1 raid/hd2);
 @gcmdl = $bdc->gen_unlink_list();
-is_deeply(\@cmdl, \@gcmdl, 'Generate unlink list for multiple new drives');
+is_deeply \@cmdl, \@gcmdl, 'Generate unlink list for multiple new drives';
 
 @cmdl = ([qw(create -f qcow2  raid/hd1 10G)],
     [qw(create -f qcow2  raid/hd2 12G)]);
 @gcmdl = $bdc->gen_qemu_img_cmdlines();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img command line for multiple new drives');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img command line for multiple new drives';
 
 @cmdl = ('-blockdev', 'driver=file,node-name=hd1-overlay0-file,filename=raid/hd1-overlay0,cache.no-flush=on',
     '-blockdev', 'driver=qcow2,node-name=hd1-overlay0,file=hd1-overlay0-file,cache.no-flush=on,discard=unmap',
@@ -105,26 +105,26 @@ is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img command line for multiple new driv
 $bdc = OpenQA::Qemu::BlockDevConf->new();
 $bdc->add_existing_drive('hd1', '/abs/path/sle15-minimal.qcow2', 'virtio-blk', 22548578304);
 @gcmdl = $bdc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for single existing drive');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for single existing drive';
 
 $cmdl[-1] .= ',logical_block_size=4096,physical_block_size=4096';
 $bdc = OpenQA::Qemu::BlockDevConf->new();
 $bdc->add_existing_drive('hd1', '/abs/path/sle15-minimal.qcow2', 'virtio-blk', 22548578304, undef, 4096);
 @gcmdl = $bdc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for existing drive with 4k sector size');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for existing drive with 4k sector size';
 
 @cmdl = ([qw(create -f qcow2 -F qcow2 -b /abs/path/sle15-minimal.qcow2 raid/hd1-overlay0 22548578304)]);
 @gcmdl = $bdc->gen_qemu_img_cmdlines();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img command line for single existing drive');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img command line for single existing drive';
 
 @cmdl = qw(raid/hd1-overlay0);
 @gcmdl = $bdc->gen_unlink_list();
-is_deeply(\@cmdl, \@gcmdl, 'Generate unlink list for single existing drive');
+is_deeply \@cmdl, \@gcmdl, 'Generate unlink list for single existing drive';
 
 $compress = 1;
 @cmdl = (['convert', '-c', '-W', '-O', 'qcow2', 'raid/hd1-overlay0', 'images/hd1.qcow2']);
 @gcmdl = $bdc->gen_qemu_img_convert(qr/^hd1/, 'images', 'hd1.qcow2', $compress);
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img convert for single existing drive');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img convert for single existing drive';
 
 @cmdl = ('qemu-kvm', '-foo',
     '-blockdev', 'driver=file,node-name=hd0-overlay0-file,filename=raid/hd0-overlay0,cache.no-flush=on',
@@ -138,11 +138,11 @@ is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img convert for single existing drive'
     UEFI => 1);
 $proc = qemu_proc('-foo', \%vars);
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for single existing UEFI disk using vars');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for single existing UEFI disk using vars';
 
 @cmdl = ([qw(create -f qcow2 -F raw -b), "$Bin/data/Core-7.2.iso", qw(raid/hd0-overlay0 11814912)]);
 @gcmdl = $proc->blockdev_conf->gen_qemu_img_cmdlines();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img command line for single existing UEFI disk');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img command line for single existing UEFI disk';
 
 @cmdl = ('qemu-kvm', '-foo',
     '-device', 'virtio-scsi-device,id=scsi0',
@@ -167,7 +167,7 @@ is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img command line for single existing U
 $proc = qemu_proc('-foo', \%vars);
 
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for new drives on multipath');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for new drives on multipath';
 
 path(TMPPATH)->make_path();
 my $path = TMPPATH . '/multipath.json';
@@ -177,7 +177,7 @@ $proc = OpenQA::Qemu::Proc->new()
   ->qemu_bin('qemu-kvm');
 $proc->deserialise_state(path($path)->slurp());
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Multipath Command line after serialisation and deserialisation');
+is_deeply \@gcmdl, \@cmdl, 'Multipath Command line after serialisation and deserialisation';
 
 $ENV{QEMU_IMG_CREATE_TRIES} = 2;
 my $expected = qr/failed after 2 tries.*No such.*directory/s;
@@ -206,7 +206,7 @@ ok $proc->init_blockdev_images(), 'init_blockdev_images passes';
     SCSICONTROLLER => 'virtio-scsi-device');
 $proc = qemu_proc('-static-args', \%vars);
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line for new drive and cdrom using vars');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for new drive and cdrom using vars';
 
 path('/tmp/18-qemu.t/new-drive-and-cdrom.json')->spew($proc->serialise_state);
 
@@ -232,18 +232,18 @@ $bdc->for_each_drive(sub {
         $bdc->add_snapshot_to_drive(shift, $ss);
 });
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line after snapshot');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line after snapshot';
 
 $ss = $ssc->revert_to_snapshot('a snapshot');
-is($ss->sequence, 1, 'Returned snapshot sequence number');
+is $ss->sequence, 1, 'Returned snapshot sequence number';
 $bdc->for_each_drive(sub ($drive) {
         my $unlinks = $bdc->revert_to_snapshot($drive, $ss);
-        is(scalar(@$unlinks), 0, 'Correct number of overlay files need unlinking for ' . $drive->id);
-        is($drive->drive->{overlay}, undef, 'Reverted snapshot has no forward link');
-        is($drive->drive->needs_creating, 1, 'Active layer set to be recreated for drive ' . $drive->id);
+        is scalar(@$unlinks), 0, 'Correct number of overlay files need unlinking for ' . $drive->id;
+        is $drive->drive->{overlay}, undef, 'Reverted snapshot has no forward link';
+        is $drive->drive->needs_creating, 1, 'Active layer set to be recreated for drive ' . $drive->id;
 });
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line after reverting a snapshot');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line after reverting a snapshot';
 
 $path = TMPPATH . '/reverted-snapshot.json';
 path($path)->spew($proc->serialise_state());
@@ -253,21 +253,21 @@ $proc = OpenQA::Qemu::Proc->new()
   ->qemu_img_bin('qemu-img');
 $proc->deserialise_state(path($path)->slurp());
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Command line after snapshot and serialisation')
-  || diag(explain(\@gcmdl));
+is_deeply \@gcmdl, \@cmdl, 'Command line after snapshot and serialisation'
+  or diag explain \@gcmdl;
 
 @cmdl = ([qw(create -f qcow2 -F qcow2 -b raid/hd0 raid/hd0-overlay1 10G)],
     [qw(create -f qcow2 -F qcow2 -b raid/cd0-overlay0 raid/cd0-overlay1 11814912)]);
 @gcmdl = $bdc->gen_qemu_img_cmdlines();
-is_deeply(\@gcmdl, \@cmdl, 'Generate reverted snapshot images');
+is_deeply \@gcmdl, \@cmdl, 'Generate reverted snapshot images';
 
 @cmdl = qw(raid/hd0-overlay1 raid/cd0-overlay1);
 @gcmdl = $bdc->gen_unlink_list();
-is_deeply(\@gcmdl, \@cmdl, 'Generate unlink list of reverted snapshot images');
+is_deeply \@gcmdl, \@cmdl, 'Generate unlink list of reverted snapshot images';
 
 @cmdl = (['convert', '-c', '-W', '-O', 'qcow2', 'raid/hd0-overlay1', 'images/hd0.qcow2']);
 @gcmdl = $bdc->gen_qemu_img_convert(qr/^hd0$/, 'images', 'hd0.qcow2', $compress);
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu-img convert with snapshots');
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img convert with snapshots';
 
 @cmdl = ('qemu-kvm', '-static-args',
     '-device', 'virtio-scsi-device,id=scsi0',
@@ -302,14 +302,14 @@ $ssc = $proc->snapshot_conf;
 $bdc = $proc->blockdev_conf;
 
 $ss = $ssc->revert_to_snapshot('snapshot 1');
-is($ss->sequence, 1, 'Returned snapshot sequence number');
+is $ss->sequence, 1, 'Returned snapshot sequence number';
 $bdc->for_each_drive(sub ($drive) {
         my $unlinks = $bdc->revert_to_snapshot($drive, $ss);
-        is(scalar(@$unlinks), 9, 'Correct number of overlay files need unlinking for ' . $drive->id);
+        is scalar(@$unlinks), 9, 'Correct number of overlay files need unlinking for ' . $drive->id;
 });
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line after deserialising and reverting a snapshot')
-  || diag(explain(\@gcmdl));
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line after deserialising and reverting a snapshot'
+  or diag explain \@gcmdl;
 
 %vars = (NUMDISKS => 1,
     HDDMODEL => 'scsi-hd',
@@ -357,14 +357,14 @@ $ssc = $proc->snapshot_conf;
 $bdc = $proc->blockdev_conf;
 
 $ss = $ssc->revert_to_snapshot('snapshot 1');
-is($ss->sequence, 1, 'Returned snapshot sequence number');
+is $ss->sequence, 1, 'Returned snapshot sequence number';
 $bdc->for_each_drive(sub ($drive) {
         my $unlinks = $bdc->revert_to_snapshot($drive, $ss);
-        is(scalar(@$unlinks), 10, 'Correct number of overlay files need unlinking for ' . $drive->id);
+        is scalar(@$unlinks), 10, 'Correct number of overlay files need unlinking for ' . $drive->id;
 });
 @gcmdl = $proc->gen_cmdline();
-is_deeply(\@gcmdl, \@cmdl, 'Generate qemu command line after deserialising and reverting a snapshot')
-  || diag(explain(\@gcmdl));
+is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line after deserialising and reverting a snapshot'
+  or diag explain \@gcmdl;
 
 
 sub qemu_proc ($static_params, $vars) {
@@ -395,8 +395,8 @@ subtest DriveDevice => sub {
     use OpenQA::Qemu::DriveDevice;
     my $drive = OpenQA::Qemu::DriveDevice->new(id => 'test', last_overlay_id => 2);
     is $drive->new_overlay_id, 3, 'new_overlay_id() bumps last_overlay_id value';
-    is($drive->_gen_node_name(3, 2), 'test-device-2', 'Expected generated node name matches');
-    is($drive->_gen_node_name(1, 2), 'test-device', 'Expected generated node name matches');
+    is $drive->_gen_node_name(3, 2), 'test-device-2', 'Expected generated node name matches';
+    is $drive->_gen_node_name(1, 2), 'test-device', 'Expected generated node name matches';
 
 };
 
@@ -414,7 +414,7 @@ subtest 'relative assets' => sub {
         [qw(create -f qcow2 -F raw -b), "$Bin/data/uefi-code.bin", 'raid/pflash-code-overlay0', 1966080],
         [qw(create -f qcow2 -F qcow2 -b), "$dir/some.qcow2", 'raid/pflash-vars-overlay0', 512],
     );
-    is_deeply(\@gcmdl, \@cmdl, 'find the asset real path') or always_explain \@gcmdl;
+    is_deeply \@gcmdl, \@cmdl, 'find the asset real path' or always_explain \@gcmdl;
 };
 
 subtest 'qemu was killed due to the system being out of memory' => sub {
@@ -426,7 +426,7 @@ subtest 'qemu was killed due to the system being out of memory' => sub {
     my $base_state = path(bmwqemu::STATE_FILE);
     ok -f $base_state, qq{state file "$base_state" exists};
     my $state = decode_json($base_state->slurp);
-    is($state->{msg}, 'QEMU was killed due to the system being out of memory', 'qemu was killed and the reason was shown correctly');
+    is $state->{msg}, 'QEMU was killed due to the system being out of memory', 'qemu was killed and the reason was shown correctly';
     unlink './Core-7.2.iso';
 };
 
@@ -441,7 +441,7 @@ subtest 'qemu is not called on an empty file when ISO_1 is an empty string' => s
     my %empty_iso_vars = (ISO_1 => '', NUMDISKS => 0);
 
     OpenQA::Qemu::Proc->new()->configure_blockdevs('disk', 'raid', \%empty_iso_vars);
-    is($call_count, 0, 'get_img_size call count check');
+    is $call_count, 0, 'get_img_size call count check';
 };
 
 subtest configure_controllers => sub {
@@ -622,13 +622,13 @@ subtest 'verify incremental overlay mapping to snapshot' => sub {
                 });
         });
         for my $olfile (keys %overlay_files) {
-            ok(exists $overlay_files{"$olfile"}, 'hd0-overlay1 exists for snapshot1');
+            ok exists $overlay_files{"$olfile"}, 'hd0-overlay1 exists for snapshot1';
         }
     };
 
     subtest 'no duplicated overlays are being created' => sub {
         my @duplicates = grep { $overlay_files{$_} > 1 } keys %overlay_files;
-        is(scalar(@duplicates), 0, 'No duplicate overlay filenames found')
+        is scalar(@duplicates), 0, 'No duplicate overlay filenames found'
           or always_explain \@duplicates;
     };
 
@@ -638,10 +638,10 @@ subtest 'verify incremental overlay mapping to snapshot' => sub {
 
         my @unlink_list = $bdc->gen_unlink_list();
         my @hd_overlays = grep { /hd0-overlay/ } @unlink_list;
-        is(scalar(@hd_overlays), 1, 'should only include the overlay marked for recreation');
-        like($hd_overlays[0], qr/hd0-overlay1$/, 'Correct overlay1 marked for unlinking');
+        is scalar(@hd_overlays), 1, 'should only include the overlay marked for recreation';
+        like $hd_overlays[0], qr/hd0-overlay1$/, 'Correct overlay1 marked for unlinking';
         my @base_files = grep { !/overlay/ } @unlink_list;
-        is(scalar(@base_files), 0, 'No base backing files in unlink list');
+        is scalar(@base_files), 0, 'No base backing files in unlink list';
     };
 };
 
