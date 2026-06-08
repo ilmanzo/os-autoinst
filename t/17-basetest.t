@@ -111,10 +111,10 @@ subtest run_post_fail_test => sub {
 };
 
 subtest modules_test => sub {
-    ok(my $basetest = basetest->new('installation'), 'module can be created');
+    ok my $basetest = basetest->new('installation'), 'module can be created';
     $basetest->{class} = 'foo';
     $basetest->{fullname} = 'installation-foo';
-    ok($basetest->is_applicable, 'module is applicable by default');
+    ok $basetest->is_applicable, 'module is applicable by default';
 };
 
 subtest parse_serial_output => sub {
@@ -134,34 +134,34 @@ subtest parse_serial_output => sub {
         {type => 'soft', message => 'DoNotMatch', pattern => qr/DoNotMatch/},
     ];
     $basetest->parse_serial_output_qemu();
-    is($basetest->{result}, undef, 'test result untouched without match');
-    is($message, undef, 'test details do not have extra message');
+    is $basetest->{result}, undef, 'test result untouched without match';
+    is $message, undef, 'test details do not have extra message';
 
     $basetest->{serial_failures} = [
         {type => 'info', message => 'CPU soft lockup detected', pattern => qr/Serial/},
     ];
     $basetest->parse_serial_output_qemu();
-    is($basetest->{result}, 'ok', 'test result set to ok');
-    is($message, 'CPU soft lockup detected - Serial error: Serial to match', 'log message matches output');
+    is $basetest->{result}, 'ok', 'test result set to ok';
+    is $message, 'CPU soft lockup detected - Serial error: Serial to match', 'log message matches output';
 
     $basetest->{result} = 'softfail';
     $basetest->{serial_failures} = [
         {type => 'info', message => 'CPU soft lockup detected', pattern => qr/Serial/},
     ];
     $basetest->parse_serial_output_qemu();
-    is($basetest->{result}, 'softfail', 'test result stays at softfail on ok match');
+    is $basetest->{result}, 'softfail', 'test result stays at softfail on ok match';
 
     $basetest->{result} = 'fail';
     $basetest->{serial_failures} = [
         {type => 'info', message => 'CPU soft lockup detected', pattern => qr/Serial/},
     ];
     $basetest->parse_serial_output_qemu();
-    is($basetest->{result}, 'fail', 'test result stays at fail on ok match');
+    is $basetest->{result}, 'fail', 'test result stays at fail on ok match';
     $basetest->{serial_failures} = [
         {type => 'soft', message => 'CPU soft lockup detected', pattern => qr/Serial/},
     ];
     $basetest->parse_serial_output_qemu();
-    is($basetest->{result}, 'fail', 'test result stays at fail on softfail match');
+    is $basetest->{result}, 'fail', 'test result stays at fail on softfail match';
     $basetest->{result} = undef;
 
     $basetest->{serial_failures} = [
@@ -169,51 +169,51 @@ subtest parse_serial_output => sub {
     ];
 
     $basetest->parse_serial_output_qemu();
-    is($basetest->{result}, 'softfail', 'test result set to soft failure');
-    is($message, 'SimplePattern - Serial error: Serial to match', 'log message matches output');
+    is $basetest->{result}, 'softfail', 'test result set to soft failure';
+    is $message, 'SimplePattern - Serial error: Serial to match', 'log message matches output';
 
     $basetest->{serial_failures} = [
         {type => 'soft', message => 'Proper regexp', pattern => qr/\d{3}/},
     ];
     $basetest->parse_serial_output_qemu();
-    is($basetest->{result}, 'softfail', 'test result set to soft failure');
-    is($message, 'Proper regexp - Serial error: 1q2w333', 'log message matches output');
+    is $basetest->{result}, 'softfail', 'test result set to soft failure';
+    is $message, 'Proper regexp - Serial error: 1q2w333', 'log message matches output';
 
     $basetest->{serial_failures} = [
         {type => 'hard', message => 'Message1', pattern => qr/Serial/},
     ];
 
     throws_ok { $basetest->parse_serial_output_qemu() } qr(Got serial hard failure at.*), 'test died hard after match';
-    is($basetest->{result}, 'fail', 'test result set to hard failure');
+    is $basetest->{result}, 'fail', 'test result set to hard failure';
 
     $basetest->{serial_failures} = [
         {type => 'fatal', message => 'Message1', pattern => qr/Serial/},
     ];
 
     throws_ok { $basetest->parse_serial_output_qemu() } qr(Got serial hard failure at.*), 'test died hard after match with fatal type';
-    is($basetest->{result}, 'fail', 'test result set to fail after fatal failure');
+    is $basetest->{result}, 'fail', 'test result set to fail after fatal failure';
 
     $basetest->{serial_failures} = [
         {type => 'non_existent type', message => 'Message1', pattern => qr/Serial/},
     ];
     throws_ok { $basetest->parse_serial_output_qemu() } qr(Wrong type defined for serial failure.*), 'test died because of wrong serial failure type';
-    is($basetest->{result}, 'fail', 'test result set to hard failure');
+    is $basetest->{result}, 'fail', 'test result set to hard failure';
 
     $basetest->{serial_failures} = [
         {type => 'soft', message => undef, pattern => qr/Serial/},
     ];
     throws_ok { $basetest->parse_serial_output_qemu() } qr(Message not defined for serial failure for the pattern.*), 'test died because of missing message';
-    is($basetest->{result}, 'fail', 'test result set to hard failure');
+    is $basetest->{result}, 'fail', 'test result set to hard failure';
 };
 
 subtest get_new_serial_output => sub {
     my $mock_basetest = Test::MockModule->new('basetest');
     my $basetest = basetest->new('installation');
     $serial_buffer = 'Some serial string';
-    is($basetest->get_new_serial_output(), 'Some serial string', 'returns serial output');
-    is($basetest->get_new_serial_output(), '', 'returns nothing if nothing got added');
+    is $basetest->get_new_serial_output(), 'Some serial string', 'returns serial output';
+    is $basetest->get_new_serial_output(), '', 'returns nothing if nothing got added';
     $serial_buffer .= 'Some more data';
-    is($basetest->get_new_serial_output(), 'Some more data', 'returns new serial output');
+    is $basetest->get_new_serial_output(), 'Some more data', 'returns new serial output';
 };
 
 subtest record_testresult => sub {
@@ -225,47 +225,47 @@ subtest record_testresult => sub {
         name => 'test',
     }, $basetest_class;
 
-    is_deeply($basetest->record_testresult(), {result => 'unk'}, 'adding unknown result');
-    is($basetest->{result}, undef, 'test result unaffected');
-    is($basetest->{test_count}, 1, 'test count increased');
+    is_deeply $basetest->record_testresult(), {result => 'unk'}, 'adding unknown result';
+    is $basetest->{result}, undef, 'test result unaffected';
+    is $basetest->{test_count}, 1, 'test count increased';
 
-    is_deeply($basetest->record_testresult('ok'), {result => 'ok'}, 'adding "ok" result');
-    is($basetest->{result}, 'ok', 'test result is now "ok"');
+    is_deeply $basetest->record_testresult('ok'), {result => 'ok'}, 'adding "ok" result';
+    is $basetest->{result}, 'ok', 'test result is now "ok"';
 
-    is_deeply($basetest->record_testresult('softfail'), {result => 'softfail'}, 'adding "softfail" result');
-    is($basetest->{result}, 'softfail', 'test result is now "softfail"');
+    is_deeply $basetest->record_testresult('softfail'), {result => 'softfail'}, 'adding "softfail" result';
+    is $basetest->{result}, 'softfail', 'test result is now "softfail"';
 
-    is_deeply($basetest->record_testresult('ok'), {result => 'ok'}, 'adding one more "ok" result');
-    is($basetest->{result}, 'softfail', 'test result is still "softfail"');
+    is_deeply $basetest->record_testresult('ok'), {result => 'ok'}, 'adding one more "ok" result';
+    is $basetest->{result}, 'softfail', 'test result is still "softfail"';
 
-    is_deeply($basetest->record_testresult('fail'), {result => 'fail'}, 'adding "fail" result');
-    is($basetest->{result}, 'fail', 'test result is now "fail"');
+    is_deeply $basetest->record_testresult('fail'), {result => 'fail'}, 'adding "fail" result';
+    is $basetest->{result}, 'fail', 'test result is now "fail"';
 
-    is_deeply($basetest->record_testresult('ok'), {result => 'ok'}, 'adding one more "ok" result');
-    is($basetest->{result}, 'fail', 'test result is still "fail"');
+    is_deeply $basetest->record_testresult('ok'), {result => 'ok'}, 'adding one more "ok" result';
+    is $basetest->{result}, 'fail', 'test result is still "fail"';
 
-    is_deeply($basetest->record_testresult('softfail'), {result => 'softfail'}, 'adding one more "softfail" result');
-    is($basetest->{result}, 'fail', 'test result is still "fail"');
+    is_deeply $basetest->record_testresult('softfail'), {result => 'softfail'}, 'adding one more "softfail" result';
+    is $basetest->{result}, 'fail', 'test result is still "fail"';
 
-    is_deeply($basetest->record_testresult(), {result => 'unk'}, 'adding one more "unk" result');
-    is($basetest->{result}, 'fail', 'test result is still "fail"');
+    is_deeply $basetest->record_testresult(), {result => 'unk'}, 'adding one more "unk" result';
+    is $basetest->{result}, 'fail', 'test result is still "fail"';
 
-    is_deeply($basetest->record_testresult('softfail', force_status => 1), {result => 'softfail'}, 'adding one more "softfail" result but forcing the status');
-    is($basetest->{result}, 'softfail', 'test result was forced to "softfail"');
+    is_deeply $basetest->record_testresult('softfail', force_status => 1), {result => 'softfail'}, 'adding one more "softfail" result but forcing the status';
+    is $basetest->{result}, 'softfail', 'test result was forced to "softfail"';
 
-    is_deeply($basetest->take_screenshot(), {result => 'unk'},
-        'unknown result from take_screenshot not added to details');
+    is_deeply $basetest->take_screenshot(), {result => 'unk'},
+      'unknown result from take_screenshot not added to details';
 
     $last_screenshot_data = encode_base64(tinycv::new(1, 1)->ppm_data);
 
     my $res = $basetest->take_screenshot();
-    is(ref delete $res->{frametime}, 'ARRAY', 'frametime returned');
+    is ref delete $res->{frametime}, 'ARRAY', 'frametime returned';
 
-    is_deeply($res, {result => 'unk', screenshot => 'test-10.png'},
-        'mock image added to details');
+    is_deeply $res, {result => 'unk', screenshot => 'test-10.png'},
+      'mock image added to details';
 
-    is($basetest->{test_count}, 10, 'test_count accumulated');
-    is(scalar @{$basetest->{details}}, 10, 'all details added');
+    is $basetest->{test_count}, 10, 'test_count accumulated';
+    is scalar @{$basetest->{details}}, 10, 'all details added';
 };
 
 subtest 'number of test results is limited' => sub {
@@ -338,45 +338,45 @@ subtest record_screenmatch => sub {
     my $frame = 24;
 
     $basetest->record_screenmatch($image, \%match, \@tags, \@failed_needles, $frame);
-    is_deeply($basetest->{details}, [
-            {
-                area => [
-                    {
-                        x => 1,
-                        y => 2,
-                        w => 3,
-                        h => 4,
-                        similarity => 0,
-                        result => 'ok',
-                    },
-                ],
-                error => 0.128,
-                frametime => [qw(1.00 1.04)],
-                needle => 'foo',
-                json => 'some/path/foo.json',
-                needles => [
-                    {
-                        area => [
-                            {
-                                x => 4,
-                                y => 3,
-                                w => 2,
-                                h => 1,
-                                similarity => 0,
-                                result => 'fail',
-                            },
-                        ],
-                        error => 1,
-                        name => 'failure',
-                        json => 'some/path/failure.json',
-                    }
-                ],
-                properties => [],
-                screenshot => 'basetest-1.png',
-                tags => [qw(some tags)],
-                result => 'ok',
-            }
-    ], 'screenmatch detail recorded as expected')
+    is_deeply $basetest->{details}, [
+        {
+            area => [
+                {
+                    x => 1,
+                    y => 2,
+                    w => 3,
+                    h => 4,
+                    similarity => 0,
+                    result => 'ok',
+                },
+            ],
+            error => 0.128,
+            frametime => [qw(1.00 1.04)],
+            needle => 'foo',
+            json => 'some/path/foo.json',
+            needles => [
+                {
+                    area => [
+                        {
+                            x => 4,
+                            y => 3,
+                            w => 2,
+                            h => 1,
+                            similarity => 0,
+                            result => 'fail',
+                        },
+                    ],
+                    error => 1,
+                    name => 'failure',
+                    json => 'some/path/failure.json',
+                }
+            ],
+            properties => [],
+            screenshot => 'basetest-1.png',
+            tags => [qw(some tags)],
+            result => 'ok',
+        }
+      ], 'screenmatch detail recorded as expected'
       or always_explain $basetest->{details};
 
     # check a needle has workaround property
@@ -402,39 +402,39 @@ subtest record_screenmatch => sub {
 
     combined_like { $basetest_for_workaround->record_screenmatch($image, \%workaround_match, ['check-workaround-hash'], [], $frame) }
     qr/needle.*is a workaround/, 'needle workaround debug message found';
-    is_deeply($basetest_for_workaround->{details}, [
-            {
-                result => 'softfail',
-                title => 'Soft Failed',
-                text => 'basetest-3.txt'
-            },
-            {
-                area => [
-                    {
-                        x => 1,
-                        y => 2,
-                        w => 3,
-                        h => 4,
-                        similarity => 0,
-                        result => 'ok',
-                    },
-                ],
-                error => 0.25,
-                frametime => [qw(1.00 1.04)],
-                needle => 'check-workaround-hash-20190522',
-                json => $needle_file,
-                properties => [
-                    {
-                        name => 'workaround',
-                        value => 'bsc#7654321: this is a test about workaround.',
-                    }
-                ],
-                screenshot => 'basetest-1.png',
-                tags => [qw(check-workaround-hash)],
-                result => 'softfail',
-                dent => 1,
-            }
-    ], 'screenmatch detail with workaround property recorded as expected')
+    is_deeply $basetest_for_workaround->{details}, [
+        {
+            result => 'softfail',
+            title => 'Soft Failed',
+            text => 'basetest-3.txt'
+        },
+        {
+            area => [
+                {
+                    x => 1,
+                    y => 2,
+                    w => 3,
+                    h => 4,
+                    similarity => 0,
+                    result => 'ok',
+                },
+            ],
+            error => 0.25,
+            frametime => [qw(1.00 1.04)],
+            needle => 'check-workaround-hash-20190522',
+            json => $needle_file,
+            properties => [
+                {
+                    name => 'workaround',
+                    value => 'bsc#7654321: this is a test about workaround.',
+                }
+            ],
+            screenshot => 'basetest-1.png',
+            tags => [qw(check-workaround-hash)],
+            result => 'softfail',
+            dent => 1,
+        }
+      ], 'screenmatch detail with workaround property recorded as expected'
       or always_explain $basetest_for_workaround->{details};
 };
 
@@ -464,47 +464,47 @@ subtest 'register_extra_test_results' => sub {
     ];
 
     $test->register_extra_test_results($extra_tests);
-    is(@{$test->{extra_test_results}}, @{$extra_tests}, 'add extra test results');
-    is($test->{extra_test_results}->[0]->{script}, $test->{script}, 'unknown script is replaced with self->{script}.');
-    is($test->{extra_test_results}->[1]->{script}, $extra_tests->[1]->{script}, 'existing script is untouched.');
-    is($test->{extra_test_results}->[2]->{script}, $test->{script}, 'undefined script is replaced with self->{script}.');
+    is @{$test->{extra_test_results}}, @{$extra_tests}, 'add extra test results';
+    is $test->{extra_test_results}->[0]->{script}, $test->{script}, 'unknown script is replaced with self->{script}.';
+    is $test->{extra_test_results}->[1]->{script}, $extra_tests->[1]->{script}, 'existing script is untouched.';
+    is $test->{extra_test_results}->[2]->{script}, $test->{script}, 'undefined script is replaced with self->{script}.';
 };
 
 subtest 'execute_time' => sub {
     my $basetest_class = 'basetest';
     my $mock_basetest = Test::MockModule->new($basetest_class);
     my $test = basetest->new('foo');
-    is($test->{execution_time}, 0, 'the execution time is initiated correctly');
+    is $test->{execution_time}, 0, 'the execution time is initiated correctly';
     $mock_basetest->mock(execution_time => 42);
     $mock_basetest->mock(run => undef);
     $mock_basetest->redefine(done => undef);
     combined_like { $test->runtest } qr/finished basetest foo/, 'finish status message found';
-    is($test->{execution_time}, 42, 'the execution time is correct');
+    is $test->{execution_time}, 42, 'the execution time is correct';
 };
 
 subtest skip_if_not_running => sub {
     my $test = basetest->new();
     $test->{result} = undef;
     $test->skip_if_not_running;
-    is($test->{result}, 'skip', 'skip_if_not_running works as expected');
+    is $test->{result}, 'skip', 'skip_if_not_running works as expected';
 };
 
 subtest capture_filename => sub {
     my $test = basetest->new();
     $test->capture_filename;
-    is($test->{wav_fn}, 'basetest-001-captured.wav', 'capture_filename works as expected');
+    is $test->{wav_fn}, 'basetest-001-captured.wav', 'capture_filename works as expected';
     dies_ok { $test->capture_filename } 'nested recordings are prevented';
     $test->{wav_fn} = undef;
     $test->capture_filename;
-    is($test->{wav_fn}, 'basetest-002-captured.wav', 'capture_filename works as expected');
+    is $test->{wav_fn}, 'basetest-002-captured.wav', 'capture_filename works as expected';
 };
 
 subtest stop_audiocapture => sub {
     my $test = basetest->new();
     my $res = $test->stop_audiocapture();
-    is($res->{audio}, undef, 'audio capture stopped');
-    is($res->{result}, 'unk', 'audio capture stopped');
-    is($test->{details}->[-1], $res, 'result appended to details');
+    is $res->{audio}, undef, 'audio capture stopped';
+    is $res->{result}, 'unk', 'audio capture stopped';
+    is $test->{details}->[-1], $res, 'result appended to details';
 };
 
 $mock_bmwqemu->noop('fctres', 'fctinfo');
@@ -512,19 +512,19 @@ $mock_bmwqemu->noop('fctres', 'fctinfo');
 subtest verify_sound_image => sub {
     my $test = basetest->new();
     my $res = $test->verify_sound_image("$FindBin::Bin/data/frame1.ppm", 'notapath2', 'check');
-    is_deeply($res->{area}, [{x => 1, y => 2, similarity => 100}], 'area was returned') or always_explain $res->{area};
-    is($res->{needle}->{file}, 'foundneedle.json', 'needle file was returned');
-    is($res->{needle}->{name}, 'foundneedle', 'needle name was returned');
+    is_deeply $res->{area}, [{x => 1, y => 2, similarity => 100}], 'area was returned' or always_explain $res->{area};
+    is $res->{needle}->{file}, 'foundneedle.json', 'needle file was returned';
+    is $res->{needle}->{name}, 'foundneedle', 'needle name was returned';
     $suppress_match = 'yes';
     my $details;
     my $mock_test = Test::MockModule->new('basetest');
     $mock_test->mock(record_screenfail => sub ($self, %args) { $details = \%args; });
     $res = $test->verify_sound_image("$FindBin::Bin/data/frame1.ppm", "$FindBin::Bin/data/frame2.ppm", 1);
-    is($res, undef, 'res is undef as expected') or always_explain $res;
-    is($details->{result}, 'unk', 'no needle match: unknown status correct') or always_explain $details;
+    is $res, undef, 'res is undef as expected' or always_explain $res;
+    is $details->{result}, 'unk', 'no needle match: unknown status correct' or always_explain $details;
     $res = $test->verify_sound_image("$FindBin::Bin/data/frame1.ppm", "$FindBin::Bin/data/frame2.ppm", 0);
-    is($details->{result}, 'fail', 'no needle match: status fail') or always_explain $details;
-    is($details->{overall}, 'fail', 'no needle match: overall fail') or always_explain $details;
+    is $details->{result}, 'fail', 'no needle match: status fail' or always_explain $details;
+    is $details->{overall}, 'fail', 'no needle match: overall fail' or always_explain $details;
 };
 
 $mock_bmwqemu->noop('diag', 'modstate');
@@ -537,7 +537,7 @@ subtest search_for_expected_serial_failures => sub {
     $mock_basetest->mock(run => sub { die 'test failure' });
     $mock_basetest->mock(parse_serial_output_qemu => sub { $basetest->{result} = 'successfully called function' });
     $basetest->runtest();
-    is($basetest->{result}, 'successfully called function', 'search for expected serial failures is working');
+    is $basetest->{result}, 'successfully called function', 'search for expected serial failures is working';
 };
 
 subtest record_serialresult_with_command => sub {
@@ -547,8 +547,8 @@ subtest record_serialresult_with_command => sub {
     my $mock_basetest_local = Test::MockModule->new('basetest');
     $mock_basetest_local->redefine(record_resultfile => sub ($self, $title, $output, %nargs) { $recorded_output = $output });
     $basetest->record_serialresult('regex', 'ok', 'output', command => 'my_command');
-    like($recorded_output, qr/# Command: my_command/, 'command is in output');
-    like($recorded_output, qr/# wait_serial expected: regex/, 'expected regex is in output');
+    like $recorded_output, qr/# Command: my_command/, 'command is in output';
+    like $recorded_output, qr/# wait_serial expected: regex/, 'expected regex is in output';
 };
 
 subtest record_serialresult_hiding => sub {
@@ -614,8 +614,8 @@ subtest record_serialresult_hiding => sub {
     foreach my $case (@test_cases) {
         $mock_testapi->mock(get_var => sub ($var) { return $case->{vars}->{$var} });
         $basetest->record_serialresult(@{$case->{params}});
-        like($recorded_output, $_, "$case->{name} (contains expected)") for @{$case->{expected}};
-        unlike($recorded_output, $_, "$case->{name} (does not contain unexpected)") for @{$case->{not_expected}};
+        like $recorded_output, $_, "$case->{name} (contains expected)" for @{$case->{expected}};
+        unlike $recorded_output, $_, "$case->{name} (does not contain unexpected)" for @{$case->{not_expected}};
     }
 };
 done_testing;
