@@ -56,5 +56,5 @@ foreach my $file (@files) {
     else {
         $ok = $test->pl_file_compiles($file);
     }
-    ok($ok, "Syntax check $file");
+    ok $ok, "Syntax check $file";
 }
