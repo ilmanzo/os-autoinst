@@ -52,17 +52,17 @@ my $baseclass = backend::baseclass->new();
 subtest 'format_vtt_timestamp' => sub {
     my $timestamp = 1543917024.24791;
     $baseclass->{video_frame_number} = 0;
-    is($baseclass->format_vtt_timestamp($timestamp),
-        "\n0\n00:00:00.000 --> 00:00:00.041\n[2018-12-04T09:50:24.247]\n",
-        'frame number 0'
-    );
+    is $baseclass->format_vtt_timestamp($timestamp),
+      "\n0\n00:00:00.000 --> 00:00:00.041\n[2018-12-04T09:50:24.247]\n",
+      'frame number 0'
+      ;
 
     $timestamp += .1;
     $baseclass->{video_frame_number} = 1;
-    is($baseclass->format_vtt_timestamp($timestamp),
-        "\n1\n00:00:00.041 --> 00:00:00.083\n[2018-12-04T09:50:24.347]\n",
-        'frame number 1'
-    );
+    is $baseclass->format_vtt_timestamp($timestamp),
+      "\n1\n00:00:00.041 --> 00:00:00.083\n[2018-12-04T09:50:24.347]\n",
+      'frame number 1'
+      ;
 };
 
 subtest 'not implemented' => sub {
@@ -117,9 +117,9 @@ subtest 'SSH utilities' => sub {
             $self->mock(connect => sub {
                     my ($self, $hostname, $port) = @_;
                     return 0 if $ssh_connect_error;
-                    is($hostname, $ssh_expect->{hostname}, 'Connect to correct hostname');
+                    is $hostname, $ssh_expect->{hostname}, 'Connect to correct hostname';
                     # if unspecified, default to port 22
-                    is($port, $ssh_expect->{port} // 22, 'Connect to correct port');
+                    is $port, $ssh_expect->{port} // 22, 'Connect to correct port';
                     $self->{hostname} = $hostname;
                     $self->{port} = $port;
                     $self->{blocking} = 0;
@@ -128,8 +128,8 @@ subtest 'SSH utilities' => sub {
             $self->mock(hostname => sub { return $ssh_obj_data->{refaddr(shift)}->{hostname} });
             $self->mock(auth => sub {
                     my ($self, %args) = @_;
-                    is($args{username}, $ssh_expect->{username}, 'Correct username for ssh connection');
-                    is($args{password}, $ssh_expect->{password}, 'Correct password for ssh connection');
+                    is $args{username}, $ssh_expect->{username}, 'Correct username for ssh connection';
+                    is $args{password}, $ssh_expect->{password}, 'Correct password for ssh connection';
                     return 1;
             });
             $self->mock(auth_agent => sub { push @agent, [@_]; return 1 });
@@ -239,12 +239,12 @@ subtest 'SSH utilities' => sub {
     $log::logger = $default_logger;
 
     # Double check references
-    isnt(refaddr($ssh1), refaddr($ssh2), 'Got new connection each call');
-    is(refaddr($ssh3), refaddr($ssh4), 'Got same connection with keep_open');
-    is(refaddr($ssh4), refaddr($ssh5), 'Got same connection with keep_open');
-    isnt(refaddr($ssh5), refaddr($ssh6), 'Got new connection with different credentials');
-    isnt(refaddr($ssh5), refaddr($ssh7), 'Got new connection, when SSH session got broke');
-    isnt(refaddr($ssh4), refaddr($ssh8), 'Got same connection with different ports');
+    isnt refaddr($ssh1), refaddr($ssh2), 'Got new connection each call';
+    is refaddr($ssh3), refaddr($ssh4), 'Got same connection with keep_open';
+    is refaddr($ssh4), refaddr($ssh5), 'Got same connection with keep_open';
+    isnt refaddr($ssh5), refaddr($ssh6), 'Got new connection with different credentials';
+    isnt refaddr($ssh5), refaddr($ssh7), 'Got new connection, when SSH session got broke';
+    isnt refaddr($ssh4), refaddr($ssh8), 'Got same connection with different ports';
 
     $ssh_auth_ok = 0;
     @net_ssh2_error = (-1, 'MY_ERROR', 'Error connecting to');
@@ -261,10 +261,10 @@ subtest 'SSH utilities' => sub {
     is scalar @agent, 1, 'auth_agent called via "use_ssh_agent" despite empty password';
 
     # check run_ssh_cmd() usage
-    is($baseclass->run_ssh_cmd('echo -n "foo"', %ssh_creds), 0, 'Command successful exit');
-    isnt($baseclass->run_ssh_cmd('test 23 -eq 42', %ssh_creds), 0, 'Command failed exit');
+    is $baseclass->run_ssh_cmd('echo -n "foo"', %ssh_creds), 0, 'Command successful exit';
+    isnt $baseclass->run_ssh_cmd('test 23 -eq 42', %ssh_creds), 0, 'Command failed exit';
     my @output = $baseclass->run_ssh_cmd('echo -n "foo"', wantarray => 1, %ssh_creds);
-    is_deeply(\@output, [0, 'foo', ''], 'Command successful exit with output');
+    is_deeply \@output, [0, 'foo', ''], 'Command successful exit with output';
 
     # test handling read errors and timeout parameter of run_ssh_cmd()
     ($fail_on_read2, @net_ssh2_error) = (1, -9, 'LIBSSH2_ERROR_TIMEOUT', 'Time out waiting for data');
@@ -276,34 +276,34 @@ subtest 'SSH utilities' => sub {
 
     # Create a SSH session implecit with `run_ssh_cmd()`
     $ssh_expect->{password} = '2+3=5';
-    is($baseclass->run_ssh_cmd('echo -n "foo"', %ssh_creds, password => '2+3=5'), 0, 'Allow SSH credentials per run_ssh_cmd() call');
+    is $baseclass->run_ssh_cmd('echo -n "foo"', %ssh_creds, password => '2+3=5'), 0, 'Allow SSH credentials per run_ssh_cmd() call';
 
     my $num_ssh_connect = scalar keys %{$ssh_obj_data};
     $baseclass->run_ssh_cmd('echo -n "foo"', %ssh_creds, password => '2+3=5', keep_open => 0);
-    is($num_ssh_connect + 1, scalar keys %{$ssh_obj_data}, 'Ensure run_ssh_cmd(keep_open => 0) uses a new SSH connection');
+    is $num_ssh_connect + 1, scalar keys %{$ssh_obj_data}, 'Ensure run_ssh_cmd(keep_open => 0) uses a new SSH connection';
 
     my @connected_ssh = grep { $_->{connected} } values %$ssh_obj_data;
     my @disconnected_ssh = grep { !$_->{connected} } values %$ssh_obj_data;
 
-    is(scalar(@connected_ssh), 8, 'Expect 8 connected SSH connections');
-    is($ssh1->{connected}, 1, 'SSH connection ssh1 connected');
-    is($ssh2->{connected}, 1, 'SSH connection ssh2 connected');
-    is($ssh7->{connected}, 1, 'SSH connection ssh7 connected');
-    is($ssh8->{connected}, 1, 'SSH connection ssh8 connected');
-    is($ssh9->{connected}, 1, 'SSH connection ssh9 connected');
+    is scalar(@connected_ssh), 8, 'Expect 8 connected SSH connections';
+    is $ssh1->{connected}, 1, 'SSH connection ssh1 connected';
+    is $ssh2->{connected}, 1, 'SSH connection ssh2 connected';
+    is $ssh7->{connected}, 1, 'SSH connection ssh7 connected';
+    is $ssh8->{connected}, 1, 'SSH connection ssh8 connected';
+    is $ssh9->{connected}, 1, 'SSH connection ssh9 connected';
     # +1 unnamed connection form implicit run_ssh_cmd()
 
-    is(scalar(@disconnected_ssh), 3, 'Expect 3 disconnected SSH connections');
-    is($ssh3->{connected}, 0, 'SSH connection ssh3 disconnected');
+    is scalar(@disconnected_ssh), 3, 'Expect 3 disconnected SSH connections';
+    is $ssh3->{connected}, 0, 'SSH connection ssh3 disconnected';
     # +1 from auth failure
     # +1 run_ssh_cmd(keep_open => 0)
 
     $baseclass->close_ssh_connections();
     @connected_ssh = grep { $_->{connected} } values %$ssh_obj_data;
     is scalar @connected_ssh, 5, 'Expect 5 connected SSH connections (ssh1, ssh2 and ssh9)';
-    is($ssh1->{connected}, 1, 'SSH connection ssh1 connected');
-    is($ssh2->{connected}, 1, 'SSH connection ssh2 connected');
-    is($ssh9->{connected}, 1, 'SSH connection ssh9 connected (user agent auth)');
+    is $ssh1->{connected}, 1, 'SSH connection ssh1 connected';
+    is $ssh2->{connected}, 1, 'SSH connection ssh2 connected';
+    is $ssh9->{connected}, 1, 'SSH connection ssh9 connected (user agent auth)';
 
     subtest 'Serial SSH' => sub {
         my $io_select_mock = Test::MockModule->new('IO::Select');
@@ -314,9 +314,9 @@ subtest 'SSH utilities' => sub {
         $ssh_expect = {username => 'serial', password => 'XXX', hostname => 'serial.host'};
         $num_ssh_connect = scalar keys %{$ssh_obj_data};
         my ($ssh, $chan) = $baseclass->start_ssh_serial(username => 'serial', password => 'XXX', hostname => 'serial.host');
-        is($num_ssh_connect + 1, scalar keys %{$ssh_obj_data}, 'Ensure start_ssh_serial() uses a new SSH connection');
-        is($chan->{ext_data}, 'merge', 'STDOUT and STDERR are merged');
-        is($ssh->blocking(), 0, 'We run SSH in none blocking mode');
+        is $num_ssh_connect + 1, scalar keys %{$ssh_obj_data}, 'Ensure start_ssh_serial() uses a new SSH connection';
+        is $chan->{ext_data}, 'merge', 'STDOUT and STDERR are merged';
+        is $ssh->blocking(), 0, 'We run SSH in none blocking mode';
 
         $baseclass->truncate_serial_file();
         my $expect_output = "FOO$/" x backend::baseclass::SSH_SERIAL_READ_BUFFER_SIZE;
@@ -332,24 +332,24 @@ subtest 'SSH utilities' => sub {
         });
         my $exit_value;
         stdout_is { $exit_value = $baseclass->check_ssh_serial($ssh->sock()) } $expect_output, 'Serial output is printed to STDOUT';
-        is(path($baseclass->{serialfile})->slurp(), $expect_output, 'Serial output is written to serial file');
-        is($exit_value, 1, 'Check return value on success');
+        is path($baseclass->{serialfile})->slurp(), $expect_output, 'Serial output is written to serial file';
+        is $exit_value, 1, 'Check return value on success';
 
         $channel_read_string = undef;
         @net_ssh2_error = (LIBSSH2_ERROR_EAGAIN, 'EAGAIN', 'Try later');
         stdout_is { $exit_value = $baseclass->check_ssh_serial($ssh->sock()) } '', 'No output on EAGAIN only';
-        is($exit_value, 1, 'Check return value on EAGAIN');
-        is($baseclass->{serial}, $ssh, 'Serial SSH exists after EGAIN');
+        is $exit_value, 1, 'Check return value on EAGAIN';
+        is $baseclass->{serial}, $ssh, 'Serial SSH exists after EGAIN';
 
-        is($baseclass->check_ssh_serial(42), 0, 'Return 0 when called with wrong socket');
+        is $baseclass->check_ssh_serial(42), 0, 'Return 0 when called with wrong socket';
         is $baseclass->check_ssh_serial($ssh->sock, 1), 1, 'early return if $write is set';
 
         @net_ssh2_error = (666, 'UNKNOWN', 'OHA');
         stdout_is { $exit_value = $baseclass->check_ssh_serial($ssh->sock()) } '', 'No output on ERROR only';
-        is($exit_value, 1, 'Check return value on EAGAIN');
-        is($baseclass->{serial}, undef, 'SSH serial get disconnected on unknown read ERROR');
+        is $exit_value, 1, 'Check return value on EAGAIN';
+        is $baseclass->{serial}, undef, 'SSH serial get disconnected on unknown read ERROR';
 
-        is($baseclass->check_ssh_serial(23), 0, 'Return 0 if SSH serial isn\'t connected');
+        is $baseclass->check_ssh_serial(23), 0, 'Return 0 if SSH serial isn\'t connected';
     };
 
     subtest 'handling connection error' => sub {
@@ -420,9 +420,9 @@ subtest 'running test' => sub {
     $base_state->remove;
     throws_ok { $baseclass->run(my $channel_in, my $channel_out) } qr/fdopen Invalid argument/, 'error logged';
     my $state = decode_json($base_state->slurp);
-    if (is(ref $state, 'HASH', 'state file contains object')) {
-        is($state->{component}, 'backend', 'state file contains component message');
-        like($state->{msg}, qr/fdopen Invalid argument/, 'state file contains error message');
+    if (is ref $state, 'HASH', 'state file contains object') {
+        is $state->{component}, 'backend', 'state file contains component message';
+        like $state->{msg}, qr/fdopen Invalid argument/, 'state file contains error message';
     }
 };
 
@@ -448,16 +448,16 @@ EOT
     # set default arguments for wait_serial set by testapi.pm
     my %dargs = (timeout => 90, expect_not_found => 0, quiet => undef, no_regex => 0, buffer_size => undef, record_output => undef);
 
-    is_deeply($baseclass->wait_serial({%dargs, regexp => 'simple', no_regex => 1}), {matched => 1, string => 'Just a simple'}, 'Test string literal on the first line');
-    is_deeply($baseclass->wait_serial({%dargs, regexp => 'GRUB2', no_regex => 1}), {matched => 1, string => " text\nJust a simple another text that will disappear\nWelcome to GRUB2"}, 'Multiline literal string match');
-    is_deeply($baseclass->wait_serial({%dargs, regexp => qr/loading\s+Boot\d{4}\s+.*\)/}), {matched => 1, string => qq[\nBdsDxe: loading Boot0001 "UEFI Misc Device" from PciRoot(0x0)/Pci(0x8,0x0)]}, 'One line regex match');
-    is_deeply($baseclass->wait_serial({%dargs, regexp => qr/\(0x8,0x0\)/}), {matched => 1, string => '
+    is_deeply $baseclass->wait_serial({%dargs, regexp => 'simple', no_regex => 1}), {matched => 1, string => 'Just a simple'}, 'Test string literal on the first line';
+    is_deeply $baseclass->wait_serial({%dargs, regexp => 'GRUB2', no_regex => 1}), {matched => 1, string => " text\nJust a simple another text that will disappear\nWelcome to GRUB2"}, 'Multiline literal string match';
+    is_deeply $baseclass->wait_serial({%dargs, regexp => qr/loading\s+Boot\d{4}\s+.*\)/}), {matched => 1, string => qq[\nBdsDxe: loading Boot0001 "UEFI Misc Device" from PciRoot(0x0)/Pci(0x8,0x0)]}, 'One line regex match';
+    is_deeply $baseclass->wait_serial({%dargs, regexp => qr/\(0x8,0x0\)/}), {matched => 1, string => '
 Some leftover
 UUID=2e41327c-ca46-4c5c-93a2-b41933d40ca8 btrfs 24G 589.7M 21.4G 2% /
 UUID=2e41327c-ca46-4c5c-93a2-b41933d40ca8 btrfs 24G 589.7M 21.4G 2% /opt
-BdsDxe: starting Boot0001 "UEFI Misc Device" from PciRoot(0x0)/Pci(0x8,0x0)'}, 'Test regex match multiline leftover');
-    is_deeply($baseclass->wait_serial({%dargs, regexp => qr/welcome$/, timeout => 1}), {matched => 0, string => "\nWelcome to GRUB!\n"}, 'Test regex mismatch');
-    is_deeply($baseclass->wait_serial({%dargs, regexp => 'something wrong', timeout => 1, no_regex => 1}), {matched => 0, string => "\nWelcome to GRUB!\n"}, 'Test string literal mismatch');
+BdsDxe: starting Boot0001 "UEFI Misc Device" from PciRoot(0x0)/Pci(0x8,0x0)'}, 'Test regex match multiline leftover';
+    is_deeply $baseclass->wait_serial({%dargs, regexp => qr/welcome$/, timeout => 1}), {matched => 0, string => "\nWelcome to GRUB!\n"}, 'Test regex mismatch';
+    is_deeply $baseclass->wait_serial({%dargs, regexp => 'something wrong', timeout => 1, no_regex => 1}), {matched => 0, string => "\nWelcome to GRUB!\n"}, 'Test string literal mismatch';
 
     subtest 'waiting for serial terminal' => sub {
         my $fake_screen = $baseclass->{current_screen} = Test::MockObject->new->set_true('read_until');
@@ -569,30 +569,30 @@ subtest check_select_rate => sub {
         my $buckets = {};
         for my $loop (1 .. ($hit_limit - 1)) {
             for my $fd (42 .. 45) {
-                is(backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, $fd, 0), 0, "$loop hit on $fd return 0");
+                is backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, $fd, 0), 0, "$loop hit on $fd return 0";
             }
         }
-        is(backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, 0), 0, "The fd 42 does not hit the limit, as time isn't up");
-        is(backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, $time_limit + 1), 0, "The fd 42 does not hit the limit, cause not all fd's hit it!");
-        is($buckets->{BUCKET}->{42}, 1, 'The counter of fd 42 was reset to 1');
+        is backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, 0), 0, "The fd 42 does not hit the limit, as time isn't up";
+        is backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, $time_limit + 1), 0, "The fd 42 does not hit the limit, cause not all fd's hit it!";
+        is $buckets->{BUCKET}->{42}, 1, 'The counter of fd 42 was reset to 1';
     };
 
     subtest single_fd_hit_the_limit => sub {
         my $buckets = {};
         for my $loop (1 .. ($hit_limit)) {
-            is(backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, 0), 0, "$loop hit on fd 42 after reset.");
+            is backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, 0), 0, "$loop hit on fd 42 after reset.";
         }
-        is(backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, $time_limit + 1), 1, 'The fd 42 hit now the limit.');
+        is backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, $time_limit + 1), 1, 'The fd 42 hit now the limit.';
     };
 
     subtest all_fds_hit_the_limit => sub {
         my $buckets = {};
         for my $loop (1 .. ($hit_limit)) {
             for my $fd (42 .. 45) {
-                is(backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, $fd, 0), 0, "$loop hit on $fd return 0");
+                is backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, $fd, 0), 0, "$loop hit on $fd return 0";
             }
         }
-        is(backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, $time_limit + 1), 1, 'Hit the limit, as all fds hit it!');
+        is backend::baseclass::check_select_rate($buckets, $time_limit, $hit_limit, 42, $time_limit + 1), 1, 'Hit the limit, as all fds hit it!';
     };
 };
 
@@ -614,7 +614,7 @@ subtest 'requesting full screen update' => sub {
     is scalar @requested_screen_updates, 2, 'screen update triggered periodically';
 };
 
-is($baseclass->get_wait_still_screen_on_here_doc_input({}), 0, 'wait_still_screen on here doc is off by default!');
+is $baseclass->get_wait_still_screen_on_here_doc_input({}), 0, 'wait_still_screen on here doc is off by default!';
 
 subtest 'corner cases of do_capture/run_capture_loop' => sub {
     # note: This test covers a few corner cases of do_capture that are not otherwise covered anyways:
