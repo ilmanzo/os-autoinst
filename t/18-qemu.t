@@ -554,7 +554,7 @@ subtest configure_pflash => sub {
         my $uuid_regex = qr/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
         is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
         is $cert_args[0], '--add-db', 'cert 2 added to db';
-        is $cert_args[1], 'c9b9af2c-3fc1-5326-b603-5b17df8f185f', 'UUID for cert 2 created';
+        is $cert_args[1], '37adf63d-93fb-4af5-9901-12f8767d3841', 'UUID for cert 2 created';
         is $cert_args[2], '/certs/bar.crt', 'path of cert 2 specified';
         is $cert_args[3], '--add-kek', 'cert 2 added to KEK';
         is $cert_args[4], $cert_args[1], 'UUID for cert 2 specified for KEK as well';
