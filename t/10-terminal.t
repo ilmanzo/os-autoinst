@@ -312,9 +312,9 @@ sub check_child ($child, $expected_exit_status = 0) {
     my $exited = WIFEXITED($CHILD_ERROR);
     my $exit_status = WEXITSTATUS($CHILD_ERROR);
 
-    ok($exited, "$child process exits cleanly");
+    ok $exited, "$child process exits cleanly";
     if ($exited) {
-        is($exit_status, $expected_exit_status, "$child process exit status is $expected_exit_status");
+        is $exit_status, $expected_exit_status, "$child process exit status is $expected_exit_status";
     }
 }
 
@@ -394,8 +394,8 @@ sub retrieve_child_tests () {
         my $data;
         try { $data = decode_json($line) }
         catch ($e) {
-            diag("Error decoding '$line': $e");    # uncoverable statement
-            ok(0, 'Valid JSON');    # uncoverable statement
+            diag "Error decoding '$line': $e";    # uncoverable statement
+            ok 0, 'Valid JSON';    # uncoverable statement
             next;    # uncoverable statement
         }
         my ($pid, $test) = @$data;
