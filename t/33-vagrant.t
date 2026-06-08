@@ -40,7 +40,7 @@ $distri->redefine('add_console', sub ($self, $name, $type, $creds) {
             die "Invalid console type '$type'. Expected '$expected_console_type'" unless $type eq $expected_console_type;
         }
         if (keys %expected_console_credentials) {
-            is_deeply($creds, \%expected_console_credentials, 'Check the name of the console');
+            is_deeply $creds, \%expected_console_credentials, 'Check the name of the console';
         }
         my $ret = Test::MockObject->new();
         $ret->set_true('backend');
@@ -96,7 +96,7 @@ $mock_run->redefine('start', sub ($cmd, $stdin, $stdout, $stderr, $timeout = und
 
         if (@$run_expect_cmd > 0) {
             my $next_expected_cmd = pop @$run_expect_cmd;
-            is_deeply($cmd, $next_expected_cmd);
+            is_deeply $cmd, $next_expected_cmd;
         }
         return $mock_handle;
 });
@@ -127,8 +127,8 @@ Vagrant.configure("2") do |config|
 end
 END
     my $libvirt_vagrant = backend::vagrant->new();
-    is($libvirt_vagrant->{box_name}, $backend_vars->{VAGRANT_BOX}, 'Backend variable matches box_name class variable');
-    is($libvirt_vagrant->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable');
+    is $libvirt_vagrant->{box_name}, $backend_vars->{VAGRANT_BOX}, 'Backend variable matches box_name class variable';
+    is $libvirt_vagrant->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable';
 
     $expected_spew_str = undef;
 };
@@ -150,8 +150,8 @@ Vagrant.configure("2") do |config|
 end
 END
     my $virtualbox_backend = backend::vagrant->new();
-    is($virtualbox_backend->{box_name}, $backend_vars->{VAGRANT_BOX}, 'Backend variable matches box_name class variable');
-    is($virtualbox_backend->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable');
+    is $virtualbox_backend->{box_name}, $backend_vars->{VAGRANT_BOX}, 'Backend variable matches box_name class variable';
+    is $virtualbox_backend->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable';
 
     $expected_spew_str = undef;
 };
@@ -177,9 +177,9 @@ Vagrant.configure("2") do |config|
 end
 END
     my $provider_with_url = backend::vagrant->new();
-    is($provider_with_url->{box_name}, $backend_vars->{VAGRANT_BOX}, 'Backend variable matches box_name class variable');
-    is($provider_with_url->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable');
-    is($provider_with_url->{box_url}, $backend_vars->{VAGRANT_BOX_URL}, 'Backend variable matches box_url class variable');
+    is $provider_with_url->{box_name}, $backend_vars->{VAGRANT_BOX}, 'Backend variable matches box_name class variable';
+    is $provider_with_url->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable';
+    is $provider_with_url->{box_url}, $backend_vars->{VAGRANT_BOX_URL}, 'Backend variable matches box_url class variable';
 
     $expected_spew_str = undef;
     $backend_vars->{VAGRANT_BOX_URL} = undef;
@@ -228,8 +228,8 @@ Vagrant.configure("2") do |config|
 end
 END
     my $local_file_backend = backend::vagrant->new();
-    like($local_file_backend->{box_name}, qr/$backend_vars->{VAGRANT_BOX}/, 'Backend variable matches box_name class variable');
-    is($local_file_backend->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable');
+    like $local_file_backend->{box_name}, qr/$backend_vars->{VAGRANT_BOX}/, 'Backend variable matches box_name class variable';
+    is $local_file_backend->{provider}, $backend_vars->{VAGRANT_PROVIDER}, 'Backend variable matches provider class variable';
 
     $expected_spew_str = undef;
     $backend_vars->{ASSETDIR} = undef;
@@ -249,7 +249,7 @@ subtest 'get_ssh_credentials returns default values' => sub {
     $run_stdout_to_write = [];
     my %credentials = $vagrant->get_ssh_credentials();
     my %default_credentials = (hostname => 'localhost', username => 'vagrant', password => 'vagrant', port => 22);
-    is_deeply(\%credentials, \%default_credentials, 'get_ssh_credentials returns the defaults without a match in stdout');
+    is_deeply \%credentials, \%default_credentials, 'get_ssh_credentials returns the defaults without a match in stdout';
 };
 
 subtest 'get_ssh_credentials parses the ssh configuration' => sub {
@@ -272,7 +272,7 @@ END
 
     my %credentials = $vagrant->get_ssh_credentials();
     my %expected_credentials = (hostname => '192.168.122.9', username => 'foobar', password => 'vagrant', port => 2328);
-    is_deeply(\%credentials, \%expected_credentials, 'get_ssh_credentials extracts data from vagrant ssh-config');
+    is_deeply \%credentials, \%expected_credentials, 'get_ssh_credentials extracts data from vagrant ssh-config';
 };
 
 subtest 'run_cmd invokes vagrant ssh' => sub {
@@ -281,7 +281,7 @@ subtest 'run_cmd invokes vagrant ssh' => sub {
     $run_stdout_to_write = [$os_release];
     my $res = $vagrant->run_cmd('cat /etc/os-release');
 
-    is($res, $os_release, 'run_cmd returns the IPC::Run stdout');
+    is $res, $os_release, 'run_cmd returns the IPC::Run stdout';
 };
 
 subtest 'do_stop_vm does not try to remove the libvirt storage pool when using virtualbox' => sub {
@@ -436,7 +436,7 @@ subtest 'do_start_vm does not call to virsh when using virtualbox' => sub {
     my $virtualbox = backend::vagrant->new();
 
     $virtualbox->do_start_vm();
-    is(@$run_expect_cmd, 0, 'Both commands should have been executed');
+    is @$run_expect_cmd, 0, 'Both commands should have been executed';
 };
 
 subtest 'is_shutdown reports the status correctly' => sub {
@@ -477,17 +477,17 @@ END
         $libvirt_not_created_stdout, $libvirt_not_running_stdout, $libvirt_running_stdout
     ];
 
-    ok(!$vagrant->is_shutdown(), 'vagrant should report the VM as running');
-    ok($vagrant->is_shutdown(), 'vagrant should report the shutoff VM as turned off');
-    ok($vagrant->is_shutdown(), 'vagrant should report the not created VM as turned off');
+    ok !$vagrant->is_shutdown(), 'vagrant should report the VM as running';
+    ok $vagrant->is_shutdown(), 'vagrant should report the shutoff VM as turned off';
+    ok $vagrant->is_shutdown(), 'vagrant should report the not created VM as turned off';
 };
 
 subtest 'can_handle is a noop' => sub {
-    is($vagrant->can_handle(), undef, 'can_handle returns undef');
+    is $vagrant->can_handle(), undef, 'can_handle returns undef';
 };
 
 subtest 'stop_serial_grab is a noop' => sub {
-    is($vagrant->stop_serial_grab(), undef, 'stop_serial_grab returns undef');
+    is $vagrant->stop_serial_grab(), undef, 'stop_serial_grab returns undef';
 };
 
 subtest 'check_socket calls the base class function' => sub {
@@ -495,7 +495,7 @@ subtest 'check_socket calls the base class function' => sub {
     $check_socket_write_expected = 42;
     $check_socket_ret = 1;
 
-    is($vagrant->check_socket('16', 42), 1, 'check_socket return value matches');
+    is $vagrant->check_socket('16', 42), 1, 'check_socket return value matches';
 };
 
 done_testing;
