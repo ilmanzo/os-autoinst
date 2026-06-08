@@ -260,7 +260,7 @@ to use it via `virt-fw-vars`.
 
 sub _make_resolution_configuration ($resolution) {
     return () unless $resolution;
-    die "Specified UEFI_PFLASH_RES is invalid; it must be e.g. 800x600\n" unless $resolution =~ m/(?<width>\d+)x(?<height>\d+)/i;
+    die "Specified UEFI_PFLASH_RESOLUTION is invalid; it must be e.g. 800x600\n" unless $resolution =~ m/(?<width>\d+)x(?<height>\d+)/i;
 
     my $data = _make_resolution_hex_data($+{width}, $+{height});
     my %vars = (name => 'PlatformConfig', guid => '7235c51c-0c80-4cab-87ac-3b084a6304b1', attr => 7, data => $data);
@@ -307,7 +307,7 @@ sub configure_pflash ($self, $vars) {
         my @cert_args = map { ('--enroll-cert' => $_) } shift @certs // ();
         my $uuid = '37adf63d-93fb-4af5-9901-12f8767d3841';    # fixed "well-known" UUID
         push @cert_args, map { ('--add-db', $uuid, $_, '--add-kek', $uuid, $_) } @certs;
-        my @res_args = _make_resolution_configuration($vars->{UEFI_PFLASH_RES});
+        my @res_args = _make_resolution_configuration($vars->{UEFI_PFLASH_RESOLUTION});
         if (@secureboot_args || @cert_args || @res_args) {
             my $fw_adjusted = path($fw->basename('.bin') . '-adjusted.bin')->to_abs;
             runcmd('virt-fw-vars', '-i', $fw->to_string, '-o', $fw_adjusted->to_string, @secureboot_args, @cert_args, @res_args);

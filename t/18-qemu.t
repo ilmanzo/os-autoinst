@@ -561,12 +561,12 @@ subtest configure_pflash => sub {
         is $cert_args[5], $cert_args[2], 'path of cert 2 specified for KEK as well';
         $mock_proc->unmock('runcmd');
     };
-    subtest 'UEFI_PFLASH_RES' => sub {
+    subtest 'UEFI_PFLASH_RESOLUTION' => sub {
         my @commands;
         $mock_proc->redefine(runcmd => sub { push @commands, [@_] });
         $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
         $vars{UEFI_PFLASH_CERTS} = '';
-        $vars{UEFI_PFLASH_RES} = '800x600';
+        $vars{UEFI_PFLASH_RESOLUTION} = '800x600';
         $vars{UEFI_PFLASH_SECURE_BOOT} = undef;
         $proc->configure_pflash(\%vars);
         my @expected_commands = ([@expected_base_args, '--set-json']);
