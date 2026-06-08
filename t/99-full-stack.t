@@ -22,8 +22,8 @@ my $data_dir = "$Bin/data/";
 my $pool_dir = "$dir/pool/";
 mkdir $pool_dir;
 
-note("data dir: $data_dir");
-note("pool dir: $pool_dir");
+note "data dir: $data_dir";
+note "pool dir: $pool_dir";
 
 $ENV{OS_AUTOINST_STORAGE_KEEP_FREE_RATIO} = 0;
 
@@ -80,12 +80,12 @@ unlike $log, qr/warn.*qemu-system.*terminating/, 'No warning about expected term
 my $ignore_results_re = qr/fail/;
 for my $result (grep { $_ !~ $ignore_results_re } glob 'testresults/result*.json') {
     my $json = decode_json(path($result)->slurp);
-    is($json->{result}, 'ok', "Result in $result is ok");
+    is $json->{result}, 'ok', "Result in $result is ok";
 }
 
 for my $result (glob 'testresults/result*fail*.json') {
     my $json = decode_json(path($result)->slurp);
-    is($json->{result}, 'fail', "Result in $result is fail");
+    is $json->{result}, 'fail', "Result in $result is fail";
 }
 
 subtest 'Assert screen failure' => sub {
