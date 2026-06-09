@@ -101,7 +101,7 @@ sub _postpone_backend_command_until_resumed ($self, $response) {
         $self->reason_for_pause($reason_for_pause = "reached $cmd and pause on next command enabled");
     }
 
-    return unless $reason_for_pause;
+    return undef unless $reason_for_pause;
 
     # emit info
     $self->_send_to_cmd_srv({paused => $response, reason => $reason_for_pause});
@@ -260,7 +260,7 @@ sub _handle_command_resume_test_execution ($self, $response, @) {
     # skip resuming last command if receiving a resume command without having previously postponed an answer
     # note: This should normally not be the case. However, the JavaScript client can technically send the command
     #       to resume at any time and that apparently also happens sometimes in the fullstack test (see poo#101734).
-    return undef unless defined $postponed_answer_fd;
+    return unless defined $postponed_answer_fd;
 
     # if no command has been postponed (because paused due to timeout or on set_current_test) just return 1
     if (!$postponed_command) {

@@ -758,7 +758,7 @@ sub console ($self, $testapi_console) {
 
 sub bouncer ($self, $call, $args) {
     # forward to the current VNC console
-    return unless $self->{current_screen};
+    return undef unless $self->{current_screen};
     return $self->{current_screen}->$call($args);
 }
 
@@ -1018,7 +1018,7 @@ sub _reset_asserted_screen_check_variables ($self) {
 }
 
 sub check_asserted_screen ($self, $args) {
-    return unless my $img = $self->last_image;    # no screenshot yet to search on
+    return undef unless my $img = $self->last_image;    # no screenshot yet to search on
     my $watch = OpenQA::Benchmark::Stopwatch->new();
     my $timestamp = $self->last_screenshot;
     my $n = $self->_time_to_assert_screen_deadline;
@@ -1028,7 +1028,7 @@ sub check_asserted_screen ($self, $args) {
     my $search_ratio = $n < 0 || $n % FULL_SCREEN_SEARCH_FREQUENCY == 0 ? 1 : 0.02;
     my ($oldimg, $old_search_ratio) = @{$self->assert_screen_last_check || [undef, 0]};
 
-    bmwqemu::diag('no change: ' . time_remaining_str($n)) and return if $n >= 0 && $oldimg && $oldimg eq $img && $old_search_ratio >= $search_ratio;
+    bmwqemu::diag('no change: ' . time_remaining_str($n)) and return undef if $n >= 0 && $oldimg && $oldimg eq $img && $old_search_ratio >= $search_ratio;
 
     $watch->start();
     $watch->{debug} = 0;
@@ -1117,7 +1117,7 @@ sub check_asserted_screen ($self, $args) {
         }
     }
     $self->assert_screen_last_check([$img, $search_ratio]);
-    return;
+    return undef;
 }
 
 sub _reduce_to_biggest_changes ($imglist, $limit) {

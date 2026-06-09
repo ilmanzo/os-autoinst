@@ -173,7 +173,7 @@ sub isotovideo_command ($mojo_lite_controller, $commands) {
     return $mojo_lite_controller->reply->not_found unless grep { $cmd eq $_ } @$commands;
 
     my $app = $mojo_lite_controller->app;
-    return unless my $isotovideo = $app->defaults('isotovideo');
+    return undef unless my $isotovideo = $app->defaults('isotovideo');
 
     # send command to isotovideo and block until a response arrives
     myjsonrpc::send_json($isotovideo, {cmd => $cmd, params => $mojo_lite_controller->req->query_params->to_hash});

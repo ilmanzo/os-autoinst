@@ -50,7 +50,7 @@ sub search_ ($self, $needle, $threshold, $search_ratio, $stopwatch = undef) {
     my ($sim, $xmatch, $ymatch);
     my (@exclude, @match, @ocr);
 
-    return unless $needle;
+    return undef unless $needle;
 
     my $needle_image = $needle->get_image;
     unless ($needle_image) {
@@ -141,7 +141,7 @@ sub cmp_by_error_type_ {    # no:style:signatures
 # in array context returns array with two elements. First element is best match
 # or undefined, second element are candidates that did not match.
 sub search ($self, $needle, $threshold = undef, $search_ratio = undef, $stopwatch = undef) {
-    return unless $needle;
+    return undef unless $needle;
 
     $stopwatch->lap('Searching for needles') if $stopwatch;
 
@@ -171,12 +171,12 @@ sub search ($self, $needle, $threshold = undef, $search_ratio = undef, $stopwatc
     else {
         my $found = $self->search_($needle, $threshold, $search_ratio, $stopwatch);
         $stopwatch->lap("** search_: single needle: $needle->{name}") if $stopwatch;
-        return unless $found;
+        return undef unless $found;
         if (wantarray) {
             return ($found, undef) if ($found->{ok});
             return (undef, [$found]);
         }
-        return unless $found->{ok};
+        return undef unless $found->{ok};
         return $found;
     }
 }

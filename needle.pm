@@ -84,11 +84,11 @@ sub new ($classname, $jsonfile) {
         if (my $click_point = $area_from_json->{click_point}) {
             if ($got_click_point) {
                 warn "$jsonfile has more than one area with a click point without assigning IDs to each\n";
-                return;
+                return undef;
             }
             if (!is_click_point_valid($click_point)) {
                 warn "$jsonfile has an area with invalid click point\n";
-                return;
+                return undef;
             }
             if (ref $click_point ne 'HASH' || !defined $click_point->{id}) {
                 $got_click_point = 1;
@@ -97,7 +97,7 @@ sub new ($classname, $jsonfile) {
             }
             if ($got_click_point && $got_click_point_with_id) {
                 warn "$jsonfile has more than one area with a click point without assigning IDs to each\n";
-                return;
+                return undef;
             }
             $area->{click_point} = $click_point;
         }
@@ -109,13 +109,13 @@ sub new ($classname, $jsonfile) {
     }
 
     # one match is mandatory
-    warn "$jsonfile missing match area\n" and return unless $gotmatch;
+    warn "$jsonfile missing match area\n" and return undef unless $gotmatch;
 
     $self->{name} = basename($jsonfile, '.json');
     my $png = $self->{png} || $self->{name} . '.png';
 
     $self->{png} = path(dirname($jsonfile), $png)->to_string;
-    warn "$self->{png} is empty or not found" and return unless -s $self->{png};
+    warn "$self->{png} is empty or not found" and return undef unless -s $self->{png};
     $self = bless $self, $classname;
     $self->register();
     return $self;

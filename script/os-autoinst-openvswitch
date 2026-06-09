@@ -194,11 +194,11 @@ sub _ovs_version () { qx{ovs-vsctl --version} }
 
 sub check_min_ovs_version ($min_ver) {
     my $out = _ovs_version;
-    return if ($out !~ /\(Open vSwitch\)\s+(\d+\.\d+\.\d+)/m);
+    return undef if ($out !~ /\(Open vSwitch\)\s+(\d+\.\d+\.\d+)/m);
 
     my @ver = split /\./, $1;
     my @min_ver = split /\./, $min_ver;
-    return if (@ver != @min_ver);
+    return undef if (@ver != @min_ver);
 
     return (sprintf '%04d%04d%04d', @ver) >= sprintf '%04d%04d%04d', @min_ver;
 }

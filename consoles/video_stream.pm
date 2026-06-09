@@ -155,7 +155,7 @@ sub connect_remote_video ($self, $url) {
         if (!_v4l2_ctl($url, $self->{args}->{video_cmd_prefix}, '--set-dv-bt-timings query')) {
             bmwqemu::diag('No video signal');
             $self->{dv_timings} = '';
-            return;
+            return undef;
         }
         $self->{dv_timings} = _v4l2_ctl($url, $self->{args}->{video_cmd_prefix}, '--get-dv-timings');
     }
@@ -435,7 +435,7 @@ sub update_framebuffer ($self) {
 
 sub current_screen ($self) {
     $self->update_framebuffer();
-    return unless $self->{_framebuffer};
+    return undef unless $self->{_framebuffer};
     return $self->{_framebuffer};
 }
 
@@ -513,7 +513,7 @@ sub mouse_move_to ($self, $x, $y) {
 }
 
 sub mouse_button ($self, $args) {
-    return unless $self->{input_pipe};
+    return undef unless $self->{input_pipe};
     my $button = $args->{button};
     my $bstate = $args->{bstate};
     # careful: the bits order is different than in VNC

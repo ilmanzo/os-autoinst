@@ -129,7 +129,7 @@ sub _send_json ($self, $cmd) {
     close $self->{backend_process}->channel_out;
     $self->{backend_process}->channel_out(undef);
     $self->{backend_process}->stop;
-    return;
+    return undef;
 }
 
 1;
