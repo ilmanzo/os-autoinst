@@ -37,7 +37,7 @@ sub mk_res ($code, @text) { map { Mojo::Message::Response->new->code($code)->bod
 
 subtest 'test configuration with fake URL' => sub {
     my $vmware_mock = Test::MockModule->new('consoles::VMWare');
-    my (@get_vmware_wss_url_args, @dewebsockify_args);
+    my @dewebsockify_args;
     $vmware_mock->redefine(get_vmware_wss_url => sub ($self) { ('wss://foo', 'session') });
     $vmware_mock->redefine(_start_dewebsockify_process => sub ($self, @args) { @dewebsockify_args = @args });
 

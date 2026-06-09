@@ -36,8 +36,6 @@ $| = 1;
 our $default_timeout = 30;    ## no critic (Variables::ProhibitPackageVars)
 our $openqa_default_share = '/var/lib/openqa/share';    ## no critic (Variables::ProhibitPackageVars)
 
-my @ocrrect;
-
 our $screenshotpath = 'qemuscreenshot';    ## no critic (Variables::ProhibitPackageVars)
 
 # global vars

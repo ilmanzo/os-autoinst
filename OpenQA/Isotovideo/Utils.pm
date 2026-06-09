@@ -441,7 +441,7 @@ sub spawn_debuggers () {
     $debugging_tools{vncviewer} = ['vncviewer', '-viewonly', '-shared', "localhost:$bmwqemu::vars{VNC}"] if $ENV{RUN_VNCVIEWER};
     $debugging_tools{debugviewer} = ["$bmwqemu::topdir/debugviewer", 'qemuscreenshot/last.png'] if $ENV{RUN_DEBUGVIEWER};
     for my $tool (keys %debugging_tools) {
-        my ($stdin, $stdout, $stderr, $ret);
+        my ($stdin, $stdout, $stderr);
         IPC::Run::run(\@{$debugging_tools{$tool}}, \$stdin, \$stdout, \$stderr);
     }
 }
