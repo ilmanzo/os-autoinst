@@ -18,6 +18,7 @@ our @EXPORT_OK = qw(
   qv
   quote
   runcmd
+  runcmd_out
   run
   run_diag
   attempt
@@ -86,10 +87,17 @@ sub run_diag (@args) {
 
 # Open a process to run external program and check its return status
 sub runcmd (@cmd) {
-    my ($e, $out) = run(@cmd);
+    my ($e, $out) = runcmd_out(@cmd);
     bmwqemu::diag $out if $out && length($out) > 0;
-    die "runcmd '" . join(' ', @cmd) . "' failed with exit code $e" . ($out ? ": '$out'" : '') unless $e == 0;
     return $e;
+}
+
+# Open a process to run external program, check its returns status and return the output
+sub runcmd_out (@cmd) {
+    my ($e, $out) = run(@cmd);
+    die "runcmd '" . join(' ', @cmd) . "' failed with exit code $e" . ($out ? ": '$out'" : '') unless $e == 0;
+    chomp $out;
+    return ($e, $out);
 }
 
 ## use critic

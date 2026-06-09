@@ -202,6 +202,9 @@ Supported variables per backend
 | UEFI_SECURE_BOOT | boolean | 1 | Whether the auto-selection of `UEFI_PFLASH_CODE` and `UEFI_PFLASH_VARS` should use firmware with SecureBoot enabled |
 | UEFI_PFLASH_CODE | string |  | Specify the file name of the UEFI firmware code which will be loaded onto a read-only PFLASH drive |
 | UEFI_PFLASH_VARS | string |  | Specify the file name which contains the UEFI firmware variables which will be loaded onto a mutable PFLASH drive |
+| UEFI_PFLASH_CERTS | string |  | Specify the semicolon-separated file names of certificates that should be enrolled into the UEFI firmware variables file using `virt-fw-vars`. |
+| UEFI_PFLASH_SECURE_BOOT | boolean |  | Enable or disable secure boot in the UEFI firmware variables file using `virt-fw-vars`. |
+| UEFI_PFLASH_RESOLUTION | string |  | Specify the resolution to configure via UEFI firmware variables file using `virt-fw-vars`, e.g. `800x600` for a with of 800 pixels and a height of 600 pixels. |
 | PUBLISH_PFLASH_VARS | string |  | Specify the file name to publish the UEFI vars file as |
 | UEFI_BIOS |  |  | Deprecated, use UEFI_PFLASH_CODE |
 | USBBOOT | boolean | 0 | Mount ISO as USB disk and boot VM from it |

@@ -155,8 +155,8 @@ subtest runcmd => sub {
     stderr_like { $ret = runcmd('rm', 'image.qcow2') } qr/running `rm/, 'debug runcmd output with rm';
     is $ret, 0, 'delete image and get its return code';
     stderr_like {
-        throws_ok { runcmd('ls', 'image.qcow2') } qr/runcmd 'ls image.qcow2' failed with exit code \d+/, 'command failed and calls die'
-    } qr/No such file or directory/, 'no image found as expected';
+        throws_ok { runcmd('ls', 'image.qcow2') } qr/runcmd 'ls image.qcow2' failed with exit code \d+.*No such file or directory/, 'command failed and calls die with output'
+    } qr/running `ls image.qcow2`/, 'invocation logged';
 };
 
 subtest run_diag => sub {
