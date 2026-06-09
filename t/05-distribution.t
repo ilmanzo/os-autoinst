@@ -21,7 +21,7 @@ subtest 'script_run' => sub {
     $mock_testapi->redefine(type_string => undef);
     $mock_testapi->redefine(wait_serial => undef);
     throws_ok { $d->script_run() } qr/^Too few arguments/, 'Error on incorrect usage';
-    like(warning { $d->script_run('foo') }, qr/^Use of uninitialized.*serialdev/, 'Warning on undefined serialdev');
+    like warning { $d->script_run('foo') }, qr/^Use of uninitialized.*serialdev/, 'Warning on undefined serialdev';
     {
         no warnings 'once';
         $testapi::serialdev = 'my_serial';

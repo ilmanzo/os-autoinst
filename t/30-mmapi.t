@@ -49,13 +49,13 @@ sub call ($function_name, @args) {
 # test without a server
 subtest 'mmapi: server not reachable' => sub {
     combined_like { is_deeply call($_), undef, "undef returned ($_)" } qr/Connection error/, "error logged ($_)" for (qw(mmapi::get_children));
-    is_deeply(\@recorded_info, [], 'no info recorded') or always_explain \@recorded_info;
+    is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
 };
 
 subtest 'lockapi: server not reachable' => sub {
     combined_like { is call($_, qw(name where info)), 0, "zero returned $_" } qr/Connection error/, "error logged ($_)"
       for (qw(lockapi::mutex_create lockapi::mutex_try_lock lockapi::barrier_create lockapi::barrier_try_wait));
-    is_deeply(\@recorded_info, [], 'no info recorded') or always_explain \@recorded_info;
+    is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
 };
 
 # setup a fake server
@@ -140,30 +140,30 @@ $bmwqemu::vars{OPENQA_URL} = '/not/relevant';
 mmapi::set_app($mock_srv);
 
 subtest 'mmapi: general usage' => sub {
-    is(api_call(post => 'mutex/foo', {action => 'unlock'})->code, 200, 'api_call returns result');
+    is api_call(post => 'mutex/foo', {action => 'unlock'})->code, 200, 'api_call returns result';
 
     # test mmapi's `get_` functions
-    is_deeply(mmapi::get_children(), [1, 2, 3], 'query children');
-    is_deeply(mmapi::get_children_by_state('some-state'), [1], 'query children by state');
+    is_deeply mmapi::get_children(), [1, 2, 3], 'query children';
+    is_deeply mmapi::get_children_by_state('some-state'), [1], 'query children by state';
     combined_like {
-        is_deeply(mmapi::get_children_by_state('another-state'), undef, 'query children by state (no results)');
+        is_deeply mmapi::get_children_by_state('another-state'), undef, 'query children by state (no results)';
     } qr|get_children_by_state: 404 response.*URL was.*/mm/children/another-state|, 'query children by state error logged';
-    is_deeply(mmapi::get_parents(), [4, 5, 6], 'query parents');
-    is_deeply(mmapi::get_job_info(100), {the => 'job info'}, 'query job info');
+    is_deeply mmapi::get_parents(), [4, 5, 6], 'query parents';
+    is_deeply mmapi::get_job_info(100), {the => 'job info'}, 'query job info';
     combined_like {
-        is_deeply(mmapi::get_job_info(101), undef, 'query job info (no result)');
+        is_deeply mmapi::get_job_info(101), undef, 'query job info (no result)';
     } qr/get_job_info: 404 response.*URL was.*101/, 'query job info error logged';
-    is_deeply(mmapi::get_job_autoinst_url(100), 'http://fake-host:20423/fake-jobtoken', 'get autoinst URL');
+    is_deeply mmapi::get_job_autoinst_url(100), 'http://fake-host:20423/fake-jobtoken', 'get autoinst URL';
     combined_like {
-        is_deeply(mmapi::get_job_autoinst_vars(101), undef, 'get autoinst vars (no result)');
+        is_deeply mmapi::get_job_autoinst_vars(101), undef, 'get autoinst vars (no result)';
     } qr/get_job_autoinst_url: .*/, 'error to get autoinst URL logged';
 
     # test with mocked get_job_autoinst_url
     my $mmapi_mock = Test::MockModule->new('mmapi');
     $mmapi_mock->redefine(get_job_autoinst_url => sub { '/autoinst' });
-    is_deeply(mmapi::get_job_autoinst_vars(100), {foo => 'bar'}, 'get autoinst vars');
+    is_deeply mmapi::get_job_autoinst_vars(100), {foo => 'bar'}, 'get autoinst vars';
 
-    is_deeply(\@recorded_info, [], 'no info recorded') or always_explain \@recorded_info;
+    is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
 };
 
 subtest 'lockapi: misuse' => sub {
@@ -173,7 +173,7 @@ subtest 'lockapi: misuse' => sub {
       for (qw(lockapi::barrier_create lockapi::barrier_wait lockapi::barrier_destroy));
     combined_like { throws_ok { call($_, 'foo', '') } qr/mydie/, "no task throws ($_)" } qr/missing.*task/, "no task logged ($_)"
       for (qw(lockapi::barrier_create));
-    is_deeply(\@recorded_info, [], 'no info recorded') or always_explain \@recorded_info;
+    is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
 };
 
 subtest 'lockapi: server returns error' => sub {
@@ -185,7 +185,7 @@ subtest 'lockapi: server returns error' => sub {
       for (qw(lockapi::mutex_try_lock lockapi::mutex_unlock lockapi::barrier_try_wait));
     combined_like { throws_ok { call($_, 'finished_lock') } qr/mydie/, "owner finished throws ($_)" } qr/owner already finished/, "finished logged ($_)"
       for (qw(lockapi::mutex_try_lock));
-    is_deeply(\@recorded_info, [], 'no info recorded') or always_explain \@recorded_info;
+    is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
     # note: Omitting lockapi::mutex_lock and lockapi::barrier_wait here to avoid being blocked infinitely.
 };
 
@@ -211,14 +211,14 @@ subtest 'lockapi::barrier_wait() failures' => sub {
     my $start = time;
     my $timeout = lockapi::POLL_INTERVAL - 1;
     combined_like { throws_ok { lockapi::barrier_wait({name => 'blocked', timeout => $timeout}) } qr/mydie/, 'die() on timeout' } qr/barrier 'blocked' timeout after/, 'barrier_wait() die on timeout specified';
-    is(time - $start, $timeout, "Wait $timeout seconds, for timeout < POLL_INTERVAL");
+    is time - $start, $timeout, "Wait $timeout seconds, for timeout < POLL_INTERVAL";
     $start = time;
     $timeout = lockapi::POLL_INTERVAL + 1;
     combined_like { throws_ok { lockapi::barrier_wait({name => 'blocked', timeout => $timeout}) } qr/mydie/, 'die() on timeout' } qr/barrier 'blocked' timeout after/, 'barrier_wait() die on timeout specified';
-    is(time - $start, $timeout, "Wait $timeout seconds, for timeout > POLL_INTERVAL");
+    is time - $start, $timeout, "Wait $timeout seconds, for timeout > POLL_INTERVAL";
     $start = time;
     combined_like { throws_ok { lockapi::barrier_wait({name => 'blocked', timeout => 0}) } qr/mydie/, 'die() on timeout' } qr/barrier 'blocked' timeout after/, 'barrier_wait() die on timeout specified';
-    is(time - $start, 0, "Don't wait for timeout == 0");
+    is time - $start, 0, "Don't wait for timeout == 0";
 };
 
 subtest 'mmapi: wait functions' => sub {
@@ -235,10 +235,10 @@ subtest 'mmapi: get_current_job_id function' => sub {
     my $do_error = 0;
     $fake_api->get('/whoami' => sub { return $do_error ? shift->render(status => 404, text => 'error') : shift->render(json => {id => 23}) });
 
-    is(get_current_job_id(), 23, 'Retrieve jobid');
+    is get_current_job_id(), 23, 'Retrieve jobid';
     $do_error = 1;
     combined_like {
-        is(get_current_job_id(), undef, 'Retrieve undef on error');
+        is get_current_job_id(), undef, 'Retrieve undef on error';
     } qr /404 response/, 'Error message has 404';
 };
 

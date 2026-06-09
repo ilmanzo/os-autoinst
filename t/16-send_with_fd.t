@@ -43,18 +43,18 @@ my $pid = fork || do {
 my ($afd, $bfd) = POSIX::pipe();
 die "Could not create pipe: $!" unless (defined $afd && defined $bfd);
 
-ok(0 < tinycv::send_with_fd($bsk, 'echo', $bfd), 'Send file handle');
+ok 0 < tinycv::send_with_fd($bsk, 'echo', $bfd), 'Send file handle';
 POSIX::close($bfd);
 shutdown $bsk, 2;
 
 my $buf = '';
 POSIX::read($afd, $buf, 4)
   || die "Failed to read echo from pipe: $!";
-ok($buf eq 'echo', 'Receive echo on pipe FD we sent');
+ok $buf eq 'echo', 'Receive echo on pipe FD we sent';
 POSIX::close($afd);
 
 wait;
-ok(0 == $?, 'Child process exited cleanly');
+ok 0 == $?, 'Child process exited cleanly';
 
 done_testing();
 

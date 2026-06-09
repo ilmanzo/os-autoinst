@@ -34,7 +34,7 @@ my $proc = Test::MockModule->new('OpenQA::Qemu::Proc');
 $proc->redefine(exec_qemu => undef);
 $proc->redefine(connect_qmp => undef);
 $proc->redefine(init_blockdev_images => undef);
-ok(my $backend = backend(), 'backend can be created');
+ok my $backend = backend(), 'backend can be created';
 # disable any graphics display in tests
 $bmwqemu::vars{QEMU_APPEND} = '-nographic';
 # as needed to start backend
@@ -57,16 +57,16 @@ $distri->redefine(add_console => sub {
 $backend_mock->mock(select_console => undef);
 $testapi::distri = distribution->new;
 
-stderr_like { ok($backend->start_qemu(), 'qemu can be started') } qr/running .*chattr/, 'preparing local files';
-ok(exists $called{add_console}, 'a console has been added');
-is($called{add_console}, 1, 'one console has been added');
+stderr_like { ok $backend->start_qemu(), 'qemu can be started' } qr/running .*chattr/, 'preparing local files';
+ok exists $called{add_console}, 'a console has been added';
+is $called{add_console}, 1, 'one console has been added';
 
 subtest 'using Open vSwitch D-Bus service' => sub {
     my $expected = qr/Open vSwitch command.*show.*arguments 'foo bar'.*(The name.*not (provided|activatable)|Failed to connect|AccessDenied)/;
     my $msg = 'error about missing service';
     throws_ok { $backend->_dbus_call('show', 'foo', 'bar') } $expected, $msg . ' in exception';
     $bmwqemu::vars{QEMU_NON_FATAL_DBUS_CALL} = 1;
-    combined_like { is_deeply([$backend->_dbus_call('show', 'foo', 'bar')], [undef, undef], 'failed dbus call ignored gracefully') } $expected, $msg;
+    combined_like { is_deeply [$backend->_dbus_call('show', 'foo', 'bar')], [undef, undef], 'failed dbus call ignored gracefully' } $expected, $msg;
     $bmwqemu::vars{QEMU_NON_FATAL_DBUS_CALL} = 0;
     $backend_mock->redefine(_dbus_do_call => sub { (1, 'failed') });
     throws_ok { $backend->_dbus_call('show') } qr/failed/, 'failed dbus call throws exception';
@@ -90,11 +90,11 @@ subtest 'using Open vSwitch D-Bus service' => sub {
 my $fake_qmp_answer;
 $backend_mock->redefine(handle_qmp_command => sub { push @{$called{handle_qmp_command}}, $_[1]; $fake_qmp_answer });
 combined_like { $backend->power({action => 'off'}); } qr/[debug]*POWER: action: off/s, 'Debug message logged for power off';
-ok(exists $called{handle_qmp_command}, 'a qmp command has been called');
-is_deeply($called{handle_qmp_command}, [{execute => 'quit'}], 'quit has been called for off');
+ok exists $called{handle_qmp_command}, 'a qmp command has been called';
+is_deeply $called{handle_qmp_command}, [{execute => 'quit'}], 'quit has been called for off';
 $called{handle_qmp_command} = undef;
 combined_like { $backend->power({action => 'acpi'}); } qr/[debug]*POWER: action: acpi/s, 'Debug message logged for power acpi';
-is_deeply($called{handle_qmp_command}, [{execute => 'system_powerdown'}], 'powerdown has been called for acpi');
+is_deeply $called{handle_qmp_command}, [{execute => 'system_powerdown'}], 'powerdown has been called for acpi';
 $called{handle_qmp_command} = undef;
 
 subtest 'eject cd' => sub {
@@ -132,14 +132,14 @@ subtest 'switch_network' => sub {
     $called{handle_qmp_command} = undef;
 
     $backend->switch_network({network_enabled => 0});
-    ok(exists $called{handle_qmp_command}, 'network must be disabled');
-    is_deeply($called{handle_qmp_command}[0], \%switch_network_params, 'qmp command for setlink is passed');
+    ok exists $called{handle_qmp_command}, 'network must be disabled';
+    is_deeply $called{handle_qmp_command}[0], \%switch_network_params, 'qmp command for setlink is passed';
 
     $called{handle_qmp_command} = undef;
     $backend->switch_network({network_enabled => 1, network_link_name => 'bingo'});
     %switch_network_params = (arguments => {name => 'bingo', up => Mojo::JSON->true}, execute => 'set_link');
-    ok(exists $called{handle_qmp_command}, 'a qmp command has been called');
-    is_deeply($called{handle_qmp_command}[0], \%switch_network_params, 'Network name can be specified, network can be enabled');
+    ok exists $called{handle_qmp_command}, 'a qmp command has been called';
+    is_deeply $called{handle_qmp_command}[0], \%switch_network_params, 'Network name can be specified, network can be enabled';
 
     $called{handle_qmp_command} = undef;
 };
@@ -240,22 +240,22 @@ subtest 'qemu_net_boot' => sub {
         like $cmdline, qr|mac=\d{2}:\d{2}:\d{2}:\d{2}:\d{2}:\d{2}\s|, 'device does not set bootindex by default on aarch64';
         unlike $cmdline, qr|-boot once=d|, 'boot parameter is not set on aarch64';
     };
-    subtest('Test boot with n on x86_64', \&test_boot_options, 'n', 'x86_64', undef, qr|-boot order=n|);
-    subtest('Test boot with net on x86_64', \&test_boot_options, 'net', 'x86_64', undef, qr|-boot order=n|);
-    subtest('Test boot with n on aarch64', \&test_boot_options, 'n', 'aarch64', undef, qr|-boot order=n|);
-    subtest('Test boot with net on aarch64', \&test_boot_options, 'net', 'aarch64', undef, qr|-boot order=n|);
+    subtest 'Test boot with n on x86_64', \&test_boot_options, 'n', 'x86_64', undef, qr|-boot order=n|;
+    subtest 'Test boot with net on x86_64', \&test_boot_options, 'net', 'x86_64', undef, qr|-boot order=n|;
+    subtest 'Test boot with n on aarch64', \&test_boot_options, 'n', 'aarch64', undef, qr|-boot order=n|;
+    subtest 'Test boot with net on aarch64', \&test_boot_options, 'net', 'aarch64', undef, qr|-boot order=n|;
     $bmwqemu::vars{BOOTFROM} = 'nc';
     throws_ok { $backend->start_qemu } qr{unsupported boot order: nc}, 'dies on multi boot order as os-autoinst doesnt supported';
     delete $bmwqemu::vars{BOOTFROM};
     delete $bmwqemu::vars{BOOT_MENU};
-    subtest('Test boot with n on x86_64', \&test_boot_options, 0, 'x86_64', 1, qr|mac=52:54:00:12:34:56,bootindex=1|);
-    subtest('Test boot with set c to bootindex=0 on x86_64', \&test_boot_options, 0, 'x86_64', 1, qr|drive=hd0,bootindex=0|);
-    subtest('Test boot with n on aarch64', \&test_boot_options, 0, 'aarch64', 1, qr|mac=52:54:00:12:34:56,bootindex=1|);
-    subtest('Test boot with set c to bootindex=0 on aarch64', \&test_boot_options, 0, 'aarch64', 1, qr|drive=hd0,bootindex=0|);
-    subtest('Test boot with n on s390x', \&test_boot_options, 0, 's390x', 1, qr|mac=52:54:00:12:34:56,bootindex=1|);
-    subtest('Test boot with set c to bootindex=0 on s390x', \&test_boot_options, 0, 's390x', 1, qr|drive=hd0,bootindex=0|);
-    subtest('Test boot with n on ppc64le', \&test_boot_options, 0, 'ppc64le', 1, qr|mac=52:54:00:12:34:56,bootindex=1|);
-    subtest('Test boot with set c to bootindex=0 on ppc64le', \&test_boot_options, 0, 'ppc64le', 1, qr|drive=hd0,bootindex=0|);
+    subtest 'Test boot with n on x86_64', \&test_boot_options, 0, 'x86_64', 1, qr|mac=52:54:00:12:34:56,bootindex=1|;
+    subtest 'Test boot with set c to bootindex=0 on x86_64', \&test_boot_options, 0, 'x86_64', 1, qr|drive=hd0,bootindex=0|;
+    subtest 'Test boot with n on aarch64', \&test_boot_options, 0, 'aarch64', 1, qr|mac=52:54:00:12:34:56,bootindex=1|;
+    subtest 'Test boot with set c to bootindex=0 on aarch64', \&test_boot_options, 0, 'aarch64', 1, qr|drive=hd0,bootindex=0|;
+    subtest 'Test boot with n on s390x', \&test_boot_options, 0, 's390x', 1, qr|mac=52:54:00:12:34:56,bootindex=1|;
+    subtest 'Test boot with set c to bootindex=0 on s390x', \&test_boot_options, 0, 's390x', 1, qr|drive=hd0,bootindex=0|;
+    subtest 'Test boot with n on ppc64le', \&test_boot_options, 0, 'ppc64le', 1, qr|mac=52:54:00:12:34:56,bootindex=1|;
+    subtest 'Test boot with set c to bootindex=0 on ppc64le', \&test_boot_options, 0, 'ppc64le', 1, qr|drive=hd0,bootindex=0|;
     delete $bmwqemu::vars{PXEBOOT};
     delete $bmwqemu::vars{ARCH};
 };

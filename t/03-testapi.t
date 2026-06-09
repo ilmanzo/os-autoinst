@@ -28,7 +28,7 @@ require tinycv;
 
 $bmwqemu::vars{WORKER_HOSTNAME} = 'localhost';
 
-ok(looks_like_number($OpenQA::Isotovideo::Interface::version), 'isotovideo version set (variable is considered part of test API)');
+ok looks_like_number($OpenQA::Isotovideo::Interface::version), 'isotovideo version set (variable is considered part of test API)';
 
 my $cmds;
 use Test::MockModule;
@@ -147,7 +147,7 @@ subtest 'type_string' => sub {
     $cmds = [];
 
     stderr_like { type_string 'hallo', 4 } qr/<<< testapi::type_string.*interval=4/, 'type_string log output';
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 4, text => 'hallo'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 4, text => 'hallo'}];
     $cmds = [];
 
     # after we tested the log output in some calls we can switch it off for the
@@ -155,55 +155,55 @@ subtest 'type_string' => sub {
     $mock_bmwqemu->noop('log_call', 'diag', 'fctres');
 
     type_string 'hallo', secret => 1;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 250, text => 'hallo'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 250, text => 'hallo'}];
     $cmds = [];
 
     type_string 'hallo', secret => 1, max_interval => 10;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 10, text => 'hallo'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 10, text => 'hallo'}];
     $cmds = [];
 
     type_string 'hallo', wait_screen_change => 3;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 250, text => 'hal'}, {cmd => 'backend_type_string', max_interval => 250, text => 'lo'},]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 250, text => 'hal'}, {cmd => 'backend_type_string', max_interval => 250, text => 'lo'},];
     $cmds = [];
 
     type_string 'hallo', wait_screen_change => 2;
-    is_deeply(
-        $cmds,
-        [
-            {cmd => 'backend_type_string', max_interval => 250, text => 'ha'},
-            {cmd => 'backend_type_string', max_interval => 250, text => 'll'},
-            {cmd => 'backend_type_string', max_interval => 250, text => 'o'},
-        ]);
+    is_deeply
+      $cmds,
+      [
+        {cmd => 'backend_type_string', max_interval => 250, text => 'ha'},
+        {cmd => 'backend_type_string', max_interval => 250, text => 'll'},
+        {cmd => 'backend_type_string', max_interval => 250, text => 'o'},
+      ];
     $cmds = [];
 
     type_string 'hallo', wait_screen_change => 3, max_interval => 10;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 10, text => 'hal'}, {cmd => 'backend_type_string', max_interval => 10, text => 'lo'},]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 10, text => 'hal'}, {cmd => 'backend_type_string', max_interval => 10, text => 'lo'},];
     $cmds = [];
 
     type_string 'true', lf => 1;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 250, text => "true\n"}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 250, text => "true\n"}];
     $cmds = [];
 
     $testapi::password = 'stupid';
     type_password;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'stupid'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'stupid'}];
     $cmds = [];
 
     type_password 'hallo';
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'hallo'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'hallo'}];
     $cmds = [];
 
     type_password 'hallo', max_interval => 5;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 5, text => 'hallo'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 5, text => 'hallo'}];
     $cmds = [];
 
     $fake_timeout = 1;
     throws_ok { type_password 'hallo', wait_still_screen => 1 }
     qr/wait_still_screen timed out after 30s/, 'dies if wait_still_screen times out';
-    is_deeply($cmds, [
-            {cmd => 'backend_type_string', max_interval => 100, text => 'hallo'},
-            {cmd => 'backend_wait_still_screen', similarity_level => 47, stilltime => 1, timeout => 30},
-    ]) or always_explain $cmds;
+    is_deeply $cmds, [
+        {cmd => 'backend_type_string', max_interval => 100, text => 'hallo'},
+        {cmd => 'backend_wait_still_screen', similarity_level => 47, stilltime => 1, timeout => 30},
+    ] or always_explain $cmds;
     $cmds = [];
 };
 
@@ -228,7 +228,7 @@ subtest 'wait_screen_change' => sub {
 
 subtest 'enter_cmd' => sub {
     enter_cmd 'true';
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 250, text => "true\n"}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 250, text => "true\n"}];
     $cmds = [];
 };
 
@@ -261,27 +261,27 @@ subtest 'type_string with wait_still_screen' => sub {
     my $module = Test::MockModule->new('testapi');
     $module->redefine(wait_still_screen => sub { $wait_still_screen_called = 1; });
     type_string 'hallo', wait_still_screen => 1;
-    is_deeply($cmds, [{cmd => 'backend_type_string', text => 'hallo', max_interval => 250}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', text => 'hallo', max_interval => 250}];
     $cmds = [];
-    ok($wait_still_screen_called, 'wait still screen should have been called');
+    ok $wait_still_screen_called, 'wait still screen should have been called';
     type_string 'test2_adding_timeout', wait_still_screen => 1, timeout => 5, max_interval => 100;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'test2_adding_timeout'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'test2_adding_timeout'}];
     $cmds = [];
-    ok($wait_still_screen_called, 'wait still screen should have been called');
+    ok $wait_still_screen_called, 'wait still screen should have been called';
     type_string 'test3_with_sim_level', wait_still_screen => 1, timeout => 5, similarity_level => 38, max_interval => 100;
-    is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'test3_with_sim_level'}]);
+    is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'test3_with_sim_level'}];
     $cmds = [];
-    ok($wait_still_screen_called, 'wait still screen should have been called');
+    ok $wait_still_screen_called, 'wait still screen should have been called';
 };
 
 
 $testapi::password = 'stupid';
 type_password;
-is_deeply($cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'stupid'}]);
+is_deeply $cmds, [{cmd => 'backend_type_string', max_interval => 100, text => 'stupid'}];
 $cmds = [];
 
 send_key 'ret';
-is_deeply($cmds, [{cmd => 'backend_send_key', key => 'ret'}], 'send_key with no default arguments') || always_explain $cmds;
+is_deeply $cmds, [{cmd => 'backend_send_key', key => 'ret'}], 'send_key with no default arguments' or always_explain $cmds;
 $cmds = [];
 
 $mock_bmwqemu->redefine(result_dir => File::Temp->newdir());
@@ -291,24 +291,24 @@ subtest 'send_key with wait_screen_change' => sub {
     my $wait_screen_change_called = 0;
     $mock_testapi->redefine(wait_screen_change => sub : prototype(&@) { shift->(); $wait_screen_change_called = 1 });
     send_key 'ret', wait_screen_change => 1;
-    is(scalar @$cmds, 1, 'send_key waits for screen change') || always_explain $cmds;
+    is scalar @$cmds, 1, 'send_key waits for screen change' or always_explain $cmds;
     $cmds = [];
-    ok($wait_screen_change_called, 'wait_screen_change called by send_key');
+    ok $wait_screen_change_called, 'wait_screen_change called by send_key';
 };
 
 subtest 'assert_screen_change' => sub {
     combined_like { testapi::assert_screen_change { say 'something' } } qr/something/, 'callback invoked';
 };
 
-is($autotest::current_test->{dents}, 0, 'no soft failures so far');
+is $autotest::current_test->{dents}, 0, 'no soft failures so far';
 $mock_bmwqemu->unmock('log_call');
 stderr_like { record_soft_failure('workaround for bug#1234') } qr/record_soft_failure.*reason=.*workaround for bug#1234.*/, 'soft failure with reason';
-is($autotest::current_test->{dents}, 1, 'one more dent recorded');
-is(scalar @{$autotest::current_test->{details}}, 1, 'exactly one more detail added recorded');
+is $autotest::current_test->{dents}, 1, 'one more dent recorded';
+is scalar @{$autotest::current_test->{details}}, 1, 'exactly one more detail added recorded';
 my $details = $autotest::current_test->{details}[-1];
-my $details_ok = is($details->{title}, 'Soft Failed', 'title for soft failure added');
-$details_ok &= is($details->{result}, 'softfail', 'result correct');
-$details_ok &= like($details->{text}, qr/basetest-[0-9]+.*txt/, 'file for soft failure added');
+my $details_ok = is $details->{title}, 'Soft Failed', 'title for soft failure added';
+$details_ok &= is $details->{result}, 'softfail', 'result correct';
+$details_ok &= like $details->{text}, qr/basetest-[0-9]+.*txt/, 'file for soft failure added';
 always_explain $details unless $details_ok;
 $mock_bmwqemu->noop('log_call');
 
@@ -318,8 +318,8 @@ $autotest::last_milestone = {};
 select_console('a-console');
 is console('a-console')->{console}, 'a-console';
 is_deeply $autotest::activated_consoles, ['a-console'], 'Current console is activated';
-is(is_serial_terminal, 0, 'Not a serial terminal');
-is(current_console, 'a-console', 'Current console is the a-console');
+is is_serial_terminal, 0, 'Not a serial terminal';
+is current_console, 'a-console', 'Current console is the a-console';
 is console('b-console')->{console}, 'b-console', 'new console created on the fly';
 
 subtest 'script_run' => sub {
@@ -329,7 +329,7 @@ subtest 'script_run' => sub {
     $testapi::serialdev = 'null';
 
     $mock_bmwqemu->unmock('fctres');
-    stderr_like { is(assert_script_run('true'), undef, 'nothing happens on success') } qr/wait_serial/, 'log';
+    stderr_like { is assert_script_run('true'), undef, 'nothing happens on success' } qr/wait_serial/, 'log';
     $mock_bmwqemu->noop('fctres');
     $fake_exit = 1;
     throws_ok { assert_script_run 'false', 42 } qr/command.*false.*failed at/, 'with timeout option (deprecated mode)';
@@ -345,15 +345,15 @@ subtest 'script_run' => sub {
       'using two named arguments; fail message does not apply on timeout';
     $fake_exit = 0;
     $cmds = [];
-    is(script_run('true'), '0', 'script_run with no check of success, returns exit code');
-    like($cmds->[1]->{text}, qr/; echo /);
+    is script_run('true'), '0', 'script_run with no check of success, returns exit code';
+    like $cmds->[1]->{text}, qr/; echo /;
     $cmds = [];
-    is(script_run('true', output => 'foo'), '0', 'script_run with no check of success and output, returns exit code');
-    like($cmds->[1]->{text}, qr/; echo .*Comment: foo/);
+    is script_run('true', output => 'foo'), '0', 'script_run with no check of success and output, returns exit code';
+    like $cmds->[1]->{text}, qr/; echo .*Comment: foo/;
     $fake_exit = 1;
-    is(script_run('false'), '1', 'script_run with no check of success, returns exit code');
-    is(script_run('false', output => 'foo'), '1', 'script_run with no check of success and output, returns exit code');
-    is(script_run('false', 0), undef, 'script_run with no check of success, returns undef when not waiting');
+    is script_run('false'), '1', 'script_run with no check of success, returns exit code';
+    is script_run('false', output => 'foo'), '1', 'script_run with no check of success and output, returns exit code';
+    is script_run('false', 0), undef, 'script_run with no check of success, returns undef when not waiting';
     $fake_matched = 0;
     throws_ok { script_run('sleep 13', timeout => 10, quiet => 1) } qr/command.*timed out/, 'exception occurred on script_run() timeout';
     throws_ok { script_run('sleep 13', timeout => 10, quiet => 1) } qr/command.*timed out/, 'exception occurred on script_run() timeout';
@@ -369,8 +369,8 @@ subtest 'script_run' => sub {
 
     $fake_matched = 1;
     $fake_exit = 1234;
-    is(background_script_run('sleep 10'), '1234', 'background_script_run returns a PID');
-    is(background_script_run('sleep 10', output => 'foo'), '1234', 'background_script_run with output returns valid PID');
+    is background_script_run('sleep 10'), '1234', 'background_script_run returns a PID';
+    is background_script_run('sleep 10', output => 'foo'), '1234', 'background_script_run with output returns valid PID';
 
     my $mock_testapi = Test::MockModule->new('testapi');
     $mock_testapi->redefine(is_serial_terminal => 1);
@@ -379,19 +379,19 @@ subtest 'script_run' => sub {
     throws_ok { background_script_run('foo') } qr/PID marker not found/, 'dies without PID marker';
     $cmds = [];
     $mock_testapi->redefine(hashed_string => 'XXX');
-    is(assert_script_run('true', max_interval => 1), undef, 'nothing happens on success (slow typing)');
-    is_deeply($cmds, [
-            {
-                text => 'true; echo XXX-$?-',
-                cmd => 'backend_type_string',
-                max_interval => 1
-            },
-            {
-                text => "\n",
-                cmd => 'backend_type_string',
-                max_interval => 1
-            }
-    ]);
+    is assert_script_run('true', max_interval => 1), undef, 'nothing happens on success (slow typing)';
+    is_deeply $cmds, [
+        {
+            text => 'true; echo XXX-$?-',
+            cmd => 'backend_type_string',
+            max_interval => 1
+        },
+        {
+            text => "\n",
+            cmd => 'backend_type_string',
+            max_interval => 1
+        }
+    ];
     $mock_testapi->unmock('wait_serial');
 };
 
@@ -410,10 +410,10 @@ sub assert_script_sudo_test ($waittime, $is_serial_terminal) {
 }
 
 subtest 'assert_script_sudo' => sub {
-    subtest('Test assert_script_sudo', \&assert_script_sudo_test, 0, 0);
-    subtest('Test assert_script_sudo', \&assert_script_sudo_test, 0, 1);
-    subtest('Test assert_script_sudo', \&assert_script_sudo_test, 10, 0);
-    subtest('Test assert_script_sudo', \&assert_script_sudo_test, 10, 1);
+    subtest 'Test assert_script_sudo', \&assert_script_sudo_test, 0, 0;
+    subtest 'Test assert_script_sudo', \&assert_script_sudo_test, 0, 1;
+    subtest 'Test assert_script_sudo', \&assert_script_sudo_test, 10, 0;
+    subtest 'Test assert_script_sudo', \&assert_script_sudo_test, 10, 1;
 };
 
 is match_has_tag('foo'), undef, 'match_has_tag returns undef if no needle has matched yet';
@@ -450,9 +450,9 @@ subtest 'check_assert_screen' => sub {
 
     $mock_bmwqemu->unmock('log_call');
     stderr_like {
-        is_deeply(assert_screen('foo', 1), {needle => 1}, 'expected and found MATCH reported')
-    }
-    qr/assert_screen(.*timeout=1)/;
+        is_deeply assert_screen('foo', 1), {needle => 1}, 'expected and found MATCH reported'
+      }
+      qr/assert_screen(.*timeout=1)/;
     stderr_like { assert_screen('foo', 3, timeout => 2) } qr/timeout=2/, 'named over positional';
     stderr_like { assert_screen('foo') } qr/timeout=30/, 'default timeout';
     stderr_like { assert_screen('foo', no_wait => 1) } qr/no_wait=1/, 'no wait option';
@@ -462,39 +462,39 @@ subtest 'check_assert_screen' => sub {
     $mock_bmwqemu->noop('log_call');
 
     $fake_needle_found = 0;
-    is($report_timeout_called, 0, 'report_timeout not called yet');
+    is $report_timeout_called, 0, 'report_timeout not called yet';
 
     subtest 'handle check_screen timeout' => sub {
         $cmds = [];
         $autotest::current_test->{details} = [];
 
-        ok(!check_screen('foo', 3, timeout => 2));
-        is($report_timeout_called, 1, 'report_timeout called for check_screen');
-        is_deeply($cmds, [{
-                    timeout => 2,
-                    no_wait => undef,
-                    check => 1,
-                    mustmatch => 'foo',
-                    cmd => 'check_screen',
-                },
-                {
-                    cmd => 'is_configured_to_pause_on_timeout',
-                    check => 1,
-                },
-                {
-                    check => 1,
-                    cmd => 'report_timeout',
-                    msg => 'match=fake,tags timed out after 2 (check_screen)',
-                    tags => [qw(fake tags)],
-                }], 'RPC messages correct (especially check == 1)') or always_explain $cmds;
-        is_deeply($autotest::current_test->{details}, [
-                {
-                    result => 'unk',
-                    screenshot => 'basetest-14.png',
-                    frametime => [qw(1.75 1.79)],
-                    tags => [qw(fake tags)],
-                }
-        ], 'result (to create a new neede from) has been added')
+        ok !check_screen('foo', 3, timeout => 2);
+        is $report_timeout_called, 1, 'report_timeout called for check_screen';
+        is_deeply $cmds, [{
+                timeout => 2,
+                no_wait => undef,
+                check => 1,
+                mustmatch => 'foo',
+                cmd => 'check_screen',
+            },
+            {
+                cmd => 'is_configured_to_pause_on_timeout',
+                check => 1,
+            },
+            {
+                check => 1,
+                cmd => 'report_timeout',
+                msg => 'match=fake,tags timed out after 2 (check_screen)',
+                tags => [qw(fake tags)],
+            }], 'RPC messages correct (especially check == 1)' or always_explain $cmds;
+        is_deeply $autotest::current_test->{details}, [
+            {
+                result => 'unk',
+                screenshot => 'basetest-14.png',
+                frametime => [qw(1.75 1.79)],
+                tags => [qw(fake tags)],
+            }
+          ], 'result (to create a new neede from) has been added'
           or always_explain $autotest::current_test->{details};
     };
 
@@ -507,24 +507,24 @@ subtest 'check_assert_screen' => sub {
         throws_ok { assert_screen('foo', 3, timeout => 2) }
         qr/no candidate needle with tag\(s\) \'foo\' matched/,
           'no candidate needle matched tags';
-        is($report_timeout_called, 1, 'report_timeout called on timeout');
-        is_deeply($cmds, [{
-                    timeout => 2,
-                    no_wait => undef,
-                    check => 0,
-                    mustmatch => 'foo',
-                    cmd => 'check_screen',
-                },
-                {
-                    cmd => 'is_configured_to_pause_on_timeout',
-                    check => 0,
-                },
-                {
-                    check => 0,
-                    cmd => 'report_timeout',
-                    msg => 'match=fake,tags timed out after 2 (assert_screen)',
-                    tags => [qw(fake tags)],
-                }], 'RPC messages correct (especially check == 0)') or always_explain $cmds;
+        is $report_timeout_called, 1, 'report_timeout called on timeout';
+        is_deeply $cmds, [{
+                timeout => 2,
+                no_wait => undef,
+                check => 0,
+                mustmatch => 'foo',
+                cmd => 'check_screen',
+            },
+            {
+                cmd => 'is_configured_to_pause_on_timeout',
+                check => 0,
+            },
+            {
+                check => 0,
+                cmd => 'report_timeout',
+                msg => 'match=fake,tags timed out after 2 (assert_screen)',
+                tags => [qw(fake tags)],
+            }], 'RPC messages correct (especially check == 0)' or always_explain $cmds;
 
         # simulate that we want to pause after timeout in the first place but fail as usual on 2nd attempt
         $report_timeout_called = 0;
@@ -532,14 +532,14 @@ subtest 'check_assert_screen' => sub {
         throws_ok { assert_screen('foo', 3, timeout => 2) }
         qr/no candidate needle with tag\(s\) \'foo\' matched/,
           'no candidate needle matched tags';
-        is($report_timeout_called, 2, 'report_timeout called once, and then again after pause');
+        is $report_timeout_called, 2, 'report_timeout called once, and then again after pause';
 
         # simulate a match after pausing due to timeout
         $report_timeout_called = 0;
         $fake_pause_on_timeout = 1;
         $fake_needle_found_after_pause = 1;
         assert_screen('foo', 3, timeout => 2);
-        is($report_timeout_called, 1, 'report_timeout called only once');
+        is $report_timeout_called, 1, 'report_timeout called only once';
     };
 
     my @tags = qw(tag1 tag2 tag3);
@@ -588,61 +588,61 @@ subtest 'upload_logs' => sub {
     $bmwqemu::vars{OFFLINE_SUT} = '1';
     $cmds = [];
     upload_logs '/var/log/messages';
-    is_deeply($cmds, []);
+    is_deeply $cmds, [];
     delete $bmwqemu::vars{OFFLINE_SUT};
     $cmds = [];
     upload_logs '/var/log/messages';
-    is_deeply($cmds, [
-            {
-                text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages http://localhost:4243/LookAtMeImAToken/uploadlog/messages; echo XXX-$?-',
-                cmd => 'backend_type_string',
-                max_interval => 250
-            },
-            {
-                text => "\n",
-                cmd => 'backend_type_string',
-                max_interval => 250
-            }
-    ]);
+    is_deeply $cmds, [
+        {
+            text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages http://localhost:4243/LookAtMeImAToken/uploadlog/messages; echo XXX-$?-',
+            cmd => 'backend_type_string',
+            max_interval => 250
+        },
+        {
+            text => "\n",
+            cmd => 'backend_type_string',
+            max_interval => 250
+        }
+    ];
     $cmds = [];
     upload_logs '/var/log/messages', failok => 1;
-    is_deeply($cmds, [
-            {
-                text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages --max-time 90 http://localhost:4243/LookAtMeImAToken/uploadlog/messages; echo XXX-$?-',
-                cmd => 'backend_type_string',
-                max_interval => 250
-            },
-            {
-                text => "\n",
-                cmd => 'backend_type_string',
-                max_interval => 250
-            }
-    ]);
+    is_deeply $cmds, [
+        {
+            text => 'curl --form upload=@/var/log/messages --form upname=basetest-messages --max-time 90 http://localhost:4243/LookAtMeImAToken/uploadlog/messages; echo XXX-$?-',
+            cmd => 'backend_type_string',
+            max_interval => 250
+        },
+        {
+            text => "\n",
+            cmd => 'backend_type_string',
+            max_interval => 250
+        }
+    ];
     delete $bmwqemu::vars{AUTOINST_URL_HOSTNAME};
     $cmds = [];
 };
 
 subtest 'script_sudo' => sub {
     script_sudo 'rm /boot/grub/menu.lst';
-    is_deeply($cmds, [
-            {
-                text => "sudo rm /boot/grub/menu.lst; echo XXX > /dev/null\n",
-                cmd => 'backend_type_string'
-            },
-            {
-                mustmatch => 'sudo-passwordprompt',
-                cmd => 'check_screen',
-                timeout => 3,
-                check => 1,
-                no_wait => undef
-            },
-            {
-                cmd => 'backend_type_string',
-                secret => 1,
-                text => 'stupid',
-                max_interval => 100
-            }
-    ]);
+    is_deeply $cmds, [
+        {
+            text => "sudo rm /boot/grub/menu.lst; echo XXX > /dev/null\n",
+            cmd => 'backend_type_string'
+        },
+        {
+            mustmatch => 'sudo-passwordprompt',
+            cmd => 'check_screen',
+            timeout => 3,
+            check => 1,
+            no_wait => undef
+        },
+        {
+            cmd => 'backend_type_string',
+            secret => 1,
+            text => 'stupid',
+            max_interval => 100
+        }
+    ];
     $cmds = [];
     script_sudo('ls /', 0);
     is $cmds->[0]{text}, "sudo ls /\n", 'text argument of script_sudo matched';
@@ -664,10 +664,10 @@ subtest 'parse_extra_log' => sub {
     $mock_parser->mock(to_openqa => sub { return {name => 'foo'} });
     parse_junit_log 'foo.log';
     is $i, 3, 'Correct number of methods called';
-    is_deeply($autotest::current_test->{extra_test_results}->[0], {name => 'foo', script => undef});
+    is_deeply $autotest::current_test->{extra_test_results}->[0], {name => 'foo', script => undef};
 };
 
-ok(save_screenshot);
+ok save_screenshot;
 
 subtest 'assert_and_click' => sub {
     my $mock_testapi = Test::MockModule->new('testapi');
@@ -675,98 +675,98 @@ subtest 'assert_and_click' => sub {
     $mock_testapi->redefine(assert_screen => {area => \@areas});
 
     $cmds = [];
-    ok(assert_and_click('foo'));
-    is_deeply($cmds, [
-            {
-                cmd => 'backend_get_last_mouse_set'
-            },
-            {
-                cmd => 'backend_mouse_set',
-                x => 6,
-                y => 12
-            },
-            {
-                bstate => 1,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-            {
-                bstate => 0,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-            {
-                cmd => 'backend_mouse_set',
-                x => 100,
-                y => 100
-            },
-    ], 'assert_and_click succeeds and move to old mouse set') or always_explain $cmds;
+    ok assert_and_click('foo');
+    is_deeply $cmds, [
+        {
+            cmd => 'backend_get_last_mouse_set'
+        },
+        {
+            cmd => 'backend_mouse_set',
+            x => 6,
+            y => 12
+        },
+        {
+            bstate => 1,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+        {
+            bstate => 0,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+        {
+            cmd => 'backend_mouse_set',
+            x => 100,
+            y => 100
+        },
+    ], 'assert_and_click succeeds and move to old mouse set' or always_explain $cmds;
 
     $cmds = [];
     push @areas, {x => 50, y => 60, w => 22, h => 20, click_point => {xpos => 5, ypos => 7}};
-    ok(assert_and_click('foo'));
-    is_deeply($cmds->[1], {
-            cmd => 'backend_mouse_set',
-            x => 55,
-            y => 67,
-    }, 'assert_and_click clicks at the click point') or always_explain $cmds;
+    ok assert_and_click('foo');
+    is_deeply $cmds->[1], {
+        cmd => 'backend_mouse_set',
+        x => 55,
+        y => 67,
+    }, 'assert_and_click clicks at the click point' or always_explain $cmds;
 
     $cmds = [];
     @areas = ({x => 50, y => 60, w => 22, h => 20, click_point => 'center'}, {x => 0, y => 0, w => 0, h => 0});
-    ok(assert_and_click('foo'));
-    is_deeply($cmds->[1], {
-            cmd => 'backend_mouse_set',
-            x => 61,
-            y => 70,
-    }, 'assert_and_click clicks at the click point specified as "center"') or always_explain $cmds;
+    ok assert_and_click('foo');
+    is_deeply $cmds->[1], {
+        cmd => 'backend_mouse_set',
+        x => 61,
+        y => 70,
+    }, 'assert_and_click clicks at the click point specified as "center"' or always_explain $cmds;
 
     $cmds = [];
     @areas = ({x => 50, y => 60, w => 22, h => 20, click_point => {xpos => 5, ypos => 7, id => 'first'}}, {x => 0, y => 0, w => 10, h => 10, click_point => {xpos => 5, ypos => 7, id => 'second'}});
-    ok(assert_and_click('foo', point_id => 'first'));
-    is_deeply($cmds->[1], {
-            cmd => 'backend_mouse_set',
-            x => 55,
-            y => 67,
-    }, 'assert_and_click clicks at the click point with ID "first"') or always_explain $cmds;
+    ok assert_and_click('foo', point_id => 'first');
+    is_deeply $cmds->[1], {
+        cmd => 'backend_mouse_set',
+        x => 55,
+        y => 67,
+    }, 'assert_and_click clicks at the click point with ID "first"' or always_explain $cmds;
 
     $cmds = [];
     @areas = ({x => 50, y => 60, w => 22, h => 20, click_point => {xpos => 5, ypos => 7, id => 'first'}}, {x => 0, y => 0, w => 10, h => 10, click_point => {xpos => 5, ypos => 7, id => 'second'}});
-    ok(assert_and_click('foo', point_id => 'second'));
-    is_deeply($cmds->[1], {
-            cmd => 'backend_mouse_set',
-            x => 5,
-            y => 7,
-    }, 'assert_and_click clicks at the click point with ID "second"') or always_explain $cmds;
+    ok assert_and_click('foo', point_id => 'second');
+    is_deeply $cmds->[1], {
+        cmd => 'backend_mouse_set',
+        x => 5,
+        y => 7,
+    }, 'assert_and_click clicks at the click point with ID "second"' or always_explain $cmds;
 
-    is_deeply($cmds->[-1], {cmd => 'backend_mouse_set', x => 100, y => 100}, 'assert_and_click succeeds and move to old mouse set');
+    is_deeply $cmds->[-1], {cmd => 'backend_mouse_set', x => 100, y => 100}, 'assert_and_click succeeds and move to old mouse set';
 
-    ok(assert_and_click('foo', mousehide => 1));
-    is_deeply($cmds->[-1], {cmd => 'backend_mouse_hide', border_offset => 0}, 'assert_and_click succeeds and hides mouse with mousehide => 1');
+    ok assert_and_click('foo', mousehide => 1);
+    is_deeply $cmds->[-1], {cmd => 'backend_mouse_hide', border_offset => 0}, 'assert_and_click succeeds and hides mouse with mousehide => 1';
 
-    ok(assert_and_click('foo', button => 'right'));
-    is_deeply($cmds->[-2], {bstate => 0, button => 'right', cmd => 'backend_mouse_button'}, 'assert_and_click succeeds with right click');
-    is_deeply($cmds->[-1], {cmd => 'backend_mouse_set', x => 100, y => 100}, 'assert_and_click succeeds and move to old mouse set');
+    ok assert_and_click('foo', button => 'right');
+    is_deeply $cmds->[-2], {bstate => 0, button => 'right', cmd => 'backend_mouse_button'}, 'assert_and_click succeeds with right click';
+    is_deeply $cmds->[-1], {cmd => 'backend_mouse_set', x => 100, y => 100}, 'assert_and_click succeeds and move to old mouse set';
 
-    ok(assert_and_click('foo', mousehide => -1));
-    is_deeply($cmds->[-1], {cmd => 'backend_mouse_button', button => 'left', bstate => 0}, 'assert_and_click succeeds and keep mouse with mousehide => -1');
+    ok assert_and_click('foo', mousehide => -1);
+    is_deeply $cmds->[-1], {cmd => 'backend_mouse_button', button => 'left', bstate => 0}, 'assert_and_click succeeds and keep mouse with mousehide => -1';
 };
 
 subtest 'assert_and_dclick' => sub {
     my $mock_testapi = Test::MockModule->new('testapi');
     $mock_testapi->redefine(assert_screen => {area => [{x => 1, y => 2, w => 3, h => 4}]});
-    ok(assert_and_dclick('foo', mousehide => 1));
+    ok assert_and_dclick('foo', mousehide => 1);
     for (-2, -4) {
-        is_deeply($cmds->[$_], {bstate => 0, button => 'left', cmd => 'backend_mouse_button'}, 'assert_and_dclick succeeds with bstate => 0');
+        is_deeply $cmds->[$_], {bstate => 0, button => 'left', cmd => 'backend_mouse_button'}, 'assert_and_dclick succeeds with bstate => 0';
     }
     for (-3, -5) {
-        is_deeply($cmds->[$_], {bstate => 1, button => 'left', cmd => 'backend_mouse_button'}, 'assert_and_dclick succeeds with bstate => 1');
+        is_deeply $cmds->[$_], {bstate => 1, button => 'left', cmd => 'backend_mouse_button'}, 'assert_and_dclick succeeds with bstate => 1';
     }
-    is_deeply($cmds->[-1], {cmd => 'backend_mouse_hide', border_offset => 0}, 'assert_and_dclick succeeds and hides mouse with mousehide => 1');
+    is_deeply $cmds->[-1], {cmd => 'backend_mouse_hide', border_offset => 0}, 'assert_and_dclick succeeds and hides mouse with mousehide => 1';
 };
 
 subtest 'record_info' => sub {
-    ok(record_info('my title', "my output\nnext line"), 'simple call');
-    ok(record_info('my title', 'output', result => 'ok', resultname => 'foo'), 'all arguments');
+    ok record_info('my title', "my output\nnext line"), 'simple call';
+    ok record_info('my title', 'output', result => 'ok', resultname => 'foo'), 'all arguments';
     throws_ok { record_info('my title', 'output', result => 'not supported', resultname => 'foo') } qr/unsupported/, 'invalid result';
 };
 
@@ -780,20 +780,20 @@ sub script_output_test ($is_serial_terminal) {
 
     $mock_testapi->redefine(wait_serial => "XXX\nfoo\nSCRIPT_FINISHEDXXX-0-");
     $bmwqemu::vars{OFFLINE_SUT} = 1;
-    is(script_output('echo foo'), 'foo', 'sucessfull retrieves output of script');
+    is script_output('echo foo'), 'foo', 'sucessfull retrieves output of script';
     $bmwqemu::vars{OFFLINE_SUT} = 0;
 
     $mock_testapi->redefine(wait_serial => "XXX\nSCRIPT_FINISHEDXXX-0-");
-    is(script_output('foo'), '', 'calling script_output does not fail if script returns with success');
+    is script_output('foo'), '', 'calling script_output does not fail if script returns with success';
 
     $mock_testapi->redefine(wait_serial => "This is simulated output on the serial device\nXXX\nfoo\nSCRIPT_FINISHEDXXX-0-\nand more here");
-    is(script_output('echo foo'), 'foo', 'script_output return only the actual output of the script');
+    is script_output('echo foo'), 'foo', 'script_output return only the actual output of the script';
 
     $mock_testapi->redefine(wait_serial => "XXX\nfoo\nSCRIPT_FINISHEDXXX-1-");
-    is(script_output('echo foo', undef, proceed_on_failure => 1), 'foo', 'proceed_on_failure=1 retrieves retrieves output of script and do not die');
+    is script_output('echo foo', undef, proceed_on_failure => 1), 'foo', 'proceed_on_failure=1 retrieves retrieves output of script and do not die';
 
     $mock_testapi->redefine(wait_serial => "login: XXX\nfoo\nSCRIPT_FINISHEDXXX-0-");
-    is(script_output('echo foo'), 'foo', 'script_output handles pre-marker pending text correctly');
+    is script_output('echo foo'), 'foo', 'script_output handles pre-marker pending text correctly';
 
     $mock_testapi->redefine(wait_serial => sub { return 'none' unless $_[0] =~ /SCRIPT_FINISHEDXXX/; return; });
     throws_ok { script_output('timeout'); } qr/timeout/, 'die expected with timeout';
@@ -825,16 +825,16 @@ sub script_output_test ($is_serial_terminal) {
 }
 
 subtest 'script_output' => sub {
-    subtest('Test with is_serial_terminal==0', \&script_output_test, 0);
-    subtest('Test with is_serial_terminal==1', \&script_output_test, 1);
+    subtest 'Test with is_serial_terminal==0', \&script_output_test, 0;
+    subtest 'Test with is_serial_terminal==1', \&script_output_test, 1;
 };
 
 subtest 'validate_script_output' => sub {
     my $mock_testapi = Test::MockModule->new('testapi');
     $mock_testapi->redefine(script_output => 'output');
-    ok(!validate_script_output('script', sub { m/output/ }), 'validating output with default timeout');
-    ok(!validate_script_output('script', qr/output/), 'validating output with regex and default timeout');
-    ok(!validate_script_output('script', sub { m/output/ }, 30), 'specifying timeout');
+    ok !validate_script_output('script', sub { m/output/ }), 'validating output with default timeout';
+    ok !validate_script_output('script', qr/output/), 'validating output with regex and default timeout';
+    ok !validate_script_output('script', sub { m/output/ }, 30), 'specifying timeout';
     throws_ok {
         validate_script_output('script', sub { m/error/ })
     } qr/output not validating/, 'Die on output not match';
@@ -877,7 +877,7 @@ subtest save_tmp_file => sub {
     my $expected = '<profile>Test</profile>';
     my $filename = save_tmp_file('autoyast/autoinst.xml', $expected);
     my $xml = path($filename);
-    is($xml->slurp, $expected, 'Expected file contents written');
+    is $xml->slurp, $expected, 'Expected file contents written';
     $xml->remove;
 };
 
@@ -885,16 +885,16 @@ subtest 'wait_still_screen & assert_still_screen' => sub {
     $fake_similarity = 999;
     $fake_timeout = 0;
     $mock_bmwqemu->noop('log_call');
-    ok(wait_still_screen, 'default arguments');
-    ok(wait_still_screen(3), 'still time specified');
-    ok(wait_still_screen(2, 4), 'still time and timeout');
-    ok(wait_still_screen(stilltime => 2, no_wait => 1), 'no_wait option can be specified');
-    ok(wait_still_screen(stilltime => 2, timeout => 5, no_wait => 1, similarity_level => 30), 'Add similarity_level & timeout');
+    ok wait_still_screen, 'default arguments';
+    ok wait_still_screen(3), 'still time specified';
+    ok wait_still_screen(2, 4), 'still time and timeout';
+    ok wait_still_screen(stilltime => 2, no_wait => 1), 'no_wait option can be specified';
+    ok wait_still_screen(stilltime => 2, timeout => 5, no_wait => 1, similarity_level => 30), 'Add similarity_level & timeout';
     my $ret;
     stderr_like { wait_still_screen(timeout => 4, no_wait => 1) } qr/[warn].*wait_still_screen.*timeout.*below stilltime/, 'log';
-    ok(!$ret, 'two named args, with timeout below stilltime - which will always return false');
-    ok(wait_still_screen(1, 2, timeout => 3), 'named over positional');
-    ok(assert_still_screen, 'default arguments to assert_still_screen');
+    ok !$ret, 'two named args, with timeout below stilltime - which will always return false';
+    ok wait_still_screen(1, 2, timeout => 3), 'named over positional';
+    ok assert_still_screen, 'default arguments to assert_still_screen';
     my $testapi = Test::MockModule->new('testapi');
     $testapi->redefine(wait_still_screen => sub { die "wait_still_screen(@_)" });
     throws_ok { assert_still_screen similarity_level => 9999; } qr/wait_still_screen\(similarity_level 9999\)/,
@@ -906,12 +906,12 @@ subtest 'wait_still_screen & assert_still_screen' => sub {
 subtest 'test console::console argument settings' => sub {
     # test console's methods manually since promoting the commands is mocked in this test
     my $console = consoles::console->new('dummy-console', {tty => 3});
-    is($console->{args}->{tty}, 3);
+    is $console->{args}->{tty}, 3;
     $console->set_tty(42);
-    is($console->{args}->{tty}, 42);
+    is $console->{args}->{tty}, 42;
     $console->set_args(tty => 43, foo => 'bar');
-    is($console->{args}->{tty}, 43);
-    is($console->{args}->{foo}, 'bar');
+    is $console->{args}->{tty}, 43;
+    is $console->{args}->{foo}, 'bar';
 };
 
 subtest 'test console::console::screen throws if not implemented' => sub {
@@ -921,57 +921,57 @@ subtest 'test console::console::screen throws if not implemented' => sub {
 subtest 'check_assert_shutdown' => sub {
     # Test cases, when shutdown is finished before timeout is hit
     $mod->redefine(read_json => {ret => 1});
-    ok(check_shutdown, 'check_shutdown should return "true" if shutdown finished before timeout is hit');
-    is(assert_shutdown, undef, 'assert_shutdown should return "undef" if shutdown finished before timeout is hit');
+    ok check_shutdown, 'check_shutdown should return "true" if shutdown finished before timeout is hit';
+    is assert_shutdown, undef, 'assert_shutdown should return "undef" if shutdown finished before timeout is hit';
     $mod->redefine(read_json => {ret => -1});
-    ok(check_shutdown, 'check_shutdown should return "true" if backend does not implement is_shutdown');
-    is(assert_shutdown, undef, 'assert_shutdown should return "undef" if backend does not implement is_shutdown');
+    ok check_shutdown, 'check_shutdown should return "true" if backend does not implement is_shutdown';
+    is assert_shutdown, undef, 'assert_shutdown should return "undef" if backend does not implement is_shutdown';
     # Test cases, when shutdown is not finished if timeout is hit
     $mod->redefine(read_json => {ret => 0});
-    is(check_shutdown, 0, 'check_shutdown should return "false" if timeout is hit');
+    is check_shutdown, 0, 'check_shutdown should return "false" if timeout is hit';
     throws_ok { assert_shutdown } qr/Machine didn't shut down!/, 'assert_shutdown should throw exception if timeout is hit';
     $mod->redefine(read_json => \&fake_read_json);
 };
 
 subtest 'compat_args' => sub {
     my %def_args = (a => 'X', b => 123, c => undef);
-    is_deeply({testapi::compat_args(\%def_args, [], a => 'X', b => 123)}, \%def_args, 'Check defaults 1');
-    is_deeply({testapi::compat_args(\%def_args, [], a => 'X')}, \%def_args, 'Check defaults 2');
-    is_deeply({testapi::compat_args(\%def_args, [])}, \%def_args, 'Check defaults 3');
+    is_deeply +{testapi::compat_args(\%def_args, [], a => 'X', b => 123)}, \%def_args, 'Check defaults 1';
+    is_deeply +{testapi::compat_args(\%def_args, [], a => 'X')}, \%def_args, 'Check defaults 2';
+    is_deeply +{testapi::compat_args(\%def_args, [])}, \%def_args, 'Check defaults 3';
 
-    is_deeply({testapi::compat_args(\%def_args, ['a'], a => 'X', b => 123)}, \%def_args, 'Check named parameter 1');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b'], a => 'X')}, \%def_args, 'Check named parameter 2');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b', 'c'])}, \%def_args, 'Check named parameter 3');
+    is_deeply +{testapi::compat_args(\%def_args, ['a'], a => 'X', b => 123)}, \%def_args, 'Check named parameter 1';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b'], a => 'X')}, \%def_args, 'Check named parameter 2';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b', 'c'])}, \%def_args, 'Check named parameter 3';
 
-    is_deeply({testapi::compat_args(\%def_args, [], a => 'Y', b => 666, c => 23)}, {a => 'Y', b => 666, c => 23}, 'Check named parameter 4');
-    is_deeply({testapi::compat_args(\%def_args, [], a => 'Y', b => 666)}, {a => 'Y', b => 666, c => $def_args{c}}, 'Check named parameter 5');
-    is_deeply({testapi::compat_args(\%def_args, [], a => 'Y')}, {a => 'Y', b => $def_args{b}, c => $def_args{c}}, 'Check named parameter 6');
+    is_deeply +{testapi::compat_args(\%def_args, [], a => 'Y', b => 666, c => 23)}, {a => 'Y', b => 666, c => 23}, 'Check named parameter 4';
+    is_deeply +{testapi::compat_args(\%def_args, [], a => 'Y', b => 666)}, {a => 'Y', b => 666, c => $def_args{c}}, 'Check named parameter 5';
+    is_deeply +{testapi::compat_args(\%def_args, [], a => 'Y')}, {a => 'Y', b => $def_args{b}, c => $def_args{c}}, 'Check named parameter 6';
 
-    is_deeply({testapi::compat_args(\%def_args, ['a'], 'Y', b => 666, c => 23)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 1');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b'], 'Y', 666, c => 23)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 2');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b', 'c'], 'Y', 666, 23)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 3');
+    is_deeply +{testapi::compat_args(\%def_args, ['a'], 'Y', b => 666, c => 23)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 1';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b'], 'Y', 666, c => 23)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 2';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b', 'c'], 'Y', 666, 23)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 3';
 
-    is_deeply({testapi::compat_args(\%def_args, ['a'], 'Y', c => 23, b => 666)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 4');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b'], 'Y', undef, c => 23)}, {a => 'Y', b => $def_args{b}, c => 23}, 'Check mixed parameter 5');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b'], 'Y', undef, b => 23)}, {a => 'Y', b => 23, c => $def_args{c}}, 'Check mixed parameter 6');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b', 'c'], undef, 666, 23)}, {a => $def_args{a}, b => 666, c => 23}, 'Check mixed parameter 7');
-    is_deeply({testapi::compat_args(\%def_args, ['a', 'b', 'c'], undef, undef, 23)}, {a => $def_args{a}, b => $def_args{b}, c => 23}, 'Check mixed parameter 8');
-    is_deeply({testapi::compat_args(\%def_args, ['c', 'b', 'a'], undef, undef, 23)}, {a => 23, b => $def_args{b}, c => $def_args{c}}, 'Check mixed parameter 9');
-    is_deeply({testapi::compat_args(\%def_args, ['c', 'b', 'a'], 666, undef, 23)}, {a => 23, b => $def_args{b}, c => 666}, 'Check mixed parameter 10');
+    is_deeply +{testapi::compat_args(\%def_args, ['a'], 'Y', c => 23, b => 666)}, {a => 'Y', b => 666, c => 23}, 'Check mixed parameter 4';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b'], 'Y', undef, c => 23)}, {a => 'Y', b => $def_args{b}, c => 23}, 'Check mixed parameter 5';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b'], 'Y', undef, b => 23)}, {a => 'Y', b => 23, c => $def_args{c}}, 'Check mixed parameter 6';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b', 'c'], undef, 666, 23)}, {a => $def_args{a}, b => 666, c => 23}, 'Check mixed parameter 7';
+    is_deeply +{testapi::compat_args(\%def_args, ['a', 'b', 'c'], undef, undef, 23)}, {a => $def_args{a}, b => $def_args{b}, c => 23}, 'Check mixed parameter 8';
+    is_deeply +{testapi::compat_args(\%def_args, ['c', 'b', 'a'], undef, undef, 23)}, {a => 23, b => $def_args{b}, c => $def_args{c}}, 'Check mixed parameter 9';
+    is_deeply +{testapi::compat_args(\%def_args, ['c', 'b', 'a'], 666, undef, 23)}, {a => 23, b => $def_args{b}, c => 666}, 'Check mixed parameter 10';
 
-    is_deeply({testapi::compat_args(\%def_args, ['a'], 'Y', c => undef, b => 666)}, {a => 'Y', b => 666, c => $def_args{c}}, 'Undef in parameter 1');
-    is_deeply({testapi::compat_args(\%def_args, ['a'], 'Y', c => undef, b => undef)}, {a => 'Y', b => $def_args{b}, c => $def_args{c}}, 'Undef in parameter 2');
-    is_deeply({testapi::compat_args(\%def_args, ['a'], undef, c => undef, b => undef)}, {a => $def_args{a}, b => $def_args{b}, c => $def_args{c}}, 'Undef in parameter 3');
+    is_deeply +{testapi::compat_args(\%def_args, ['a'], 'Y', c => undef, b => 666)}, {a => 'Y', b => 666, c => $def_args{c}}, 'Undef in parameter 1';
+    is_deeply +{testapi::compat_args(\%def_args, ['a'], 'Y', c => undef, b => undef)}, {a => 'Y', b => $def_args{b}, c => $def_args{c}}, 'Undef in parameter 2';
+    is_deeply +{testapi::compat_args(\%def_args, ['a'], undef, c => undef, b => undef)}, {a => $def_args{a}, b => $def_args{b}, c => $def_args{c}}, 'Undef in parameter 3';
 
-    is_deeply({testapi::compat_args(\%def_args, [], a => 'Y', b => 666, k => 5)}, {a => 'Y', b => 666, c => $def_args{c}, k => 5}, 'Additional parameter 1');
-    is_deeply({testapi::compat_args(\%def_args, [], k => 5)}, {a => $def_args{a}, b => $def_args{b}, c => $def_args{c}, k => 5}, 'Additional parameter 2');
-    is_deeply({testapi::compat_args(\%def_args, ['c'], k => 5)}, {a => $def_args{a}, b => $def_args{b}, c => $def_args{c}, k => 5}, 'Additional parameter - one fixed parameter');
-    is_deeply({testapi::compat_args(\%def_args, ['c'], 666, k => 5)}, {a => $def_args{a}, b => $def_args{b}, c => 666, k => 5}, 'Additional parameter 3');
+    is_deeply +{testapi::compat_args(\%def_args, [], a => 'Y', b => 666, k => 5)}, {a => 'Y', b => 666, c => $def_args{c}, k => 5}, 'Additional parameter 1';
+    is_deeply +{testapi::compat_args(\%def_args, [], k => 5)}, {a => $def_args{a}, b => $def_args{b}, c => $def_args{c}, k => 5}, 'Additional parameter 2';
+    is_deeply +{testapi::compat_args(\%def_args, ['c'], k => 5)}, {a => $def_args{a}, b => $def_args{b}, c => $def_args{c}, k => 5}, 'Additional parameter - one fixed parameter';
+    is_deeply +{testapi::compat_args(\%def_args, ['c'], 666, k => 5)}, {a => $def_args{a}, b => $def_args{b}, c => 666, k => 5}, 'Additional parameter 3';
 
-    like(warning { testapi::compat_args(\%def_args, [], a => 'Z', 'outch') }->[0], qr/^Odd number of arguments/, 'Warned on Odd number 1');
-    like(warning { testapi::compat_args(\%def_args, [], 'outch') }->[0], qr/^Odd number of arguments/, 'Warned on Odd number 2');
+    like warning { testapi::compat_args(\%def_args, [], a => 'Z', 'outch') }->[0], qr/^Odd number of arguments/, 'Warned on Odd number 1';
+    like warning { testapi::compat_args(\%def_args, [], 'outch') }->[0], qr/^Odd number of arguments/, 'Warned on Odd number 2';
 
-    is_deeply({testapi::compat_args(\%def_args, ['a'], '^[invalid regex string')}, {%def_args, a => '^[invalid regex string'}, 'Check invalid regex string');
+    is_deeply +{testapi::compat_args(\%def_args, ['a'], '^[invalid regex string')}, {%def_args, a => '^[invalid regex string'}, 'Check invalid regex string';
 };
 
 subtest 'check quiet option on script runs' => sub {
@@ -979,22 +979,22 @@ subtest 'check quiet option on script runs' => sub {
     my $mock_testapi = Test::MockModule->new('testapi');
     $mock_testapi->redefine(script_output => 'output');
     $mock_testapi->redefine(wait_serial => sub ($regex, %args) {
-            is($args{quiet}, 1, 'Check default quiet argument');
+            is $args{quiet}, 1, 'Check default quiet argument';
             return "XXX\nfoo\nSCRIPT_FINISHEDXXX-0-";
     });
-    is(script_output('echo foo', 30), 'foo', 'script_output with _QUIET_SCRIPT_CALLS=1 expects command output');
-    is(script_run('true'), '0', 'script_run with _QUIET_SCRIPT_CALLS=1');
-    is(assert_script_run('true'), undef, 'assert_script_run with _QUIET_SCRIPT_CALLS=1');
-    ok(!validate_script_output('script', sub { m/output/ }), 'validate_script_output with _QUIET_SCRIPT_CALLS=1');
+    is script_output('echo foo', 30), 'foo', 'script_output with _QUIET_SCRIPT_CALLS=1 expects command output';
+    is script_run('true'), '0', 'script_run with _QUIET_SCRIPT_CALLS=1';
+    is assert_script_run('true'), undef, 'assert_script_run with _QUIET_SCRIPT_CALLS=1';
+    ok !validate_script_output('script', sub { m/output/ }), 'validate_script_output with _QUIET_SCRIPT_CALLS=1';
 
     $mock_testapi->redefine(wait_serial => sub ($regex, %args) {
-            is($args{quiet}, 0, 'Check default quiet argument');
+            is $args{quiet}, 0, 'Check default quiet argument';
             return "XXX\nfoo\nSCRIPT_FINISHEDXXX-0-";
     });
-    is(script_output('echo foo', quiet => 0), 'foo', 'script_output with _QUIET_SCRIPT_CALLS=1 and quiet=>0');
-    is(script_run('true', quiet => 0), '0', 'script_run with _QUIET_SCRIPT_CALLS=1 and quiet=>0');
-    is(assert_script_run('true', quiet => 0), undef, 'assert_script_run with _QUIET_SCRIPT_CALLS=1 and quiet=>0');
-    ok(!validate_script_output('script', sub { m/output/ }, quiet => 0), 'validate_script_output with _QUIET_SCRIPT_CALLS=1 and quiet=>0');
+    is script_output('echo foo', quiet => 0), 'foo', 'script_output with _QUIET_SCRIPT_CALLS=1 and quiet=>0';
+    is script_run('true', quiet => 0), '0', 'script_run with _QUIET_SCRIPT_CALLS=1 and quiet=>0';
+    is assert_script_run('true', quiet => 0), undef, 'assert_script_run with _QUIET_SCRIPT_CALLS=1 and quiet=>0';
+    ok !validate_script_output('script', sub { m/output/ }, quiet => 0), 'validate_script_output with _QUIET_SCRIPT_CALLS=1 and quiet=>0';
     delete $bmwqemu::vars{_QUIET_SCRIPT_CALLS};
     $mock_testapi->unmock('wait_serial');
 };
@@ -1003,15 +1003,15 @@ subtest 'host_ip, autoinst_url' => sub {
     $bmwqemu::vars{QEMUPORT} = 0;
     $bmwqemu::vars{JOBTOKEN} = '';
     $bmwqemu::vars{WORKER_HOSTNAME} = 'my_worker_host';
-    is(autoinst_url('foo'), 'http://my_worker_host:1/foo', 'autoinst_url returns reasonable URL based on WORKER_HOSTNAME');
+    is autoinst_url('foo'), 'http://my_worker_host:1/foo', 'autoinst_url returns reasonable URL based on WORKER_HOSTNAME';
     is testapi::host_ip, 'my_worker_host', 'host_ip has sane default';
     $bmwqemu::vars{BACKEND} = 'qemu';
-    is(autoinst_url('foo'), 'http://10.0.2.2:1/foo', 'autoinst_url returns static IP for qemu');
+    is autoinst_url('foo'), 'http://10.0.2.2:1/foo', 'autoinst_url returns static IP for qemu';
     is testapi::host_ip, '10.0.2.2', 'host_ip has sane default for qemu';
     $bmwqemu::vars{QEMU_HOST_IP} = '192.168.42.1';
-    is(autoinst_url('foo'), 'http://192.168.42.1:1/foo', 'autoinst_url returns configured static IP');
+    is autoinst_url('foo'), 'http://192.168.42.1:1/foo', 'autoinst_url returns configured static IP';
     $bmwqemu::vars{AUTOINST_URL_HOSTNAME} = 'localhost';
-    is(autoinst_url('foo'), 'http://localhost:1/foo', 'we can configure the hostname that autoinst_url returns');
+    is autoinst_url('foo'), 'http://localhost:1/foo', 'we can configure the hostname that autoinst_url returns';
 };
 
 subtest 'data_url' => sub {
@@ -1075,106 +1075,106 @@ subtest 'mouse_drag' => sub {
     $cmds = [];
     # Startpoint from a needle. Endpoint coordinates.
     mouse_drag(startpoint => 'foo', endx => $endx, endy => $endy, button => $button, timeout => 30);
-    is_deeply($cmds, [
-            {
-                cmd => 'backend_mouse_set',
-                x => 102,
-                y => 103
-            },
-            {
-                bstate => 1,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-            {
-                cmd => 'backend_mouse_set',
-                x => 200,
-                y => 200
-            },
-            {
-                bstate => 0,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-    ], 'mouse drag (startpoint defined by a needle)') or always_explain $cmds;
+    is_deeply $cmds, [
+        {
+            cmd => 'backend_mouse_set',
+            x => 102,
+            y => 103
+        },
+        {
+            bstate => 1,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+        {
+            cmd => 'backend_mouse_set',
+            x => 200,
+            y => 200
+        },
+        {
+            bstate => 0,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+    ], 'mouse drag (startpoint defined by a needle)' or always_explain $cmds;
 
     # Startpoint from coordinates, endpoint from a needle.
     $cmds = [];
     mouse_drag(endpoint => 'foo', startx => $startx, starty => $starty, button => $button, timeout => 30);
-    is_deeply($cmds, [
-            {
-                cmd => 'backend_mouse_set',
-                x => 0,
-                y => 0
-            },
-            {
-                bstate => 1,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-            {
-                cmd => 'backend_mouse_set',
-                x => 102,
-                y => 103
-            },
-            {
-                bstate => 0,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-    ], 'mouse drag (endpoint defined by a needle)') or always_explain $cmds;
+    is_deeply $cmds, [
+        {
+            cmd => 'backend_mouse_set',
+            x => 0,
+            y => 0
+        },
+        {
+            bstate => 1,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+        {
+            cmd => 'backend_mouse_set',
+            x => 102,
+            y => 103
+        },
+        {
+            bstate => 0,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+    ], 'mouse drag (endpoint defined by a needle)' or always_explain $cmds;
 
     # Using coordinates only.
     $cmds = [];
     mouse_drag(endx => $endx, endy => $endy, startx => $startx, starty => $starty, button => $button, timeout => 30);
-    is_deeply($cmds, [
-            {
-                cmd => 'backend_mouse_set',
-                x => 0,
-                y => 0
-            },
-            {
-                bstate => 1,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-            {
-                cmd => 'backend_mouse_set',
-                x => 200,
-                y => 200
-            },
-            {
-                bstate => 0,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-    ], 'mouse drag (start and endpoints defined by coordinates)') or always_explain $cmds;
+    is_deeply $cmds, [
+        {
+            cmd => 'backend_mouse_set',
+            x => 0,
+            y => 0
+        },
+        {
+            bstate => 1,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+        {
+            cmd => 'backend_mouse_set',
+            x => 200,
+            y => 200
+        },
+        {
+            bstate => 0,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+    ], 'mouse drag (start and endpoints defined by coordinates)' or always_explain $cmds;
 
     # Both needle and coordinates provided for startpoint (coordinates should win).
     $cmds = [];
     mouse_drag(startpoint => 'foo', endx => $endx, endy => $endy, startx => $startx, starty => $starty, button => $button, timeout => 30);
-    is_deeply($cmds, [
-            {
-                cmd => 'backend_mouse_set',
-                x => 0,
-                y => 0
-            },
-            {
-                bstate => 1,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-            {
-                cmd => 'backend_mouse_set',
-                x => 200,
-                y => 200
-            },
-            {
-                bstate => 0,
-                button => 'left',
-                cmd => 'backend_mouse_button'
-            },
-    ], 'mouse drag (redundant definition by a needle)') or always_explain $cmds;
+    is_deeply $cmds, [
+        {
+            cmd => 'backend_mouse_set',
+            x => 0,
+            y => 0
+        },
+        {
+            bstate => 1,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+        {
+            cmd => 'backend_mouse_set',
+            x => 200,
+            y => 200
+        },
+        {
+            bstate => 0,
+            button => 'left',
+            cmd => 'backend_mouse_button'
+        },
+    ], 'mouse drag (redundant definition by a needle)' or always_explain $cmds;
     throws_ok { mouse_drag(endx => $endx, endy => $endy) } qr/starting.*point.*not.*provided/, 'faile for no start';
     throws_ok { mouse_drag(startx => $endx, starty => $endy) } qr/ending.*point.*not.*provided/, 'faile for no end';
 };
@@ -1182,15 +1182,15 @@ subtest 'mouse_drag' => sub {
 subtest 'show_curl_progress_meter' => sub {
     $testapi::serialdev = 'ttyS0';
     $bmwqemu::vars{UPLOAD_METER} = 1;
-    is(testapi::show_curl_progress_meter(), '-o /dev/ttyS0 ', 'show_curl_progress_meter returns curl output parameter pointing to /dev/ttyS0');
+    is testapi::show_curl_progress_meter(), '-o /dev/ttyS0 ', 'show_curl_progress_meter returns curl output parameter pointing to /dev/ttyS0';
     $bmwqemu::vars{UPLOAD_METER} = 0;
-    is(testapi::show_curl_progress_meter(), '', 'show_curl_progress_meter returns "0" when UPLOAD_METER is not set');
+    is testapi::show_curl_progress_meter(), '', 'show_curl_progress_meter returns "0" when UPLOAD_METER is not set';
 };
 
 subtest 'get_wait_still_screen_on_here_doc_input' => sub {
-    is(testapi::backend_get_wait_still_screen_on_here_doc_input != 42, 1, 'Sanity check, that wait_still_screen_on_here_doc_input returns not 42!');
+    is testapi::backend_get_wait_still_screen_on_here_doc_input != 42, 1, 'Sanity check, that wait_still_screen_on_here_doc_input returns not 42!';
     testapi::set_var(_WAIT_STILL_SCREEN_ON_HERE_DOC_INPUT => 42);
-    is(testapi::backend_get_wait_still_screen_on_here_doc_input, 42, 'The variable `_WAIT_STILL_SCREEN_ON_HERE_DOC_INPUT` has precedence over backend value!');
+    is testapi::backend_get_wait_still_screen_on_here_doc_input, 42, 'The variable `_WAIT_STILL_SCREEN_ON_HERE_DOC_INPUT` has precedence over backend value!';
 };
 
 subtest init => sub {
@@ -1244,9 +1244,9 @@ subtest 'send_key_until_needlematch' => sub {
     $fake_needle_found = 1;
     $cmds = [];
     send_key_until_needlematch('tag', 'esc');
-    is(scalar @$cmds, 1, 'needle matches immediately, no key sent') || always_explain $cmds;
-    is($cmds->[-1]->{cmd}, 'check_screen');
-    is($cmds->[-1]->{timeout}, 0);
+    is scalar @$cmds, 1, 'needle matches immediately, no key sent' or always_explain $cmds;
+    is $cmds->[-1]->{cmd}, 'check_screen';
+    is $cmds->[-1]->{timeout}, 0;
 
     # Needle never matches
     $mock_testapi->unmock('send_key');
@@ -1258,10 +1258,10 @@ subtest 'send_key_until_needlematch' => sub {
     # Skip the first check_screen
     shift @$cmds;
     for my $cmd (@$cmds) {
-        is($cmd->{timeout}, 1, 'timeout for other check_screen is nonzero') if $cmd->{cmd} eq 'check_screen';
+        is $cmd->{timeout}, 1, 'timeout for other check_screen is nonzero' if $cmd->{cmd} eq 'check_screen';
         $count_send_key++ if $cmd->{cmd} eq 'backend_send_key';
     }
-    is($count_send_key, 3, 'tried to send_key three times') || always_explain $cmds;
+    is $count_send_key, 3, 'tried to send_key three times' or always_explain $cmds;
     $cmds = [];
 
     $fake_needle_found = 1;
@@ -1347,7 +1347,7 @@ subtest 'wait_serial record_command' => sub {
             $recorded_cmd = $args{command};
     });
     wait_serial('regex', record_command => 'my_command');
-    is($recorded_cmd, 'my_command', 'command passed to record_serialresult');
+    is $recorded_cmd, 'my_command', 'command passed to record_serialresult';
 };
 
 done_testing;

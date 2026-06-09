@@ -7,7 +7,7 @@ use Test::Warnings;
 use FindBin '$Bin';
 
 if (not -e "$Bin/../.git") {
-    pass('Skipping all tests, not in a git repository');    # uncoverable statement
+    pass 'Skipping all tests, not in a git repository';    # uncoverable statement
     done_testing;    # uncoverable statement
     exit;    # uncoverable statement
 }
@@ -22,7 +22,7 @@ my $rc = $?;
 die "Could not run $make_cmd: rc=$rc, out: @out" if $rc;
 
 my @status = grep { not m/^\?/ } qx{git -C "$Bin/.." status --porcelain};
-ok(!@status, "No changed files after '$make_cmd'") or diag @status;
+ok !@status, "No changed files after '$make_cmd'" or diag @status;
 
 done_testing;
 

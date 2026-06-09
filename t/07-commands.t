@@ -50,9 +50,9 @@ $bmwqemu::vars{UPLOAD_MAX_MESSAGE_SIZE_GB} = 0.0048828125;    # 5 MiB, less than
 my @tempfiles;
 # now this is a game of luck
 my $pool_directory = $data_dir->child('pool');
-ok(chdir $pool_directory, "change command server working directory to $pool_directory");
+ok chdir $pool_directory, "change command server working directory to $pool_directory";
 my ($cserver, $cfd);
-ok(chdir $data_dir->child('pool'), 'change command server working directory');
+ok chdir $data_dir->child('pool'), 'change command server working directory';
 combined_like { ($cserver, $cfd) = commands::start_server($mojoport); } qr//, 'command server started';
 
 my $spid = fork;
@@ -70,7 +70,7 @@ if ($spid == 0) {
 my $t = Test::Mojo->new;
 wait_for_server($t->ua);
 
-ok(chdir $toplevel_dir, "change overall test working directory back to $toplevel_dir");
+ok chdir $toplevel_dir, "change overall test working directory back to $toplevel_dir";
 
 subtest 'failure if jobtoken wrong' => sub {
     $t->get_ok("$base_url/NEVEREVER")->status_is(404);
@@ -126,14 +126,14 @@ subtest 'data api (directory download)' => sub {
     my $tmpdir = tempdir;
     my $outfile = path($tmpdir . '/data_full.cpio');
     $outfile->spew($t->tx->res->body);
-    ok(system("cd $tmpdir && cpio -id < data_full.cpio >/dev/null 2>&1") == 0, 'Extract cpio archive');
-    ok(-d $tmpdir . '/data/mod1', 'Recursive directory download 1.1');
-    ok(-d $tmpdir . '/data/mod1/sub', 'Recursive directory download 1.2');
-    ok(-f $tmpdir . '/data/mod1/test1.txt', 'Recursive directory download 1.3');
-    ok(-f $tmpdir . '/data/mod1/sub/test2.txt', 'Recursive directory download 1.4');
-    ok(-f $tmpdir . '/data/autoinst.xml', 'Recursive directory download 1.5');
-    ok(path($tmpdir . '/data/mod1/sub/test2.txt')->slurp eq 'TEST_FILE_2', 'Recursive directory download 1.6');
-    ok(path($tmpdir . '/data/mod1/test1.txt')->slurp eq 'TEST_FILE_1', 'Recursive directory download 1.7');
+    ok system("cd $tmpdir && cpio -id < data_full.cpio >/dev/null 2>&1") == 0, 'Extract cpio archive';
+    ok -d $tmpdir . '/data/mod1', 'Recursive directory download 1.1';
+    ok -d $tmpdir . '/data/mod1/sub', 'Recursive directory download 1.2';
+    ok -f $tmpdir . '/data/mod1/test1.txt', 'Recursive directory download 1.3';
+    ok -f $tmpdir . '/data/mod1/sub/test2.txt', 'Recursive directory download 1.4';
+    ok -f $tmpdir . '/data/autoinst.xml', 'Recursive directory download 1.5';
+    ok path($tmpdir . '/data/mod1/sub/test2.txt')->slurp eq 'TEST_FILE_2', 'Recursive directory download 1.6';
+    ok path($tmpdir . '/data/mod1/test1.txt')->slurp eq 'TEST_FILE_1', 'Recursive directory download 1.7';
 
     $t->get_ok("$base_url/$job/data/mod1");
     $t->status_is(200);
@@ -141,12 +141,12 @@ subtest 'data api (directory download)' => sub {
     $tmpdir = tempdir;
     $outfile = path($tmpdir . '/data_full.cpio');
     $outfile->spew($t->tx->res->body);
-    ok(system("cd $tmpdir && cpio -id < data_full.cpio >/dev/null 2>&1") == 0, 'Extract cpio archive');
-    ok(-d $tmpdir . '/data/sub', 'Recursive directory download 2.1');
-    ok(-f $tmpdir . '/data/test1.txt', 'Recursive directory download 2.2');
-    ok(-f $tmpdir . '/data/sub/test2.txt', 'Recursive directory download 2.3');
-    ok(path($tmpdir . '/data/sub/test2.txt')->slurp eq 'TEST_FILE_2', 'Recursive directory download 2.4');
-    ok(path($tmpdir . '/data/test1.txt')->slurp eq 'TEST_FILE_1', 'Recursive directory download 2.5');
+    ok system("cd $tmpdir && cpio -id < data_full.cpio >/dev/null 2>&1") == 0, 'Extract cpio archive';
+    ok -d $tmpdir . '/data/sub', 'Recursive directory download 2.1';
+    ok -f $tmpdir . '/data/test1.txt', 'Recursive directory download 2.2';
+    ok -f $tmpdir . '/data/sub/test2.txt', 'Recursive directory download 2.3';
+    ok path($tmpdir . '/data/sub/test2.txt')->slurp eq 'TEST_FILE_2', 'Recursive directory download 2.4';
+    ok path($tmpdir . '/data/test1.txt')->slurp eq 'TEST_FILE_1', 'Recursive directory download 2.5';
 
     $t->get_ok("$base_url/$job/data/mod1/sub")->status_is(200)->content_type_is('application/x-cpio');
 };

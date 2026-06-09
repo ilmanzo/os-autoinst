@@ -90,17 +90,17 @@ like warning {
 }, qr/ERROR: no tests loaded/, 'run_all outputs status on stderr';
 
 ($died, $completed) = get_tests_done;
-is($died, 1, 'run_all with no tests should catch runalltests dying');
-is($completed, 0, 'run_all with no tests should not complete');
+is $died, 1, 'run_all with no tests should catch runalltests dying';
+is $completed, 0, 'run_all with no tests should not complete';
 
 loadtest 'start';
 loadtest 'next';
-is(keys %autotest::tests, 2, 'two tests have been scheduled');
+is keys %autotest::tests, 2, 'two tests have been scheduled';
 loadtest 'start', 'rescheduling same step later';
-is(keys %autotest::tests, 3, 'three steps have been scheduled (one twice)') || always_explain %autotest::tests;
-is($autotest::tests{'tests-start1'}->{name}, 'start#1', 'handle duplicate tests');
-is($autotest::tests{'tests-start1'}->{fullname}, 'tests-start#1', 'duplicate test has correct fullname');
-is($autotest::tests{'tests-start1'}->{$_}, $autotest::tests{'tests-start'}->{$_}, "duplicate tests point to the same $_")
+is keys %autotest::tests, 3, 'three steps have been scheduled (one twice)' or always_explain %autotest::tests;
+is $autotest::tests{'tests-start1'}->{name}, 'start#1', 'handle duplicate tests';
+is $autotest::tests{'tests-start1'}->{fullname}, 'tests-start#1', 'duplicate test has correct fullname';
+is $autotest::tests{'tests-start1'}->{$_}, $autotest::tests{'tests-start'}->{$_}, "duplicate tests point to the same $_"
   for qw(script category class);
 
 like warning {
@@ -111,8 +111,8 @@ like warning {
 $autotest::isotovideo = 1;
 stderr_like { autotest::run_all } qr/finished/, 'run_all outputs status on stderr';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'start+next+start should not die');
-is($completed, 1, 'start+next+start should complete');
+is $died, 0, 'start+next+start should not die';
+is $completed, 1, 'start+next+start should complete';
 
 # Test loading snapshots with always_rollback flag. Have to put it here, before loading
 # runargs test module, as it fails.
@@ -252,14 +252,14 @@ stderr_like {
 qr@scheduling alt_name tests/run_args.pm@;
 stderr_like { autotest::run_all } qr/finished alt_name tests/, 'dynamic scheduled alt_name shows up';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'run_args test should not die');
-is($completed, 1, 'run_args test should complete');
+is $died, 0, 'run_args test should not die';
+is $completed, 1, 'run_args test should complete';
 
 stderr_like { autotest::loadtest('tests/run_args.pm', name => 'alt_name') } qr@scheduling alt_name tests/run_args.pm@;
 stderr_like { autotest::run_all } qr/Snapshots are not supported/, 'run_all outputs status on stderr';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'run_args test should not die if there is no run_args');
-is($completed, 0, 'run_args test should not complete if there is no run_args');
+is $died, 0, 'run_args test should not die if there is no run_args';
+is $completed, 0, 'run_args test should not complete if there is no run_args';
 
 throws_ok { autotest::loadtest('tests/run_args.pm', name => 'alt_name', run_args => {foo => 'bar'}) } qr/The run_args must be a sub-class of OpenQA::Test::RunArgs/, 'error message mentions RunArgs';
 
@@ -278,16 +278,16 @@ my $record_resultfile_called;
 $mock_basetest->redefine(record_resultfile => sub { ++$record_resultfile_called });
 stderr_like { autotest::run_all } qr/oh noes/, 'run_all outputs status on stderr';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'non-fatal test failure should not die');
-is($completed, 1, 'non-fatal test failure should complete');
+is $died, 0, 'non-fatal test failure should not die';
+is $completed, 1, 'non-fatal test failure should complete';
 is $record_resultfile_called, 4, 'record_resultfile was called';
 
 # now let's add an ignore_failure test
 loadtest 'ignore_failure';
 stderr_like { autotest::run_all } qr/oh noes/, 'run_all outputs status on stderr';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'unimportant test failure should not die');
-is($completed, 1, 'unimportant test failure should complete');
+is $died, 0, 'unimportant test failure should not die';
+is $completed, 1, 'unimportant test failure should complete';
 
 # unmock runtest, to fail in search_for_expected_serial_failures
 $mock_basetest->unmock('runtest');
@@ -300,8 +300,8 @@ $mock_basetest->redefine(search_for_expected_serial_failures => sub ($self) {
 $bmwqemu::vars{MAKETESTSNAPSHOTS} = 1;
 stderr_like { autotest::run_all } qr/Snapshots are supported/, 'run_all outputs status on stderr';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'fatal serial failure test should not die');
-is($completed, 0, 'fatal serial failure test should not complete');
+is $died, 0, 'fatal serial failure test should not die';
+is $completed, 0, 'fatal serial failure test should not complete';
 $bmwqemu::vars{MAKETESTSNAPSHOTS} = 0;
 # make the serial failure non-fatal
 $mock_basetest->unmock('search_for_expected_serial_failures');
@@ -313,27 +313,27 @@ $mock_basetest->redefine(search_for_expected_serial_failures => sub ($self) {
 $autotest::current_test = Test::MockObject->new->set_true('record_resultfile');
 stderr_like { autotest::run_all } qr/Snapshots are supported/, 'run_all outputs status on stderr';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'non-fatal serial failure test should not die');
-is($completed, 1, 'non-fatal serial failure test should complete');
+is $died, 0, 'non-fatal serial failure test should not die';
+is $completed, 1, 'non-fatal serial failure test should complete';
 
 # disable snapshots and clean last milestone from previous testrun (with had snapshots enabled)
 $enable_snapshots = 0;
 $autotest::last_milestone = undef;
 
 my $output = combined_from(sub { autotest::run_all });
-like($output, qr/Snapshots are not supported/, 'snapshots actually disabled');
-unlike($output, qr/Loading a VM snapshot/, 'no attempt to load VM snapshot');
+like $output, qr/Snapshots are not supported/, 'snapshots actually disabled';
+unlike $output, qr/Loading a VM snapshot/, 'no attempt to load VM snapshot';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'non-fatal serial failure test should not die');
-is($completed, 0, 'non-fatal serial failure test should not complete by default without snapshot support');
+is $died, 0, 'non-fatal serial failure test should not die';
+is $completed, 0, 'non-fatal serial failure test should not complete by default without snapshot support';
 
 $mock_basetest->redefine(test_flags => {fatal => 0});
 $output = combined_from(sub { autotest::run_all });
-like($output, qr/Snapshots are not supported/, 'snapshots actually disabled');
-unlike($output, qr/Loading a VM snapshot/, 'no attempt to load VM snapshot');
+like $output, qr/Snapshots are not supported/, 'snapshots actually disabled';
+unlike $output, qr/Loading a VM snapshot/, 'no attempt to load VM snapshot';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'non-fatal serial failure test should not die');
-is($completed, 1, 'non-fatal serial failure test should complete with {fatal => 0} and not snapshot support');
+is $died, 0, 'non-fatal serial failure test should not die';
+is $completed, 1, 'non-fatal serial failure test should complete with {fatal => 0} and not snapshot support';
 
 # Revert mock for runtest and remove mock for search_for_expected_serial_failures
 $mock_basetest->unmock('search_for_expected_serial_failures');
@@ -344,13 +344,13 @@ $mock_basetest->redefine(runtest => sub { die "oh noes!\n"; });
 loadtest 'fatal';
 stderr_like { autotest::run_all } qr/oh noes/, 'run_all outputs status on stderr';
 ($died, $completed) = get_tests_done;
-is($died, 0, 'fatal test failure should not die');
-is($completed, 0, 'fatal test failure should not complete');
+is $died, 0, 'fatal test failure should not die';
+is $completed, 0, 'fatal test failure should not complete';
 
 loadtest 'fatal', 'rescheduling same step later' for 1 .. 10;
 my @opts = qw(script fullname category class);
-is(@{$autotest::tests{'tests-fatal'}}{@opts}, @{$autotest::tests{'tests-fatal' . $_}}{@opts}, "tests-fatal$_ share same options with tests-fatal")
-  && is(@{$autotest::tests{'tests-fatal' . $_}}{name}, 'fatal#' . $_)
+is @{$autotest::tests{'tests-fatal'}}{@opts}, @{$autotest::tests{'tests-fatal' . $_}}{@opts}, "tests-fatal$_ share same options with tests-fatal"
+  && is @{$autotest::tests{'tests-fatal' . $_}}{name}, 'fatal#' . $_
   for 1 .. 10;
 
 subtest 'scheduling rules' => sub {
@@ -412,9 +412,9 @@ subtest 'test scheduling test modules at test runtime' => sub {
 };
 
 my $sharedir = '/home/tux/.local/lib/openqa/share';
-is(autotest::parse_test_path("$sharedir/tests/sle/tests/x11/firefox.pm"), 'x11');
-is(autotest::parse_test_path("$sharedir/tests/sle/tests/x11/toolkits/motif.pm"), 'x11/toolkits');
-is(autotest::parse_test_path("$sharedir/factory/other/sysrq.pm"), 'other');
+is autotest::parse_test_path("$sharedir/tests/sle/tests/x11/firefox.pm"), 'x11';
+is autotest::parse_test_path("$sharedir/tests/sle/tests/x11/toolkits/motif.pm"), 'x11/toolkits';
+is autotest::parse_test_path("$sharedir/factory/other/sysrq.pm"), 'other';
 
 subtest 'load test successfully when CASEDIR is a relative path' => sub {
     path($bmwqemu::vars{CASEDIR}, 'tests/start.pm')->copy_to(path('foo/tests')->make_path->child('start2.pm'));
@@ -506,9 +506,9 @@ subtest rollback_activated_consoles => sub {
     $autotest::activated_consoles = ['activated_console'];
     $autotest::last_milestone_console = 'last_milestone_console';
     autotest::rollback_activated_consoles();
-    is(scalar(@$autotest::activated_consoles), 0, 'activated consoles cleared');
-    is_deeply(\@reset_consoles, [{cmd => 'backend_reset_console', testapi_console => 'activated_console'}], 'activated consoles reset');
-    is_deeply(\@selected_consoles, [{cmd => 'backend_select_console', testapi_console => 'last_milestone_console'}], 'last milestone console selected');
+    is scalar(@$autotest::activated_consoles), 0, 'activated consoles cleared';
+    is_deeply \@reset_consoles, [{cmd => 'backend_reset_console', testapi_console => 'activated_console'}], 'activated consoles reset';
+    is_deeply \@selected_consoles, [{cmd => 'backend_select_console', testapi_console => 'last_milestone_console'}], 'last milestone console selected';
 };
 
 subtest find_script => sub {

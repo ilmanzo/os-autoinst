@@ -433,7 +433,7 @@ subtest 'input events' => sub {
     $console->activate;
     $console->mouse_set({x => 60, y => 60});
     my $mouse_position = $console->get_last_mouse_set();
-    is_deeply($mouse_position, {x => 60, y => 60}, 'Got correct mouse position');
+    is_deeply $mouse_position, {x => 60, y => 60}, 'Got correct mouse position';
     $console->disable;
 };
 

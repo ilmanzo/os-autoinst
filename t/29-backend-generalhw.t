@@ -75,12 +75,12 @@ ok !$backend->check_socket(1), 'can check socket';
 
 subtest 'start VM' => sub {
     # start the "VM" which should actually just run a few commands via IPC::Run and start the VNC and serial consoles
-    is_deeply($backend->do_start_vm, {}, 'return value');
-    is_deeply(\@invoked_cmds, [
-            [$cmd_ctl, 'poweroff'], [$cmd_ctl, 'flash', 'light', '/hdd', '5G'], [$cmd_ctl, 'poweroff'],
-            ['sleep', 3], [$cmd_ctl, 'poweron'], 'start_serial_grab'
-    ], 'poweroff/on commands invoked') or always_explain \@invoked_cmds;
-    is_deeply(\@vnc_logins, [['vnc.server']], 'tried to connect to VNC server') or always_explain \@vnc_logins;
+    is_deeply $backend->do_start_vm, {}, 'return value';
+    is_deeply \@invoked_cmds, [
+        [$cmd_ctl, 'poweroff'], [$cmd_ctl, 'flash', 'light', '/hdd', '5G'], [$cmd_ctl, 'poweroff'],
+        ['sleep', 3], [$cmd_ctl, 'poweron'], 'start_serial_grab'
+    ], 'poweroff/on commands invoked' or always_explain \@invoked_cmds;
+    is_deeply \@vnc_logins, [['vnc.server']], 'tried to connect to VNC server' or always_explain \@vnc_logins;
 };
 
 subtest 'start VM with video' => sub {
@@ -89,12 +89,12 @@ subtest 'start VM with video' => sub {
     $bmwqemu::vars{GENERAL_HW_VIDEO_STREAM_URL} = 'udp://@:5004';
     $bmwqemu::vars{GENERAL_HW_INPUT_CMD} = 'ctl input';
     @invoked_cmds = ();
-    is_deeply($backend->do_start_vm, {}, 'return value');
-    is_deeply(\@invoked_cmds, [
-            [$cmd_ctl, 'poweroff'], [$cmd_ctl, 'flash', 'light', '/hdd', '5G'], [$cmd_ctl, 'poweroff'],
-            ['sleep', 3], [$cmd_ctl, 'poweron'], 'start_serial_grab'
-    ], 'poweroff/on commands invoked') or always_explain \@invoked_cmds;
-    is_deeply(\@video_connects, [['udp://@:5004']], 'tried to connect to video stream') or always_explain \@vnc_logins;
+    is_deeply $backend->do_start_vm, {}, 'return value';
+    is_deeply \@invoked_cmds, [
+        [$cmd_ctl, 'poweroff'], [$cmd_ctl, 'flash', 'light', '/hdd', '5G'], [$cmd_ctl, 'poweroff'],
+        ['sleep', 3], [$cmd_ctl, 'poweron'], 'start_serial_grab'
+    ], 'poweroff/on commands invoked' or always_explain \@invoked_cmds;
+    is_deeply \@video_connects, [['udp://@:5004']], 'tried to connect to video stream' or always_explain \@vnc_logins;
 };
 
 subtest 'hdd args' => sub {
@@ -102,28 +102,28 @@ subtest 'hdd args' => sub {
     $bmwqemu::vars{NUMDISKS} = '2';
     $bmwqemu::vars{HDD_2} = '/hdd2';
     $bmwqemu::vars{HDDSIZEGB_2} = '10';
-    is_deeply($backend->compute_hdd_args, ['/hdd', '5G', '/hdd2', '10G'], 'return value');
+    is_deeply $backend->compute_hdd_args, ['/hdd', '5G', '/hdd2', '10G'], 'return value';
 };
 
 subtest 'stop VM' => sub {
     @invoked_cmds = ();
-    is_deeply($backend->do_stop_vm, {}, 'return value');
-    is_deeply(\@invoked_cmds, [[$cmd_ctl, 'poweroff']], 'poweroff/on commands invoked') or always_explain \@invoked_cmds;
+    is_deeply $backend->do_stop_vm, {}, 'return value';
+    is_deeply \@invoked_cmds, [[$cmd_ctl, 'poweroff']], 'poweroff/on commands invoked' or always_explain \@invoked_cmds;
 };
 
 subtest 'is_shutdown' => sub {
     @invoked_cmds = ();
-    is_deeply($backend->is_shutdown, -1, 'return value');
-    is_deeply(\@invoked_cmds, [], 'nothing invoked') or always_explain \@invoked_cmds;
+    is_deeply $backend->is_shutdown, -1, 'return value';
+    is_deeply \@invoked_cmds, [], 'nothing invoked' or always_explain \@invoked_cmds;
     $bmwqemu::vars{GENERAL_HW_IS_SHUTDOWN_CMD} = 'ctl is_shutdown';
     $fake_system_return = 1;
-    is_deeply($backend->is_shutdown, '', 'return value');
-    is_deeply(\@invoked_cmds, [[$cmd_ctl, 'is_shutdown']], 'is_shutdown invoked') or always_explain \@invoked_cmds;
+    is_deeply $backend->is_shutdown, '', 'return value';
+    is_deeply \@invoked_cmds, [[$cmd_ctl, 'is_shutdown']], 'is_shutdown invoked' or always_explain \@invoked_cmds;
 
     $fake_system_return = 0;
     @invoked_cmds = ();
-    is_deeply($backend->is_shutdown, 1, 'return value');
-    is_deeply(\@invoked_cmds, [[$cmd_ctl, 'is_shutdown']], 'is_shutdown invoked') or always_explain \@invoked_cmds;
+    is_deeply $backend->is_shutdown, 1, 'return value';
+    is_deeply \@invoked_cmds, [[$cmd_ctl, 'is_shutdown']], 'is_shutdown invoked' or always_explain \@invoked_cmds;
 };
 
 subtest 'eject_cd' => sub {
@@ -131,11 +131,11 @@ subtest 'eject_cd' => sub {
     $backend->eject_cd;
     $backend->eject_cd({id => 'cd1'});
     $backend->eject_cd({force => 1});
-    is_deeply(\@invoked_cmds, [
-            [$cmd_ctl, 'eject'],
-            [$cmd_ctl, 'eject', '--id=cd1'],
-            [$cmd_ctl, 'eject', '--force'],
-    ], 'eject commands invoked') or always_explain \@invoked_cmds;
+    is_deeply \@invoked_cmds, [
+        [$cmd_ctl, 'eject'],
+        [$cmd_ctl, 'eject', '--id=cd1'],
+        [$cmd_ctl, 'eject', '--force'],
+    ], 'eject commands invoked' or always_explain \@invoked_cmds;
 };
 
 subtest 'error handling' => sub {

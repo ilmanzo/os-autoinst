@@ -27,6 +27,7 @@ is qx{git grep -l '^use POSIX;'}, '', 'Use of bare POSIX import is discouraged, 
 is qx{git grep --all-match -P -e '^use Mojo::Base' -e '^use base (?!.*# no:style)'}, '', 'No redundant Mojo::Base+base';
 is qx{git grep -I -l -P '^use (warnings|strict)' ':!external/'}, '', 'No files using "warning|strict", should use Mojo::Base instead';
 is qx{git grep -I -l 'sub [a-z_A-Z0-9]\\+()'}, '', 'Consistent space before function signatures (this is not ensured by perltidy)';
+is qx{git grep -Pr "(?<!->)(?<!sub )\\b(ok|is|isnt|like|unlike|cmp_ok|can_ok|isa_ok|subtest|diag|note|explain|pass|fail|new_ok|is_deeply)\\s*\\(" {t,xt}/ | grep -vE "(t|xt)/(lib|testresults|data|fake)/|\\.py:"}, '', 'Consistent Test::More call format (no parentheses)';
 is qx{git grep -I -l -E 'Copyright [0-9]{4}(-?[0-9]{4})? SUSE LLC' ':!external/'}, '', "No files using 'Copyright <year> SUSE LLC'";
 
 done_testing;

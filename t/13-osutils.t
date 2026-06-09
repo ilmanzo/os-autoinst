@@ -41,45 +41,45 @@ subtest gen_params => sub {
     my $condition = 0;
 
     gen_params \@params, 'test', '1';
-    is_deeply(\@params, [qw(-foo bar -baz foobar -test 1)], 'added parameter');
+    is_deeply \@params, [qw(-foo bar -baz foobar -test 1)], 'added parameter';
 
     my $nothing;
     @params = qw(-foo bar);
     gen_params \@params, 'test', $nothing;
-    is_deeply(\@params, [qw(-foo bar)], "didn't added any parameter");
+    is_deeply \@params, [qw(-foo bar)], "didn't added any parameter";
 
     @params = qw(-foo bar);
     gen_params \@params, 'test', [qw(1 2 3)];
-    is_deeply(\@params, [qw(-foo bar -test), '1,2,3'], 'Added parameter if parameter is an arrayref');
+    is_deeply \@params, [qw(-foo bar -test), '1,2,3'], 'Added parameter if parameter is an arrayref';
 
     @params = qw(-foo bar);
     my $apple = 1;
     my $tree = 2;
     my $bar = 3;
     gen_params \@params, 'test', [qv "$apple $tree $bar"];
-    is_deeply(\@params, [qw(-foo bar -test), '1,2,3'], 'Added parameter if parameter is an arrayref supplied with qv()');
+    is_deeply \@params, [qw(-foo bar -test), '1,2,3'], 'Added parameter if parameter is an arrayref supplied with qv()';
 
     my $nothing_is_there;
     @params = qw(-foo bar);
     gen_params \@params, 'test', $nothing_is_there;
-    is_deeply(\@params, [qw(-foo bar)], "don't add parameter if it's empty");
+    is_deeply \@params, [qw(-foo bar)], "don't add parameter if it's empty";
 
 
     @params = qw(!!foo bar);
     gen_params \@params, 'test', [qv "$apple $tree $bar"], prefix => '!!';
-    is_deeply(\@params, [qw(!!foo bar !!test), '1,2,3'], 'Added parameter if parameter is an arrayref and with custom prefix');
+    is_deeply \@params, [qw(!!foo bar !!test), '1,2,3'], 'Added parameter if parameter is an arrayref and with custom prefix';
 
     @params = qw(-kernel vmlinuz -initrd initrd);
     gen_params \@params, 'append', 'ro root=/dev/sda1';
-    is_deeply(\@params, [('-kernel', 'vmlinuz', '-initrd', 'initrd', '-append', "\'ro root=/dev/sda1\'")], 'Quote itself if parameter contains whitespace');
+    is_deeply \@params, [('-kernel', 'vmlinuz', '-initrd', 'initrd', '-append', "\'ro root=/dev/sda1\'")], 'Quote itself if parameter contains whitespace';
 
     @params = qw(-kernel vmlinuz -initrd initrd);
     gen_params \@params, 'append', 'ro root=/dev/sda1', no_quotes => 1;
-    is_deeply(\@params, [('-kernel', 'vmlinuz', '-initrd', 'initrd', '-append', 'ro root=/dev/sda1')], 'Do not quote itself if pass no_quotes argument');
+    is_deeply \@params, [('-kernel', 'vmlinuz', '-initrd', 'initrd', '-append', 'ro root=/dev/sda1')], 'Do not quote itself if pass no_quotes argument';
 
     @params = qw(-kernel vmlinuz);
     gen_params \@params, 'append', 'ro root=/dev/sda1', no_quotes => 1, prefix => '--';
-    is_deeply(\@params, [('-kernel', 'vmlinuz', '--append', 'ro root=/dev/sda1')], 'Do not quote itself if pass no_quotes argument with custom prefix');
+    is_deeply \@params, [('-kernel', 'vmlinuz', '--append', 'ro root=/dev/sda1')], 'Do not quote itself if pass no_quotes argument with custom prefix';
 };
 
 subtest dd_gen_params => sub {
@@ -89,28 +89,28 @@ subtest dd_gen_params => sub {
     my $condition = 0;
 
     dd_gen_params \@params, 'test', '1';
-    is_deeply(\@params, [qw(--foo bar --baz foobar --test 1)], 'added parameter');
+    is_deeply \@params, [qw(--foo bar --baz foobar --test 1)], 'added parameter';
 
     my $nothing;
     @params = qw(--foo bar);
     dd_gen_params \@params, 'test', $nothing;
-    is_deeply(\@params, [qw(--foo bar)], "didn't added any parameter");
+    is_deeply \@params, [qw(--foo bar)], "didn't added any parameter";
 
     @params = qw(--foo bar);
     dd_gen_params \@params, 'test', [qw(1 2 3)];
-    is_deeply(\@params, [qw(--foo bar --test), '1,2,3'], 'Added parameter if parameter is an arrayref');
+    is_deeply \@params, [qw(--foo bar --test), '1,2,3'], 'Added parameter if parameter is an arrayref';
 
     @params = qw(--foo bar);
     my $apple = 1;
     my $tree = 2;
     my $bar = 3;
     dd_gen_params \@params, 'test', [qv "$apple $tree $bar"];
-    is_deeply(\@params, [qw(--foo bar --test), '1,2,3'], 'Added parameter if parameter is an arrayref supplied with qv()');
+    is_deeply \@params, [qw(--foo bar --test), '1,2,3'], 'Added parameter if parameter is an arrayref supplied with qv()';
 
     my $nothing_is_there;
     @params = qw(--foo bar);
     dd_gen_params \@params, 'test', $nothing_is_there;
-    is_deeply(\@params, [qw(--foo bar)], "don't add parameter if it's empty");
+    is_deeply \@params, [qw(--foo bar)], "don't add parameter if it's empty";
 
 };
 
@@ -163,15 +163,15 @@ subtest run_diag => sub {
     use osutils 'run_diag';
 
     stderr_like {
-        is(run_diag(qw(echo foo)), 'foo', 'Return stdout')
+        is run_diag(qw(echo foo)), 'foo', 'Return stdout'
     } qr/terminated with 0/, 'Exit code appear in log';
 
     stderr_like {
-        is(run_diag('echo foo 1>&2'), 'foo', 'Return stderr')
+        is run_diag('echo foo 1>&2'), 'foo', 'Return stderr'
     } qr/running `echo/, 'Command appear in log';
 
     stderr_unlike {
-        is(run_diag('false'), '', 'Empty string, if command does not produce output')
+        is run_diag('false'), '', 'Empty string, if command does not produce output'
     } qr/^\s*$/m, 'No empty line, if command does not produce output';
 
 
@@ -185,7 +185,7 @@ subtest run_diag => sub {
     } qr/foo\d+bar/, 'STDERR output appear in the log';
 
     stderr_like {
-        is(run_diag('/I_do_not_exists'), undef, 'Return undef on execution error and do not die')
+        is run_diag('/I_do_not_exists'), undef, 'Return undef on execution error and do not die'
     } qr/No such file or directory/, 'Error message appear in log';
 };
 

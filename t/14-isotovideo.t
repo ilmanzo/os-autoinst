@@ -55,16 +55,16 @@ subtest 'get the version number' => sub {
     chdir "$Bin/..";
     combined_like { system $^X, "$toplevel_dir/isotovideo", '--workdir', $pool_dir, '--version' } qr/Current version is.+\[interface v[0-9]+\]/, 'version printed';
     chdir $pool_dir;
-    ok(!-e bmwqemu::STATE_FILE, 'no state file was written');
+    ok !-e bmwqemu::STATE_FILE, 'no state file was written';
 };
 
 subtest 'color output can be configured via the command-line' => sub {
     chdir $pool_dir;
     unlink 'vars.json' if -e 'vars.json';
     my $out = stderr_from { isotovideo(opts => "--color=yes casedir=$data_dir/tests schedule=module1,bar/module2 _exit_after_schedule=1") };
-    isnt($out, colorstrip($out), 'logs use colors when requested');
+    isnt $out, colorstrip($out), 'logs use colors when requested';
     $out = stderr_from { isotovideo(opts => "--color=no casedir=$data_dir/tests schedule=module1,bar/module2 _exit_after_schedule=1") };
-    is($out, colorstrip($out), 'no colors in logs');
+    is $out, colorstrip($out), 'no colors in logs';
 };
 
 subtest 'standalone isotovideo without any parameters' => sub {
@@ -104,7 +104,7 @@ subtest 'isotovideo with custom git repo parameters specified' => sub {
     # run during a `git rebase -x 'make test'`
     delete @ENV{qw(GIT_DIR GIT_REFLOG_ACTION GIT_WORK_TREE)};
     my $git_init_output = qx{git init -q --bare repo.git 2>&1};
-    is($?, 0, 'initialized test repo') or always_explain $git_init_output;
+    is $?, 0, 'initialized test repo' or always_explain $git_init_output;
     # Ensure the checkout folder does not exist so that git clone tries to
     # create a new checkout on every test run
     remove_tree('repo');
@@ -118,9 +118,9 @@ subtest 'isotovideo with custom git repo parameters specified' => sub {
 
     subtest 'fatal error recorded for passing as reason' => sub {
         my $state = decode_json($base_state->slurp);
-        if (is(ref $state, 'HASH', 'state file contains object')) {
-            is($state->{component}, 'isotovideo', 'state file contains component');
-            like($state->{msg}, qr/Unable to clone Git repository/, 'state file contains error message');
+        if (is ref $state, 'HASH', 'state file contains object') {
+            is $state->{component}, 'isotovideo', 'state file contains component';
+            like $state->{msg}, qr/Unable to clone Git repository/, 'state file contains error message';
         }
     };
 };
@@ -154,24 +154,24 @@ subtest 'isotovideo with wheels' => sub {
             return 1;
     });
     checkout_wheels($case_dir, $wheels_dir);
-    is($repos[0][0], 'https://github.com/foo/bar.git', 'repo with full URL');
-    is(scalar @repos, 1, 'one wheel');
+    is $repos[0][0], 'https://github.com/foo/bar.git', 'repo with full URL';
+    is scalar @repos, 1, 'one wheel';
     $specfile->spew("version: v0.1\nwheels: [https://github.com/foo/bar.git#branch]");
     checkout_wheels($case_dir, $wheels_dir);
-    is($repos[1][0], 'https://github.com/foo/bar.git', 'repo URL with branch');
-    is($repos[1][1], 'branch', 'repo URL with branch');
-    is(scalar @repos, 2, 'one wheel');
+    is $repos[1][0], 'https://github.com/foo/bar.git', 'repo URL with branch';
+    is $repos[1][1], 'branch', 'repo URL with branch';
+    is scalar @repos, 2, 'one wheel';
     $specfile->spew("version: v0.1\nwheels: [foo/bar]");
     checkout_wheels($case_dir, $wheels_dir);
-    is(scalar @repos, 3, 'one wheel');
-    is($repos[2][0], 'https://github.com/foo/bar.git', 'only wheel');
+    is scalar @repos, 3, 'one wheel';
+    is $repos[2][0], 'https://github.com/foo/bar.git', 'only wheel';
     $specfile->spew("version: v0.1\nwheels: [foo/bar, spam/eggs]");
     checkout_wheels($case_dir, $wheels_dir);
-    is($repos[4][0], 'https://github.com/spam/eggs.git', 'second wheel');
-    is(scalar @repos, 5, 'two wheels');
+    is $repos[4][0], 'https://github.com/spam/eggs.git', 'second wheel';
+    is scalar @repos, 5, 'two wheels';
     $specfile->remove;
-    is(checkout_wheels($case_dir, $wheels_dir), 1, 'no wheels');
-    is(scalar @repos, 5, 'git never called');
+    is checkout_wheels($case_dir, $wheels_dir), 1, 'no wheels';
+    is scalar @repos, 5, 'git never called';
 
     # also verify that isotovideo invokes the wheel code correctly
     $specfile->spew("version: v0.1\nwheels: [copy/writer]");
@@ -203,7 +203,7 @@ subtest 'isotovideo with wheels' => sub {
             1;
             EOM
             path($wheels_dir, 'writer', 'tests', 'pen')->make_path->child("ink$i.pm")->spew("use Mojo::Base 'basetest'; use Copy::Writer::Content$i 'write'; sub run {}; 1");
-            is(0, checkout_wheels($case_dir, $wheels_dir), 'wheels checkout out');
+            is 0, checkout_wheels($case_dir, $wheels_dir), 'wheels checkout out';
             load_test_schedule;
             like $diags[0], qr/scheduling ink$i/, 'module from the wheel scheduled';
             my $ret = eval "Copy::Writer::Content${i}::write()";
@@ -272,8 +272,8 @@ subtest 'upload assets on demand even in failed jobs' => sub {
             opts => "casedir=$data_dir/tests schedule=$module force_publish_hdd_1=foo.qcow2 qemu_no_kvm=1 arch=i386 backend=qemu qemu=i386 novideo=1", exit_code => 0) };
     like $log, qr/scheduling failing_module $module\.pm/, 'module scheduled';
     like $log, qr/qemu-img.*foo.qcow2/, 'requested image is published even though the job failed';
-    ok(-e $pool_dir . '/assets_public/foo.qcow2', 'published image exists');
-    ok(!-e bmwqemu::STATE_FILE, 'no fatal error recorded') or die path(bmwqemu::STATE_FILE)->slurp;
+    ok -e $pool_dir . '/assets_public/foo.qcow2', 'published image exists';
+    ok !-e bmwqemu::STATE_FILE, 'no fatal error recorded' or die path(bmwqemu::STATE_FILE)->slurp;
 };
 
 subtest 'load test success when casedir and productdir are relative path' => sub {
@@ -320,7 +320,7 @@ subtest 'publish assets' => sub {
         my $out = combined_from { $return_code = handle_generated_assets($command_handler, 1) };
         like $out, qr/convert.*publish_test.qcow2/, 'publication of asset';
         is $return_code, 0, 'The asset was uploaded successfully' or die path(bmwqemu::STATE_FILE)->slurp;
-        ok(-e $publish_asset, 'test.qcow2 image exists');
+        ok -e $publish_asset, 'test.qcow2 image exists';
         unlink $publish_asset;
     };
 
@@ -333,8 +333,8 @@ subtest 'publish assets' => sub {
         like $out, qr/Requested to force the publication/, 'forced publication of asset';
         is $return_code, 0, 'The asset was uploaded successfully' or die path(bmwqemu::STATE_FILE)->slurp;
         my $force_publish_asset = $pool_dir . '/assets_public/force_publish_test.qcow2';
-        ok(-e $force_publish_asset, 'test.qcow2 image exists');
-        ok(!-e $pool_dir . '/assets_public/publish_test.qcow2', 'the asset defined by PUBLISH_HDD_X would not be generated in an incomplete job');
+        ok -e $force_publish_asset, 'test.qcow2 image exists';
+        ok !-e $pool_dir . '/assets_public/publish_test.qcow2', 'the asset defined by PUBLISH_HDD_X would not be generated in an incomplete job';
         delete $bmwqemu::vars{FORCE_PUBLISH_HDD_1};
     };
 

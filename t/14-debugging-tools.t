@@ -25,14 +25,14 @@ subtest debuggers => sub {
     $vncviewer_called = 0;
     $debugviewer_called = 0;
     spawn_debuggers;
-    is($vncviewer_called, 0, 'vncviewer was not executed');
-    is($debugviewer_called, 0, 'debugviewer was not executed');
+    is $vncviewer_called, 0, 'vncviewer was not executed';
+    is $debugviewer_called, 0, 'debugviewer was not executed';
 
     $ENV{RUN_VNCVIEWER} = 1;
     $ENV{RUN_DEBUGVIEWER} = 1;
     spawn_debuggers;
-    is($vncviewer_called, 1, 'vncviewer was executed');
-    is($debugviewer_called, 1, 'debugviewer was executed');
+    is $vncviewer_called, 1, 'vncviewer was executed';
+    is $debugviewer_called, 1, 'debugviewer was executed';
 };
 
 done_testing();
