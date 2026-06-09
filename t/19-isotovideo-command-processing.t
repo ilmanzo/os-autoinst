@@ -41,10 +41,16 @@ $rpc_mock->redefine(read_json => sub {
 });
 
 # mock bmwqemu/backend
+my $check_screen_token_echo;
+
 package FakeBackend {
     sub new ($class) { bless {messages => []}, $class }
 
     sub _send_json ($self, $cmd) {
+        if ($check_screen_token_echo) {
+            return {found => 1} if $cmd->{cmd} eq 'check_asserted_screen';
+            return {tags => [qw(some fake tags)]};
+        }
         push @{$self->{messages}}, $cmd;
         return $cmd->{cmd} eq 'is_shutdown' ? 'down' : {tags => [qw(some fake tags)]};
     }
@@ -64,6 +70,7 @@ my $command_handler = OpenQA::Isotovideo::CommandHandler->new(
 );
 
 sub reset_state () {
+    $check_screen_token_echo = 0;
     $command_handler->tags(undef);
     $command_handler->pause_test_name(undef);
     $last_received_msg_by_fd[$answer_fd] = undef;
@@ -421,6 +428,41 @@ subtest token_echo => sub {
 
         $command_handler->send_to_backend_requester({ret => 1});
         is $last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token1, 'deferred backend response gets correct token';
+    };
+
+    subtest 'check_screen token echo' => sub {
+        reset_state();
+        $command_handler->test_fd($answer_fd);
+        $check_screen_token_echo = 1;
+
+        my $token = 'check-screen-token';
+        $command_handler->process_command($answer_fd, {cmd => 'check_screen', json_cmd_token => $token, mustmatch => ['some-tag']});
+        is $command_handler->active_check_screen_token, $token, 'active_check_screen_token is stored';
+
+        $command_handler->no_wait(1);
+        $command_handler->check_asserted_screen();
+        is $last_received_msg_by_fd[$answer_fd]->{json_cmd_token}, $token, 'check_screen token is echoed back in check_asserted_screen response';
+        is $command_handler->active_check_screen_token, undef, 'active_check_screen_token is cleared after responding';
+    };
+
+    subtest 'tests_done clears pending state' => sub {
+        reset_state();
+        $command_handler->test_fd($answer_fd);
+        $command_handler->backend_requester($answer_fd);
+        $command_handler->backend_requester_token('some-backend-token');
+        $command_handler->postponed_command({cmd => 'status'});
+        $command_handler->postponed_answer_fd($answer_fd);
+        $command_handler->postponed_token('some-postponed-token');
+        $command_handler->active_check_screen_token('some-check-token');
+
+        $command_handler->process_command($answer_fd, {cmd => 'tests_done', json_cmd_token => 'tests-done-token'});
+
+        is $command_handler->backend_requester, undef, 'backend_requester is cleared upon tests_done';
+        is $command_handler->backend_requester_token, undef, 'backend_requester_token is cleared upon tests_done';
+        is $command_handler->postponed_command, undef, 'postponed_command is cleared upon tests_done';
+        is $command_handler->postponed_answer_fd, undef, 'postponed_answer_fd is cleared upon tests_done';
+        is $command_handler->postponed_token, undef, 'postponed_token is cleared upon tests_done';
+        is $command_handler->active_check_screen_token, undef, 'active_check_screen_token is cleared upon tests_done';
     };
 };
 
