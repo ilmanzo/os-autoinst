@@ -106,7 +106,7 @@ sub read_json ($socket, $cmd_token = undef, $multi = undef) {
         handle_read_error($fd) until (my @res = $s->can_read);
 
         my $qbuffer;
-        if (!sysread $socket, $qbuffer, READ_BUFFER) { bmwqemu::fctwarn("sysread failed: $!") if is_debug(); return }
+        if (!sysread $socket, $qbuffer, READ_BUFFER) { bmwqemu::fctwarn("sysread failed: $!") if is_debug(); return $multi ? () : undef }
         $cjx->incr_parse($qbuffer);
     }
 

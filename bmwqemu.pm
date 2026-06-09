@@ -304,7 +304,7 @@ sub log_call (@args) {
 # backend management
 
 sub stop_vm () {
-    return unless $backend;
+    return undef unless $backend;
     my $ret = $backend->stop();
     return $ret;
 }

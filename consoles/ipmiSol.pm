@@ -78,7 +78,7 @@ sub activate ($self) {
 }
 
 sub disable ($self) {
-    return unless $self->{serialpid};
+    return undef unless $self->{serialpid};
     $self->{serial_pipe}->print("GO!\n");
     $self->{serial_pipe}->close;
     bmwqemu::diag "waiting for termination of ipmiconsole $self->{serialpid}";

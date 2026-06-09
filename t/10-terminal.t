@@ -386,7 +386,7 @@ sub report_child_test ($method, @args) {
 }
 
 sub retrieve_child_tests () {
-    return unless -e $sharefile;
+    return undef unless -e $sharefile;
     my $fd = path($sharefile)->open('<');
     flock $fd, LOCK_SH;
     my %tests;

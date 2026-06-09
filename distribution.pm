@@ -169,7 +169,7 @@ sub script_run ($self, $cmd, @args) {
             testapi::query_isotovideo('backend_clear_serial_buffer', {});
             testapi::type_string "$cmd\n", max_interval => $args{max_interval};
             my $res = testapi::wait_serial(qr/OA:DONE-[0-9a-f]{4}-(\d+)-/, timeout => $args{timeout}, quiet => $args{quiet}, record_command => $cmd, internal_marker => 1, capture_name => 'Exit code');
-            return unless $res;
+            return undef unless $res;
             return ($res =~ /OA:DONE-[0-9a-f]{4}-(\d+)-/)[0];
         }
         $str = testapi::hashed_string('SR' . $cmd . $args{timeout});
@@ -192,13 +192,13 @@ sub script_run ($self, $cmd, @args) {
             }
         }
         my $res = testapi::wait_serial($wait_pattern, timeout => $args{timeout}, quiet => $args{quiet}, record_command => $cmd, internal_marker => 1, capture_name => 'Exit code');
-        return unless $res;
+        return undef unless $res;
         return ($res =~ $wait_pattern)[0];
     }
     else {
         testapi::type_string "$cmd", max_interval => $args{max_interval};
         testapi::send_key 'ret';
-        return;
+        return undef;
     }
 }
 
@@ -263,7 +263,7 @@ sub script_sudo ($self, $prog, $wait = 10) {
     if ($str) {
         return testapi::wait_serial($str, $wait, internal_marker => 1);
     }
-    return;
+    return undef;
 }
 
 =head2 script_output
@@ -448,7 +448,7 @@ markers to serial.
 =cut
 
 sub install_serial_marker_hook ($self, $level) {
-    return if $level < 2;
+    return undef if $level < 2;
     my $dev = "/dev/$testapi::serialdev";
     my $func;
     if ($level == 3) {

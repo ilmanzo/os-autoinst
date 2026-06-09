@@ -331,7 +331,7 @@ configuration variables.
 sub handle_generated_assets ($command_handler, $clean_shutdown) {
     my $return_code = 0;
     # mark hard disks for upload if test finished
-    return unless $bmwqemu::vars{BACKEND} =~ m/^(qemu|generalhw)$/;
+    return undef unless $bmwqemu::vars{BACKEND} =~ m/^(qemu|generalhw)$/;
     my @toextract;
     my $nd = $bmwqemu::vars{NUMDISKS} // 1;
     if ($command_handler->test_completed) {

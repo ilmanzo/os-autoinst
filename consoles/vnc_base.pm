@@ -19,7 +19,7 @@ sub disable ($self) {
 }
 
 sub disable_vnc_stalls ($self) {
-    return unless $self->{vnc};
+    return undef unless $self->{vnc};
     $self->{vnc}->check_vnc_stalls(0);
     return 0;
 }
@@ -43,7 +43,7 @@ sub request_screen_update ($self, $args = undef) {
 }
 
 sub current_screen ($self) {
-    return unless $self->{vnc};
+    return undef unless $self->{vnc};
 
     unless ($self->{vnc}->_framebuffer) {
         # No _framebuffer yet.  First connect?  Tickle vnc server to
@@ -58,7 +58,7 @@ sub current_screen ($self) {
     }
 
     $self->{vnc}->update_framebuffer();
-    return unless $self->{vnc}->_framebuffer;
+    return undef unless $self->{vnc}->_framebuffer;
     return $self->{vnc}->_framebuffer;
 }
 

@@ -359,7 +359,7 @@ sub _check_backend_response ($rsp, $check, $timeout, $mustmatch) {
             $autotest::current_test->save_test_result();
             # now back into waiting for the backend
             $rsp = myjsonrpc::read_json($autotest::isotovideo);
-            return unless $rsp;
+            return undef unless $rsp;
             $rsp = $rsp->{ret};
             $rsp->{tags} = $tags;
             return _check_backend_response($rsp, $check, $timeout, $mustmatch);
@@ -368,7 +368,7 @@ sub _check_backend_response ($rsp, $check, $timeout, $mustmatch) {
     else {
         die 'unexpected response ' . bmwqemu::pp($rsp);
     }
-    return;
+    return undef;
 }
 
 sub _check_or_assert ($mustmatch, $check, %args) {
@@ -521,7 +521,7 @@ sub click_lastmatch (%args) {
     $args{mousehide} //= 0;
     $args{point_id} //= undef;
 
-    return unless $last_matched_needle;
+    return undef unless $last_matched_needle;
 
     my $old_mouse_coords = query_isotovideo('backend_get_last_mouse_set');
 
@@ -890,7 +890,7 @@ sub wait_serial ($regexp, @args) {
     $autotest::current_test->record_serialresult(bmwqemu::pp($regexp), $matched, $ret->{string}, command => $args{record_command}, internal_marker => $args{internal_marker}, marker_pattern => $regexp, capture_name => $args{capture_name}) unless ($args{quiet});
     bmwqemu::fctres("$regexp: $matched");
     return $ret->{string} if ($matched eq 'ok');
-    return;    # false
+    return undef;    # false
 }
 
 =head2 x11_start_program
@@ -1167,7 +1167,7 @@ sub get_test_data ($path) {
     bmwqemu::log_call(path => $path);
     unless (-e $path) {
         bmwqemu::diag("File doesn't exist: $path");
-        return;
+        return undef;
     }
     return path($path)->slurp;
 }
@@ -2173,7 +2173,7 @@ sub upload_logs ($file, %args) {
 
     if (get_var('OFFLINE_SUT')) {
         record_info('upload skipped', "Skipped uploading log file '$file' as we are offline");
-        return;
+        return undef;
     }
     bmwqemu::log_call(file => $file, failok => $failok, timeout => $timeout, %args);
     my $basename = basename($file);
@@ -2225,7 +2225,7 @@ C<$nocheck> parameter:
 sub upload_asset ($file, $public = undef, $nocheck = undef) {
     if (get_var('OFFLINE_SUT')) {
         record_info('upload skipped', "Skipped uploading asset '$file' as we are offline");
-        return;
+        return undef;
     }
     bmwqemu::log_call(file => $file, public => $public, nocheck => $nocheck);
     my $cmd = "curl --form upload=\@$file ";

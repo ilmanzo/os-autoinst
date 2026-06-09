@@ -600,7 +600,7 @@ sub verify_sound_image ($self, $imgpath, $mustmatch, $check) {
     else {
         $self->record_screenfail(@needles_params, result => 'fail', overall => 'fail');
     }
-    return;
+    return undef;
 }
 
 sub search_for_expected_serial_failures ($self) {

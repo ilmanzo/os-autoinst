@@ -168,8 +168,8 @@ sub do_stop_vm ($self, @) {
 sub can_handle ($self, $args) {
     my $vars = \%bmwqemu::vars;
 
-    return unless $args->{function} eq 'snapshots';
-    return if $vars->{QEMU_DISABLE_SNAPSHOTS};
+    return undef unless $args->{function} eq 'snapshots';
+    return undef if $vars->{QEMU_DISABLE_SNAPSHOTS};
     my @models = ($vars->{HDDMODEL}, map { $vars->{"HDDMODEL_$_"} } (1 .. $vars->{NUMDISKS}));
     my $nvme = first { ($_ // '') eq 'nvme' } @models;
     return {ret => 1} unless $nvme;
@@ -341,7 +341,7 @@ sub save_memory_dump ($self, $args) {
 
     my $rsp = $self->handle_qmp_command({execute => 'query-status'}, fatal => 1);
     bmwqemu::diag("Migrating the machine (Current VM state is $rsp->{return}->{status})");
-    my $was_running = $rsp->{return}->{status} eq 'running';
+    my $was_running = $rsp->{return}->{status} eq 'running';    ## no critic (Community::EmptyReturn)
 
     mkpath('ulogs');
     $self->_migrate_to_file(compress_level => $compress_method eq 'internal' ? $compress_level : 0,
@@ -1209,7 +1209,7 @@ sub close_pipes ($self, $closeall = 0) {
 }
 
 sub is_shutdown ($self, @) {
-    my $ret = $self->handle_qmp_command({execute => 'query-status'})->{return}->{status}
+    my $ret = $self->handle_qmp_command({execute => 'query-status'})->{return}->{status}    ## no critic (Community::EmptyReturn)
       || 'unknown';
 
     diag("QEMU status is not 'shutdown', it is '$ret'") if $ret ne 'shutdown';
