@@ -146,7 +146,7 @@ sub _get_ustreamer_cmd ($self, $url, $sink_name) {
         '--dv-timings',    # enable using DV timings (getting resolution, and reacting to changes)
     ];
     # workaround for https://github.com/raspberrypi/linux/issues/6068
-    push @$cmd, ('--format-swap-rgb', '1') if ($swap);
+    push @$cmd, qw(--format-swap-rgb 1) if ($swap);
     return $cmd;
 }
 

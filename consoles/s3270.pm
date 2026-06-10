@@ -246,7 +246,7 @@ sub sequence_3270 ($self, @commands) { $self->send_3270($_) for @commands }
 # map the terminal status of x3270 to a hash
 sub nice_3270_status ($self, $status_string) {
     my (@raw_status) = split ' ', $status_string;
-    my @status_names = (
+    my @status_names = (    ## no critic (CodeLayout::ProhibitQuotedWordLists)
         'keyboard_state',
         ## If the keyboard is unlocked, the letter U. If the
         ## keyboard is locked waiting for a response from the

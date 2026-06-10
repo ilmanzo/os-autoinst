@@ -659,7 +659,7 @@ sub _set_graphics_backend ($self) {
         $device = 'virtio-gpu';
     }
     $device //= 'VGA';
-    my @edids = ('VGA', 'virtio-vga', 'virtio-vga-gl', 'virtio-gpu-pci', 'bochs-display', 'virtio-gpu');
+    my @edids = qw(VGA virtio-vga virtio-vga-gl virtio-gpu-pci bochs-display virtio-gpu);
     if (grep { $device eq $_ } @edids) {
         # these devices support EDID
         $options = ",edid=on,xres=$self->{xres},yres=$self->{yres}";
