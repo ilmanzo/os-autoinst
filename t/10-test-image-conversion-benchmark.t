@@ -18,7 +18,7 @@ cv::init();
 require tinycv;
 
 
-my ($res, $needle, $image, $cand, $img_src);
+my ($image, $img_src);
 
 my $data_dir = "$Bin/data";
 my $result_dir = "$data_dir/results";

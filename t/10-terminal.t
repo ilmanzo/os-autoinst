@@ -141,7 +141,7 @@ sub try_read ($fd, $fd_w, $expected) {
 
 # A mock terminal which we can communicate with over a UNIX socket
 sub fake_terminal ($pipe_in, $pipe_out) {
-    my ($fd, $listen_fd);
+    my $fd;
 
     $SIG{ALRM} = sub {
         report_child_test(fail => 'fake_terminal timed out while waiting for a connection');    # uncoverable statement

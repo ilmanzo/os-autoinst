@@ -901,7 +901,7 @@ sub _receive_update ($self) {
 
 sub _discard_ikvm_message ($self, $type, $bytes) {
     # we don't care for the content
-    $self->socket->read(my $dummy, $bytes);
+    $self->socket->read(my $dummy, $bytes);    ## no critic (Variables::ProhibitUnusedVariables)
     print "discarding $bytes bytes for message $type\n";
 
     #   when 0x04
@@ -1127,7 +1127,7 @@ sub _receive_cut_text ($self) {
     my $socket = $self->socket;
     $socket->read(my $cut_msg, 7) || OpenQA::Exception::VNCProtocolError->throw(error => 'unexpected end of data');
     my $cut_length = unpack 'xxxN', $cut_msg;
-    $socket->read(my $cut_string, $cut_length)
+    $socket->read(my $cut_string, $cut_length)    ## no critic (Variables::ProhibitUnusedVariables)
       || OpenQA::Exception::VNCProtocolError->throw(error => 'unexpected end of data');
 
     # And discard it...

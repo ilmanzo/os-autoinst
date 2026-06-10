@@ -418,7 +418,7 @@ subtest 'video-encoder' => sub {
 subtest 'running test' => sub {
     my $base_state = path(bmwqemu::STATE_FILE);
     $base_state->remove;
-    throws_ok { $baseclass->run(my $channel_in, my $channel_out) } qr/fdopen Invalid argument/, 'error logged';
+    throws_ok { $baseclass->run(undef, my $channel_out) } qr/fdopen Invalid argument/, 'error logged';
     my $state = decode_json($base_state->slurp);
     if (is ref $state, 'HASH', 'state file contains object') {
         is $state->{component}, 'backend', 'state file contains component message';
