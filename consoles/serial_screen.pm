@@ -31,11 +31,11 @@ sub new ($class, $fd_read, $fd_write = undef) {
     return $self;
 }
 
-my $trying_to_use_keys = <<'FIN.';
+my $trying_to_use_keys = <<'FIN';
 Virtio terminal and svirt serial terminal do not support send_key. Use
 type_string (possibly with an ANSI/XTERM escape sequence), or switch to a
 console which sends key presses, not terminal codes.
-FIN.
+FIN
 
 =head2 send_key
 
