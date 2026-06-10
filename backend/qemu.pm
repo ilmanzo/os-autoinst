@@ -595,7 +595,7 @@ sub console_fifo ($name) {
 
 sub create_virtio_console_fifo () { console_fifo($_) for virtio_console_fifo_names }
 
-sub delete_virtio_console_fifo () { unlink $_ or bmwqemu::fctwarn("Could not unlink $_ $!") for grep { -e } virtio_console_fifo_names }
+sub delete_virtio_console_fifo () { unlink or bmwqemu::fctwarn("Could not unlink $_ $!") for grep { -e } virtio_console_fifo_names }
 
 sub qemu_params_ofw ($self) {
     my $vars = \%bmwqemu::vars;
@@ -1050,8 +1050,7 @@ sub start_qemu ($self) {
     # The first item will have '-' prepended to it.
     if ($vars->{QEMU_APPEND}) {
         # Split multiple options, if needed
-        my @spl = split / -/, $vars->{QEMU_APPEND};
-        sp(split ' ', $_) for @spl;
+        sp(split ' ') for split / -/, $vars->{QEMU_APPEND};
     }
 
     create_virtio_console_fifo();

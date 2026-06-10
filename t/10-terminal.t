@@ -325,9 +325,9 @@ sub check_child ($child, $expected_exit_status = 0) {
 my $pipe_in = $socket_path . '.in';
 my $pipe_out = $socket_path . '.out';
 
-for (($pipe_in, $pipe_out)) {
-    unlink $_ if -p $_;
-    mkfifo $_, 0666 or die "Cannot create fifo pipe $_";
+for my $pipe ($pipe_in, $pipe_out) {
+    unlink $pipe if -p $pipe;
+    mkfifo $pipe, 0666 or die "Cannot create fifo pipe $pipe";
 }
 
 my $fpid = fork || do {
