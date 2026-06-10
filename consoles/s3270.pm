@@ -67,7 +67,7 @@ sub send_3270 ($self, $command = '', %arg) {
         command_output => \@out_array,
     };
 
-    $_ =~ s/^data: // for @{$out->{command_output}};
+    s/^data: // for @{$out->{command_output}};
     confess "expected command exit status $arg{command_status}, got $out->{command_status}"
       if $arg{command_status} ne 'any' && $out->{command_status} ne $arg{command_status};
     return $out;

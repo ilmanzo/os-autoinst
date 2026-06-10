@@ -35,7 +35,7 @@ if (-d '.git' and which('git')) {
     my @all_git_files = qx{git ls-files};
     chomp @all_git_files;
     my %skip = map { $_ => undef } @$TEST_SKIP;
-    @files = map { $root . $_ } grep { !exists $skip{$_} && $_ !~ /^t\// } @all_git_files;    # Exclude files to skip
+    @files = map { $root . $_ } grep { !exists $skip{$_} && !/^t\// } @all_git_files;    # Exclude files to skip
 }
 else {
     @files = ($test->all_pm_files('.'), $test->all_pl_files('.'));    # uncoverable statement

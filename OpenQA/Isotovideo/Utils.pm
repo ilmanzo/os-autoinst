@@ -391,7 +391,9 @@ sub load_test_schedule (@) {
         unshift @INC, '.' unless path($bmwqemu::vars{CASEDIR})->is_abs;
         bmwqemu::fctinfo 'Enforced test schedule by \'SCHEDULE\' variable in action';
         $bmwqemu::vars{INCLUDE_MODULES} = undef;
-        autotest::loadtest($_ =~ qr/\./ ? $_ : $_ . '.pm') foreach split /[, \n]+/, $bmwqemu::vars{SCHEDULE};
+        for my $test (split /[, \n]+/, $bmwqemu::vars{SCHEDULE}) {
+            autotest::loadtest($test =~ /\./ ? $test : $test . '.pm');
+        }
         $bmwqemu::vars{INCLUDE_MODULES} = 'none';
     }
     my $productdir = $bmwqemu::vars{PRODUCTDIR};

@@ -94,7 +94,7 @@ EO_HEADER
 }
 
 sub read_backend_pm {    # no:style:signatures
-    my ($backend) = $_ =~ /^([^\.]+)\.pm/;
+    my ($backend) = /^([^\.]+)\.pm/;
     return unless $backend;
     # uncoverable statement count:2
     return if (grep { /$backend/i } @backend_blocklist);
