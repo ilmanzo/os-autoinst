@@ -321,7 +321,7 @@ sub _receive_frame_ustreamer ($self) {
 
         my ($magic, $version, $id, $used) = unpack 'QLx4QQ', $ustreamer_map;
         # This is US_MEMSINK_MAGIC, but perl considers hex literals over 32bits non-portable
-        if ($magic != 14627333968358193854) {
+        if ($magic != 14_627_333_968_358_193_854) {
             bmwqemu::diag "Invalid ustreamer magic: $magic";
             return undef;
         }

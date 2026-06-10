@@ -196,7 +196,7 @@ sub _abort_if_storage_limit_exceeded () {
 
 sub ensure_valid_vars () {
     # defaults
-    $vars{QEMUPORT} ||= 15222;
+    $vars{QEMUPORT} ||= 15_222;
     $vars{VNC} ||= 90;
     # openQA already sets a random string we can reuse
     $vars{JOBTOKEN} ||= random_string(10);

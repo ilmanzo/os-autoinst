@@ -103,13 +103,13 @@ is_deeply \@gcmdl, \@cmdl, 'Generate qemu-img command line for multiple new driv
     '-blockdev', 'driver=qcow2,node-name=hd1-overlay0,file=hd1-overlay0-file,cache.no-flush=on,discard=unmap',
     '-device', 'virtio-blk,id=hd1-device,drive=hd1-overlay0');
 $bdc = OpenQA::Qemu::BlockDevConf->new();
-$bdc->add_existing_drive('hd1', '/abs/path/sle15-minimal.qcow2', 'virtio-blk', 22548578304);
+$bdc->add_existing_drive('hd1', '/abs/path/sle15-minimal.qcow2', 'virtio-blk', 22_548_578_304);
 @gcmdl = $bdc->gen_cmdline();
 is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for single existing drive';
 
 $cmdl[-1] .= ',logical_block_size=4096,physical_block_size=4096';
 $bdc = OpenQA::Qemu::BlockDevConf->new();
-$bdc->add_existing_drive('hd1', '/abs/path/sle15-minimal.qcow2', 'virtio-blk', 22548578304, undef, 4096);
+$bdc->add_existing_drive('hd1', '/abs/path/sle15-minimal.qcow2', 'virtio-blk', 22_548_578_304, undef, 4096);
 @gcmdl = $bdc->gen_cmdline();
 is_deeply \@gcmdl, \@cmdl, 'Generate qemu command line for existing drive with 4k sector size';
 
@@ -409,9 +409,9 @@ subtest 'relative assets' => sub {
     my @gcmdl = $proc->blockdev_conf->gen_qemu_img_cmdlines();
     @cmdl = (
         [qw(create -f qcow2 -F qcow2 -b), "$dir/some.qcow2", 'raid/hd0-overlay0', 512],
-        [qw(create -f qcow2 -F raw -b), "$dir/Core-7.2.iso", 'raid/cd0-overlay0', 11814912],
-        [qw(create -f qcow2 -F raw -b), "$dir/Core-7.2.iso", 'raid/cd1-overlay0', 11814912],
-        [qw(create -f qcow2 -F raw -b), "$Bin/data/uefi-code.bin", 'raid/pflash-code-overlay0', 1966080],
+        [qw(create -f qcow2 -F raw -b), "$dir/Core-7.2.iso", 'raid/cd0-overlay0', 11_814_912],
+        [qw(create -f qcow2 -F raw -b), "$dir/Core-7.2.iso", 'raid/cd1-overlay0', 11_814_912],
+        [qw(create -f qcow2 -F raw -b), "$Bin/data/uefi-code.bin", 'raid/pflash-code-overlay0', 1_966_080],
         [qw(create -f qcow2 -F qcow2 -b), "$dir/some.qcow2", 'raid/pflash-vars-overlay0', 512],
     );
     is_deeply \@gcmdl, \@cmdl, 'find the asset real path' or always_explain \@gcmdl;

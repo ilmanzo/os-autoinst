@@ -82,7 +82,7 @@ subtest 'Test open_pipe() error condition' => sub {
     cleanup_pipes($helper);
 
     my $size = 1024;
-    $file_mock->redefine(slurp => sub { return 65536; });
+    $file_mock->redefine(slurp => sub { return 65_536; });
     $vterminal_mock->redefine('get_pipe_sz', sub { return 1024; });
     $vterminal_mock->redefine('set_pipe_sz', sub {
             my ($self, $fd, $newsize) = @_;
@@ -113,7 +113,7 @@ subtest 'Test open_pipe() error condition' => sub {
     $term = consoles::virtio_terminal->new('unit-test-console', {socked_path => $socket_path});
     combined_like { $term->open_pipe() } qr/Set PIPE_SZ from 1024 to 65536/, 'Log mention new size';
     cleanup_pipes($helper);
-    is $size, 65536, 'PIPE_SZ is 65536';
+    is $size, 65_536, 'PIPE_SZ is 65536';
 
     testapi::set_var('VIRTIO_CONSOLE_PIPE_SZ', 5555);
     $helper = prepare_pipes($socket_path);

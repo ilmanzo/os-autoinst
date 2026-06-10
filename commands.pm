@@ -37,7 +37,7 @@ sub _makecpiohead ($name = undef, $s = undef) {
     #        magic ino
     my $h = '07070100000000';
     # mode                S_IFREG
-    $h .= sprintf '%08x', oct(100000) | $s->[2] & oct 777;
+    $h .= sprintf '%08x', oct(100_000) | $s->[2] & oct 777;
     #      uid     gid     nlink
     $h .= '000000000000000000000001';
     $h .= sprintf '%08x%08x', $s->[9], $s->[7];

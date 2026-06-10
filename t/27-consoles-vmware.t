@@ -48,7 +48,7 @@ subtest 'test configuration with fake URL' => sub {
     $fake_vnc->set_always(vmware_vnc_over_ws_url => 'https://root:secret%23@foo.bar');
     $fake_vnc->set_always(hostname => 'original-hostname');
     $fake_vnc->set_always(original_hostname => undef);
-    $fake_vnc->set_always(port => 12345);
+    $fake_vnc->set_always(port => 12_345);
     $fake_vnc->set_true(qw(description));
     $fake_vnc->clear;
 
@@ -62,7 +62,7 @@ subtest 'test configuration with fake URL' => sub {
     $fake_vnc->called_args_pos_is(5, 2, '127.0.0.1', 'hostname set to localhost');
     $fake_vnc->called_pos_ok(6, 'description', 'description assigned');
     $fake_vnc->called_args_pos_is(6, 2, 'VNC over WebSockets server provided by VMWare', 'description set accordingly');
-    is_deeply \@dewebsockify_args, [12345, 'wss://foo', 'session'], 'dewebsockify called with expected args'
+    is_deeply \@dewebsockify_args, [12_345, 'wss://foo', 'session'], 'dewebsockify called with expected args'
       or always_explain \@dewebsockify_args;
     is $vmware->host, 'foo.bar', 'hostname set';
     is $vmware->vm_id, undef, 'no VM-ID set (as our URL did not include one)';

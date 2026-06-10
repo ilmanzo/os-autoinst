@@ -186,7 +186,7 @@ sub get_job_autoinst_url ($target_id) {
             my $properties = $worker->{properties};
             my $hostname = $properties->{WORKER_HOSTNAME} // $worker->{host};
             my $token = $properties->{JOBTOKEN};
-            my $workerport = $worker->{instance} * 10 + 20002 + 1;    # the same as in openqa/script/worker
+            my $workerport = $worker->{instance} * 10 + 20_002 + 1;    # the same as in openqa/script/worker
             my $url = "http://$hostname:$workerport/$token";
             return $url;
         }

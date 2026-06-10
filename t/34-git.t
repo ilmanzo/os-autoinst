@@ -181,7 +181,7 @@ subtest 'cloning with caching' => sub {
         my $fake_checkout2 = $git_cache_dir->child('bar')->make_path;
 
         subtest 'below limit' => sub {
-            $bmwqemu::vars{GIT_CACHE_DIR_LIMIT} = 10000000;
+            $bmwqemu::vars{GIT_CACHE_DIR_LIMIT} = 10_000_000;
             combined_unlike { limit_git_cache_dir($git_cache_dir, $fake_checkout1, $fake_checkout_relative1, $handle_du) }
             qr/removing/i, 'no cleanup was logged';
             ok -d $repo_cache_dir, 'no cleanup has happened yet';
