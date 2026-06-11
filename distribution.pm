@@ -91,7 +91,7 @@ sub become_root ($self) {
     $self->invalidate_serial_marker_hook();
 }
 
-=head 2 disable_key_repeat
+=head2 disable_key_repeat
 
   disable_key_repeat()
 
