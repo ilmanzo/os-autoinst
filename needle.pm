@@ -228,7 +228,7 @@ sub has_tag ($self, $tag) {
 }
 
 sub has_property ($self, $property_name) {
-    return grep { ref($_) eq 'HASH' ? $_->{name} eq $property_name : $_ eq $property_name } @{$self->{properties}};
+    return grep { ref eq 'HASH' ? $_->{name} eq $property_name : $_ eq $property_name } @{$self->{properties}};
 }
 
 sub get_property_value ($self, $property_name) {

@@ -24,9 +24,9 @@ sub prepare_pipes ($socket_path, $write_buffer = undef) {
     my $pipe_in = $socket_path . '.in';
     my $pipe_out = $socket_path . '.out';
 
-    for (($pipe_in, $pipe_out)) {
-        unlink $_ if (-e $_);
-        mkfifo($_, 0666) or die "Cannot create fifo pipe $_";
+    for my $pipe ($pipe_in, $pipe_out) {
+        unlink $pipe if -e $pipe;
+        mkfifo($pipe, 0666) or die "Cannot create fifo pipe $_";
     }
 
     $pipe_data_written = 0;
