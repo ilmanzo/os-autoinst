@@ -295,7 +295,7 @@ sub do_capture ($self, $buckets, $timeout = undef, $starttime = undef) {
 
 =head2 run_capture_loop($timeout)
 
-=out
+=over
 
 =item timeout
 
