@@ -304,8 +304,8 @@ sub configure_pflash ($self, $vars) {
 
         my @secureboot_args = _make_secure_boot_configuration($vars->{UEFI_PFLASH_SECURE_BOOT});
         my @certs = split qr/;/, $vars->{UEFI_PFLASH_CERTS} // '';
-        my @cert_args = map { ('--enroll-cert' => $_) } shift @certs // ();
         my $uuid = '37adf63d-93fb-4af5-9901-12f8767d3841';    # fixed "well-known" UUID
+        my @cert_args = map { ('--enroll-cert' => $_, '--add-db', $uuid, $_) } shift @certs // ();
         push @cert_args, map { ('--add-db', $uuid, $_, '--add-kek', $uuid, $_) } @certs;
         my @res_args = _make_resolution_configuration($vars->{UEFI_PFLASH_RESOLUTION});
         if (@secureboot_args || @cert_args || @res_args) {
