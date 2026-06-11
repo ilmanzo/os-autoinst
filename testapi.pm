@@ -1758,8 +1758,7 @@ sub reset_consoles () {
     return;
 }
 
-=head2
-    current_console
+=head2 current_console
 
 Return the currently selected console, a call when no console is selected, will
 return C<undef>.
