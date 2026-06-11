@@ -17,7 +17,7 @@ use constant AUTOINST_STATUSFILE => 'autoinst-status.json';
 
 # io handles for sending data to command server and backend
 has [qw(test_fd cmd_srv_fd backend_fd backend_out_fd answer_fd)] => undef;
-has [qw(current_command_token backend_requester_token postponed_token)];
+has [qw(current_command_token backend_requester_token postponed_token active_check_screen_token)];
 
 # the name of the current test (full name includes category prefix, eg. installation-)
 has [qw(current_test_name current_test_full_name)];
@@ -70,6 +70,7 @@ sub new ($class, @args) {
 sub clear_tags_and_timeout ($self) {
     $self->tags(undef);
     $self->timeout(undef);
+    $self->active_check_screen_token(undef);
 }
 
 # processes the $response and send the answer back via $answer_fd by invoking one of the subsequent handler methods
@@ -122,6 +123,7 @@ sub _send_to_cmd_srv ($self, $data) { myjsonrpc::send_json($self->cmd_srv_fd, $d
 sub _send_to_backend ($self, $data) { myjsonrpc::send_json($self->backend_fd, $data) }
 
 sub send_to_backend_requester ($self, $data) {
+    return unless $self->backend_requester;
     local $self->{current_command_token} = $self->backend_requester_token;
     $self->_send_response($self->backend_requester, $data);
     $self->backend_requester(undef);
@@ -313,6 +315,12 @@ sub _handle_command_set_current_test ($self, $response, @) {
 sub _handle_command_tests_done ($self, $response, @) {
     $self->test_died($response->{died});
     $self->test_completed($response->{completed});
+    $self->clear_tags_and_timeout();
+    $self->backend_requester(undef);
+    $self->backend_requester_token(undef);
+    $self->postponed_command(undef);
+    $self->postponed_answer_fd(undef);
+    $self->postponed_token(undef);
     $self->_respond_ok();
     $self->emit(tests_done => $response);
     $self->current_test_name('');
@@ -323,6 +331,7 @@ sub _handle_command_tests_done ($self, $response, @) {
 sub _handle_command_check_screen ($self, $response, @) {
     $self->no_wait($response->{no_wait} // 0);
     return if $self->_postpone_backend_command_until_resumed($response);
+    $self->active_check_screen_token($self->current_command_token);
 
     my %arguments = (
         mustmatch => $response->{mustmatch},
@@ -430,7 +439,8 @@ sub check_asserted_screen ($self) {
     # the test needs that information
     $rsp->{tags} = $self->tags;
     if ($rsp->{found} || $rsp->{timeout}) {
-        myjsonrpc::send_json($self->test_fd, {ret => $rsp});
+        local $self->{current_command_token} = $self->active_check_screen_token;
+        $self->_send_response($self->test_fd, {ret => $rsp});
         $self->clear_tags_and_timeout();
     }
     else {
