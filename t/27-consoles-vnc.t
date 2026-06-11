@@ -340,7 +340,7 @@ subtest 'security handshake: DES' => sub {
     $c->_handshake_security;
     my @expected = (
         pack(C => 2),    # client confirms to use DES
-        pack(NNNN => 0x80D03992, 0xB0DB4495, 0x80D03992, 0xB0DB4495),    # client solves challenge
+        pack(NNNN => 0x80_D03_992, 0xB0_DB4_495, 0x80_D03_992, 0xB0_DB4_495),    # client solves challenge
     );
     is_deeply \@printed, \@expected, 'expected response' or always_explain \@printed;
 };

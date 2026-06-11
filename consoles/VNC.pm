@@ -309,7 +309,7 @@ sub _handshake_security ($self) {
 
         $num_tunnels = unpack 'N', $num_tunnels;
         # found in https://github.com/kanaka/noVNC
-        $self->old_ikvm($num_tunnels > 0x1000000 ? 1 : 0);
+        $self->old_ikvm($num_tunnels > 0x1_000_000 ? 1 : 0);
         $socket->read(my $ikvm_session, 20) || die 'unexpected end of data';
         my @bytes = unpack 'C20', $ikvm_session;
         print 'Session info: ';
@@ -1009,7 +1009,7 @@ sub _receive_ikvm_encoding ($self, $encoding_type, $x, $y, $w, $h) {
     $socket->read(my $aten_data, 8);
     my ($data_prefix, $data_len) = unpack 'NN', $aten_data;
 
-    $self->screen_on($w < 33000);    # screen is off is signaled by negative numbers
+    $self->screen_on($w < 33_000);    # screen is off is signaled by negative numbers
 
     # ikvm doesn't bother sending screen size changes
     if ($w != $self->width || $h != $self->height) {

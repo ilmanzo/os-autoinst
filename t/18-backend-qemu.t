@@ -537,13 +537,13 @@ subtest '"balloon" handling' => sub {
     $bmwqemu::vars{QEMU_BALLOON_TARGET} = 1;
     $backend->inflate_balloon;
     is_deeply $$invoked_qmp_cmds, [
-        {execute => 'balloon', arguments => {value => 1048576}}, {execute => 'query-balloon'}, {execute => 'query-balloon'}
+        {execute => 'balloon', arguments => {value => 1_048_576}}, {execute => 'query-balloon'}, {execute => 'query-balloon'}
     ], 'expected QMP commands invoked when "inflating balloon"' or always_explain $$invoked_qmp_cmds;
 
     $$invoked_qmp_cmds = undef;
     $backend->deflate_balloon;
     is_deeply $$invoked_qmp_cmds, [
-        {execute => 'balloon', arguments => {value => 1073741824}}    # QEMURAM * 1048576
+        {execute => 'balloon', arguments => {value => 1_073_741_824}}    # QEMURAM * 1048576
     ], 'expected QMP commands invoked when "deflating balloon"' or always_explain $$invoked_qmp_cmds;
 };
 
@@ -815,9 +815,9 @@ subtest 'special cases when starting QEMU' => sub {
 };
 
 subtest 'extract hostfwd ports from NICTYPE_USER_OPTIONS' => sub {
-    is_deeply [backend::qemu::_extract_hostfwd_ports('hostfwd=tcp::39100-:39100')], [39100], 'single tcp hostfwd';
+    is_deeply [backend::qemu::_extract_hostfwd_ports('hostfwd=tcp::39100-:39100')], [39_100], 'single tcp hostfwd';
     is_deeply [backend::qemu::_extract_hostfwd_ports('hostfwd=tcp::39100-:39100,hostfwd=tcp::5555-:22')],
-      [39100, 5555], 'multiple tcp hostfwd';
+      [39_100, 5555], 'multiple tcp hostfwd';
     is_deeply [backend::qemu::_extract_hostfwd_ports('hostfwd=udp::1234-:1234')], [1234], 'udp hostfwd';
     is_deeply [backend::qemu::_extract_hostfwd_ports('restrict=on')], [], 'no hostfwd options';
     is_deeply [backend::qemu::_extract_hostfwd_ports('')], [], 'empty string';
@@ -838,7 +838,7 @@ subtest 'port availability checks' => sub {
     subtest hostfwd => sub {
         $bmwqemu::vars{NICTYPE} = 'user';
         $bmwqemu::vars{NICTYPE_USER_OPTIONS} = 'hostfwd=tcp::39100-:39100';
-        combined_like { lives_ok { backend::qemu::_assert_port_availability(39100, 'test') } 'free port passes' }
+        combined_like { lives_ok { backend::qemu::_assert_port_availability(39_100, 'test') } 'free port passes' }
         qr/checking 39100 port availability/, 'logs port pre-qemu check with hostfwd';
         $sock_mock->redefine(new => sub { Test::MockObject->new->set_true('close') });
         combined_like { throws_ok { $backend->start_qemu } qr/Port 39100 \(hostfwd\) is already in use/, 'dies on hostfwd port conflict' }

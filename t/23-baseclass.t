@@ -50,7 +50,7 @@ $baseclass_mock->redefine(request_screen_update => sub ($self, $args) {
 my $baseclass = backend::baseclass->new();
 
 subtest 'format_vtt_timestamp' => sub {
-    my $timestamp = 1543917024.24791;
+    my $timestamp = 1_543_917_024.24_791;
     $baseclass->{video_frame_number} = 0;
     is $baseclass->format_vtt_timestamp($timestamp),
       "\n0\n00:00:00.000 --> 00:00:00.041\n[2018-12-04T09:50:24.247]\n",
@@ -269,7 +269,7 @@ subtest 'SSH utilities' => sub {
     # test handling read errors and timeout parameter of run_ssh_cmd()
     ($fail_on_read2, @net_ssh2_error) = (1, -9, 'LIBSSH2_ERROR_TIMEOUT', 'Time out waiting for data');
     throws_ok { $baseclass->run_ssh_cmd('sleep infinity', %ssh_creds, timeout => 100) } qr/waiting for data.*timeout/i, 'read timeout is fatal error';
-    is_deeply \@timeouts, [100000, 42], 'timeout increased to specified value, then set back to mocked default again';
+    is_deeply \@timeouts, [100_000, 42], 'timeout increased to specified value, then set back to mocked default again';
     ($fail_on_read2, @net_ssh2_error) = ();
     @output = $baseclass->run_ssh_cmd('test foo', %ssh_creds, timeout => 100, wantarray => 1);
     is_deeply \@output, [0, '', ''], 'command successful exit without output';

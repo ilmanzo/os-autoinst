@@ -61,11 +61,11 @@ subtest 'Prompt generation' => sub {
     my $prompt = OpenQA::Isotovideo::LLMAnalysis::build_prompt($ctx);
     like $prompt, qr/D V A.*F.*L.*S/s, 'Prompt contains all context';
 
-    my $long = 'A' x 10000;
+    my $long = 'A' x 10_000;
     $ctx->{log_tail} = $long;
     $ctx->{serial_tail} = $long;
     $prompt = OpenQA::Isotovideo::LLMAnalysis::build_prompt($ctx);
-    ok length($prompt) < 17000, 'Prompt truncated';
+    ok length($prompt) < 17_000, 'Prompt truncated';
     like $prompt, qr/sentences answering/s, 'Instructions preserved at end';
 };
 

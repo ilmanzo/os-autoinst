@@ -373,7 +373,7 @@ sub save_memory_dump ($self, $args) {
 sub inflate_balloon ($self) {
     my $vars = \%bmwqemu::vars;
     return unless $vars->{QEMU_BALLOON_TARGET};
-    my $target_bytes = $vars->{QEMU_BALLOON_TARGET} * 1048576;
+    my $target_bytes = $vars->{QEMU_BALLOON_TARGET} * 1_048_576;
     $self->handle_qmp_command({execute => 'balloon', arguments => {value => $target_bytes}}, fatal => 1);
     my $rsp = $self->handle_qmp_command({execute => 'query-balloon'}, fatal => 1);
     my $prev_actual = $rsp->{return}->{actual};
@@ -390,7 +390,7 @@ sub inflate_balloon ($self) {
 sub deflate_balloon ($self) {
     my $vars = \%bmwqemu::vars;
     return unless $vars->{QEMU_BALLOON_TARGET};
-    my $ram_bytes = $vars->{QEMURAM} * 1048576;
+    my $ram_bytes = $vars->{QEMURAM} * 1_048_576;
     $self->handle_qmp_command({execute => 'balloon', arguments => {value => $ram_bytes}}, fatal => 1);
 }
 

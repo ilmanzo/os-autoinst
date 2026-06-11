@@ -73,8 +73,8 @@ subtest 'add relevant downloads' => sub {
     my $touch = sub ($timestamp, $path) {
         path($path)->touch and utime 0, $timestamp, $path or BAIL_OUT("unable to set modification time of $path: $!");
     };
-    $touch->(1514764800, "$needles_dir/foo.png");    # … already up to date (to the exact second)
-    $touch->(1514764799, "$needles_dir/bar.png");    # … is present but outdated (by one second)
+    $touch->(1_514_764_800, "$needles_dir/foo.png");    # … already up to date (to the exact second)
+    $touch->(1_514_764_799, "$needles_dir/bar.png");    # … is present but outdated (by one second)
 
     # define expected downloads: everything from @new_needles except foo.png
     my @expected_downloads = (
