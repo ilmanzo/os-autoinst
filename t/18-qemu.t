@@ -544,21 +544,19 @@ subtest configure_pflash => sub {
     my @expected_base_args = ('virt-fw-vars', '-i', '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin', '-o', "$dir/ovmf-x86_64-ms-4m-vars-adjusted.bin");
     subtest 'UEFI_PFLASH_CERTS and UEFI_PFLASH_SECURE_BOOT' => sub {
         my @commands;
+        my @certs = map { "/certs/$_.crt" } qw(foo bar);
         $mock_proc->redefine(runcmd => sub { push @commands, [@_] });
         $vars{UEFI_PFLASH_VARS} = '/usr/share/qemu/ovmf-x86_64-ms-4m-vars.bin';
-        $vars{UEFI_PFLASH_CERTS} = '/certs/foo.crt;/certs/bar.crt';
+        $vars{UEFI_PFLASH_CERTS} = join ';', @certs;
         $vars{UEFI_PFLASH_SECURE_BOOT} = 1;
         $proc->configure_pflash(\%vars);
-        my @expected_commands = ([@expected_base_args, '--set-true', 'SecureBootEnable', '--set-false', 'CustomMode', '--enroll-cert', '/certs/foo.crt']);
-        my @cert_args = splice @{$commands[0]}, scalar @{$expected_commands[0]};
-        my $uuid_regex = qr/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+        my $expected_uuid = '37adf63d-93fb-4af5-9901-12f8767d3841';
+        my @expected_commands = ([
+                @expected_base_args, '--set-true', 'SecureBootEnable', '--set-false', 'CustomMode',
+                '--enroll-cert', $certs[0], '--add-db', $expected_uuid, $certs[0],
+                '--add-db', $expected_uuid, $certs[1], '--add-kek', $expected_uuid, $certs[1]
+        ]);
         is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
-        is $cert_args[0], '--add-db', 'cert 2 added to db';
-        is $cert_args[1], '37adf63d-93fb-4af5-9901-12f8767d3841', 'UUID for cert 2 created';
-        is $cert_args[2], '/certs/bar.crt', 'path of cert 2 specified';
-        is $cert_args[3], '--add-kek', 'cert 2 added to KEK';
-        is $cert_args[4], $cert_args[1], 'UUID for cert 2 specified for KEK as well';
-        is $cert_args[5], $cert_args[2], 'path of cert 2 specified for KEK as well';
         $mock_proc->unmock('runcmd');
     };
     subtest 'UEFI_PFLASH_RESOLUTION' => sub {
