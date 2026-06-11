@@ -32,12 +32,12 @@ our $VERSION;
 $testapi::password = 'd*97Jlk/.d';
 my $socket_path = './virtio_console';
 my $sharefile = "$Bin/fork-share.txt";
-my $login_prompt_data = <<'FIN.';
+my $login_prompt_data = <<'FIN';
 
 
 Welcome to SUSE Linux Enterprise Server 12 SP2 RC3 (x86_64) - Kernel 4.4.21-65-default (hvc0).
 
-FIN.
+FIN
 $login_prompt_data .= 'linux-5rw7 login: ';
 my $user_name_prompt_data = 'login: ';
 my $user_name_data = "root\n";
@@ -50,12 +50,12 @@ my $normalised_prompt_data = '# ';
 my $C0_EOT = "\cD";
 my $C0_ETX = "\cC";
 my $C1_control_code = qq(\eQ\n);
-my $US_keyboard_data = <<'FIN.';
+my $US_keyboard_data = <<'FIN';
 !@\#$%^&*()-_+={}[]|:;"'<>,.?/~`
 abcdefghijklmnopqrstuvwxyz
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 0123456789
-FIN.
+FIN
 my $stop_code_data = "FIN.\n";
 my $repeat_sequence_count = 1000;
 my $next_test = "GOTO NEXT\n";
