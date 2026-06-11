@@ -159,7 +159,7 @@ sub gen_qemu_img_cmdlines ($self) {
     return (@cmdlns, \@params);
 }
 
-=head 3 gen_unlink_list
+=head3 gen_unlink_list
 
 If any image file in the chain is marked as needs_creating, but already exists
 this will return it in an array so that the caller can unlink it.
