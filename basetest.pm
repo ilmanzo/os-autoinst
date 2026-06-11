@@ -169,7 +169,7 @@ sub record_screenmatch ($self, $img, $match, $tags = [], $failed_needles = [], $
     return $result;
 }
 
-=head2
+=head2 _serialize_match
 
 serialize a match result from needle::search
 
