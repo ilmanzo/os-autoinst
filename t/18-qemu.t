@@ -553,7 +553,7 @@ subtest configure_pflash => sub {
         my $expected_uuid = '37adf63d-93fb-4af5-9901-12f8767d3841';
         my @expected_commands = ([
                 @expected_base_args, '--set-true', 'SecureBootEnable', '--set-false', 'CustomMode',
-                '--enroll-cert', $certs[0], '--add-db', $expected_uuid, $certs[0],
+                '--enroll-cert', $certs[0], '--no-microsoft', '--microsoft-kek', 'none', '--add-db', $expected_uuid, $certs[0],
                 '--add-db', $expected_uuid, $certs[1], '--add-kek', $expected_uuid, $certs[1]
         ]);
         is_deeply \@commands, \@expected_commands, 'virt-fw-vars called' or always_explain \@commands;
