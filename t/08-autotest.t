@@ -350,7 +350,7 @@ is $completed, 0, 'fatal test failure should not complete';
 loadtest 'fatal', 'rescheduling same step later' for 1 .. 10;
 my @opts = qw(script fullname category class);
 is @{$autotest::tests{'tests-fatal'}}{@opts}, @{$autotest::tests{'tests-fatal' . $_}}{@opts}, "tests-fatal$_ share same options with tests-fatal"
-  && is @{$autotest::tests{'tests-fatal' . $_}}{name}, 'fatal#' . $_
+  and is $autotest::tests{'tests-fatal' . $_}->{name}, 'fatal#' . $_
   for 1 .. 10;
 
 subtest 'scheduling rules' => sub {
