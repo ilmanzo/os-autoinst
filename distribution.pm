@@ -155,7 +155,7 @@ sub script_run ($self, $cmd, @args) {
         die "Terminator '&' found in script_run call. script_run can not check script success. Use 'background_script_run' instead."
           if $cmd =~ qr/(?<!\\)&$/;
 
-        my $level = $self->_detect_serial_marker_capability();
+        my $level = $self->detect_serial_marker_capability();
         my $skip_pretty = 0;
         # Automatically protect against manual serial redirections corrupting pretty markers
         if ($level > 1 && $cmd =~ m{(?:>|>>|\btee)\s+(?:-a\s+)?/dev/\Q$testapi::serialdev\E\b}) {
@@ -570,9 +570,9 @@ sub pretty_serial_marker_guard ($self, $value) {
     });
 }
 
-=head2 _detect_serial_marker_capability
+=head2 detect_serial_marker_capability
 
-    _detect_serial_marker_capability()
+    detect_serial_marker_capability()
 
 Detect the SUT's shell capabilities for pretty serial markers.
 Returns:
@@ -582,7 +582,7 @@ Returns:
 
 =cut
 
-sub _detect_serial_marker_capability ($self) {
+sub detect_serial_marker_capability ($self) {
     my $console = testapi::current_console();
     return 1 unless defined $console;
     if (my $level = $self->{_serial_marker_level}->{$console}) {
