@@ -111,7 +111,7 @@ subtest 'pretty_serial_marker' => sub {
     $mock_testapi->redefine(wait_serial => sub { undef });
     $d->{_serial_marker_level} = {};
     $typed_string = '';
-    is $d->_detect_serial_marker_capability(), 1, 'Fallback to Level 1 if BASH detection fails';
+    is $d->detect_serial_marker_capability(), 1, 'Fallback to Level 1 if BASH detection fails';
 
     $d->{_serial_marker_level}->{'test-console'} = 3;
     $mock_testapi->redefine(wait_serial => sub { undef });
@@ -147,7 +147,7 @@ subtest 'serial_marker_reinstall_cached_level' => sub {
     $d->{_serial_marker_level}->{'test-console'} = 2;
     $d->invalidate_serial_marker_hook('test-console');
 
-    is $d->_detect_serial_marker_capability(), 2, 'Returns cached level 2';
+    is $d->detect_serial_marker_capability(), 2, 'Returns cached level 2';
     like $typed, qr/grep -q __oa_prompt.*\. ~\/\.bashrc/, 'Calls install_serial_marker_hook (types consolidated setup with sourcing)';
     ok $d->{_serial_marker_hook_installed}->{'test-console'}, 'Hook marked as installed';
 };
