@@ -9,6 +9,7 @@ use feature 'say';
 use Data::Dumper 'Dumper';
 use YAML::PP 'Dump';
 use Carp qw(confess cluck carp croak);
+use List::Util 'any';
 require IPC::Run;
 use IPC::Run::Debug;    # set IPCRUNDEBUG=data in shell environment for trace
 use Thread::Queue;
@@ -47,7 +48,7 @@ sub finish ($self) { IPC::Run::finish($self->{connection}) }
 sub send_3270 ($self, $command = '', %arg) {
     $arg{command_status} //= 'ok';
     confess "command_status must be 'ok' or 'error' or 'any', got $arg{command_status}."
-      unless (grep $arg{command_status}, ['ok', 'error', 'any']);
+      unless (any { $arg{command_status} eq $_ } qw(ok error any));
 
     $self->{in} .= $command . "\n";
     $self->{connection}->IPC::Run::pump until $self->{out} =~ /^(ok|error)/mg;
@@ -98,7 +99,7 @@ sub _handle_expect_3270_cycle ($self, $result, $start_time, %arg) {
         my $input_line = pop @$co;
         my @output_area = @$co;
 
-        @output_area = grep !/$arg{delete_lines}/, @output_area if defined $arg{delete_lines};
+        @output_area = grep { !/$arg{delete_lines}/ } @output_area if defined $arg{delete_lines};
 
         if (@output_area > 0) {
             $self->{raw_expect_queue}->enqueue(@output_area);
@@ -304,7 +305,7 @@ sub _connect_3270 ($self, $host) {
     confess "connect to host >$host< failed.\n" . Dump($sent) if $sent->{terminal_status} !~ / C\($host\) /;
     $self->send_3270('Wait(InputField)');
     my $lines = $self->expect_3270();
-    confess "doesn't look like zVM login prompt." unless grep /Fill in your USERID and PASSWORD and press ENTER/, @$lines;
+    confess "doesn't look like zVM login prompt." unless grep { /Fill in your USERID and PASSWORD and press ENTER/ } @$lines;
     return $lines;
 }
 
