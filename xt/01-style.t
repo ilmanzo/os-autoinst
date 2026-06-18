@@ -17,7 +17,7 @@ is qx{git grep -I -l '^\\(throws\\|dies\\|lives\\)_ok.*\<sub\>' t/**.t}, '', 'On
 is qx{git grep -I -l 'like.*\$\@' t/**.t}, '', 'Use throws_ok instead of manual checks of exceptions';
 is qx{git grep -I -l ' if \$\@'}, '', 'Use try/catch instead of manual \$\@ checks';
 is qx{git grep -I -l '^use \\(Try::Tiny\\|TryCatch\\)'}, '', 'No Try::Tiny or TryCatch necessary, use Feature::Compat::Try and later native Perl';
-is qx{git grep -I -l '\<spurt\>'}, '', 'No deprecated "Mojo::File::spurt", use "spew" instead';
+is qx{git grep -I -l '\\<spurt\\>' ':!xt/01-style.t'}, '', 'No deprecated "Mojo::File::spurt", use "spew" instead';
 is qx{git grep -I -l '^use testapi' backend/ consoles/}, '', 'No backend or console files use external facing testapi';
 is qx[git grep -l -e '^\\s*sub \\S\\+ [^(]\\+' --and --not -e 'sub [(\{]' --and --not -e 'sub \\S\\+\\s*[:(]' --and --not -e 'sub \\S\\+;' --and --not -e '# no:style:signatures' ':!external/' ':!t/48-testmodules-style.t'], '', 'All files use sub signatures everywhere (nameless and in-place definitions still allowed)';
 is qx[git grep -l -P 'sub\\s*\\{\\s*my\\s*\\(?\\\$' t/], '', 'Anonymous subs in tests should use signatures instead of manual unpacking of @_';

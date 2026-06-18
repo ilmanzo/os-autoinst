@@ -265,7 +265,7 @@ sub _make_resolution_configuration ($resolution) {
     my $data = _make_resolution_hex_data($+{width}, $+{height});
     my %vars = (name => 'PlatformConfig', guid => '7235c51c-0c80-4cab-87ac-3b084a6304b1', attr => 7, data => $data);
     my %json = (version => 2, variables => [\%vars]);
-    my $json_path = path('resolution-fw-conf.json')->spurt(encode_json(\%json));
+    my $json_path = path('resolution-fw-conf.json')->spew(encode_json(\%json));
     return ('--set-json' => $json_path->to_abs->to_string);
 }
 
