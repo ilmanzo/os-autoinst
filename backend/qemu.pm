@@ -589,6 +589,7 @@ sub virtio_console_names () {
 sub virtio_console_fifo_names () { map { $_ . '.in', $_ . '.out' } virtio_console_names }
 
 sub console_fifo ($name) {
+    no autodie 'unlink';
     unlink $name or $!{ENOENT} or bmwqemu::fctwarn("Could not unlink existing pipe $name: $!");
     mkfifo($name, 0666) or bmwqemu::fctwarn("Failed to create pipe $name: $!");
 }
@@ -596,6 +597,7 @@ sub console_fifo ($name) {
 sub create_virtio_console_fifo () { console_fifo($_) for virtio_console_fifo_names }
 
 sub delete_virtio_console_fifo () {
+    no autodie 'unlink';
     unlink or $!{ENOENT} or bmwqemu::fctwarn("Could not unlink $_: $!") for virtio_console_fifo_names;
 }
 
