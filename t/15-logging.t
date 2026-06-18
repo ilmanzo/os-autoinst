@@ -40,7 +40,9 @@ subtest 'Logging to STDERR' => sub {
 };
 
 subtest 'Color output can be disabled' => sub {
+    local %ENV = %ENV;
     delete $ENV{ANSI_COLORS_DISABLED};
+    delete $ENV{NO_COLOR};
     my $out = stderr_from { bmwqemu::fctwarn('with color') };
     isnt $out, colorstrip($out), 'logs use colors';
     $ENV{ANSI_COLORS_DISABLED} = 1;
