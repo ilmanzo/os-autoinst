@@ -84,8 +84,7 @@ subtest 'pretty_serial_marker' => sub {
     $mock_testapi->redefine(get_var => sub { $_[0] eq 'PRETTY_SERIAL_MARKER' ? 1 : undef });
     $testapi::serialdev = 'ttyS0';
 
-    $mock_testapi->redefine(wait_serial => sub {
-            my ($regexp) = @_;
+    $mock_testapi->redefine(wait_serial => sub ($regexp, @) {
             return 'BASH:4.4:' if ref($regexp) eq 'Regexp' && 'BASH:4.4:' =~ $regexp;
             return undef if ref($regexp) eq 'Regexp' && $regexp =~ /FC/;
             return 'SRfoo-0-';
@@ -95,8 +94,7 @@ subtest 'pretty_serial_marker' => sub {
     $d->script_run('foo');
     like $typed_string, qr/export __OA_MARK=.*; foo\n/, 'Level 2 uses export marker';
 
-    $mock_testapi->redefine(wait_serial => sub {
-            my ($regexp) = @_;
+    $mock_testapi->redefine(wait_serial => sub ($regexp, @) {
             return 'BASH:4.4:' if ref($regexp) eq 'Regexp' && 'BASH:4.4:' =~ $regexp;
             return 'FC:OK:' if ref($regexp) eq 'Regexp' && 'FC:OK:' =~ $regexp;
             return 'OA:DONE-abcd-0-foo';
@@ -130,7 +128,7 @@ subtest 'pretty_serial_marker' => sub {
     $d->script_run('foo');
     like $typed_string, qr/foo; echo SR.*-.*-\n/, 'Level 1 uses classic marker on serial terminal';
 
-    $mock_testapi->redefine(wait_serial => sub ($pat, %args) {
+    $mock_testapi->redefine(wait_serial => sub ($pat, %) {
             return 0 if $pat =~ /foo; echo SR.*-\$\?-/;
             return 'SRfoo-0-';
     });
@@ -167,8 +165,7 @@ subtest 'reboot_safety' => sub {
     $testapi::serialdev = 'ttyS0';
 
     # Initial detection (Level 3)
-    $mock_testapi->redefine(wait_serial => sub {
-            my ($regexp) = @_;
+    $mock_testapi->redefine(wait_serial => sub ($regexp, @) {
             return 'BASH:4.4:' if ref($regexp) eq 'Regexp' && 'BASH:4.4:' =~ $regexp;
             return 'FC:OK:' if ref($regexp) eq 'Regexp' && 'FC:OK:' =~ $regexp;
             return 'OA:DONE-abcd-0-';
@@ -324,8 +321,7 @@ subtest 'serial_terminal_redirection_guard' => sub {
     $mock_testapi->redefine(query_isotovideo => sub { });
     $mock_bmwqemu->redefine(diag => sub { $diag_msg .= $_[0] });
     $mock_bmwqemu->redefine(log_call => sub { });
-    $mock_testapi->redefine(wait_serial => sub {
-            my ($regexp) = @_;
+    $mock_testapi->redefine(wait_serial => sub ($regexp, @) {
             return 'BASH:4.4:' if ref($regexp) eq 'Regexp' && 'BASH:4.4:' =~ $regexp;
             return 'FC:OK:' if ref($regexp) eq 'Regexp' && 'FC:OK:' =~ $regexp;
             return 'OA:DONE-abcd-0-';

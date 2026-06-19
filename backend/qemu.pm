@@ -460,11 +460,10 @@ sub save_snapshot ($self, $args) {
     $self->save_console_snapshots($vmname);
 
     my $snapshot = $self->{proc}->snapshot_conf->add_snapshot($vmname);
-    $bdc->for_each_drive(sub {
+    $bdc->for_each_drive(sub ($drive) {
             local $Data::Dumper::Indent = 0;
             local $Data::Dumper::Terse = 1;
             local $Data::Dumper::Sortkeys = 1;
-            my $drive = shift;
 
             my $overlay = $bdc->add_snapshot_to_drive($drive, $snapshot);
             my $req = {execute => 'blockdev-snapshot-sync',

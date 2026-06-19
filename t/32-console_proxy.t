@@ -33,8 +33,7 @@ $console->mock('ret_undef', sub { return; });
 $console->mock('ret_list', sub { qw(a b c d); });
 $console->mock('ret_list_empty', sub { return; });
 $console->mock('ret_die', sub { die '!!Urgs!!'; });
-$console->mock('check_args', sub {
-        my ($self, @args) = @_;
+$console->mock('check_args', sub ($self, @args) {
         is_deeply \@args, $console_check_args, 'Got expected (' . join(',', @args) . ') arguments';
 });
 

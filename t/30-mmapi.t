@@ -61,12 +61,10 @@ subtest 'lockapi: server not reachable' => sub {
 # setup a fake server
 my $mock_srv = Mojolicious->new;
 $mock_srv->log->unsubscribe('message')->on(
-    message => sub {
-        my ($log, $level, @lines) = @_;
+    message => sub ($log, $level, @lines) {
         note "[$level] " . join "\n", @lines, '';
     });
-$mock_srv->helper(render_mutex => sub {
-        my ($self, %args) = @_;
+$mock_srv->helper(render_mutex => sub ($self, %) {
         my $name = $self->param('name') // '';
         return $self->render(status => 200, text => 'ok') if $name eq 'lucky_lock';
         return $self->render(status => 404, text => 'error') if $name eq 'prone_lock';
@@ -76,8 +74,7 @@ $mock_srv->helper(render_mutex => sub {
 my $routes = $mock_srv->routes;
 my $fake_api = $routes->any('/api/v1');
 my $wait_for_children_state;
-$fake_api->get('/mm/children' => sub {
-        my ($self) = @_;
+$fake_api->get('/mm/children' => sub ($self) {
         if ($wait_for_children_state) {
             return $self->render(json => {jobs => {1 => 'scheduled'}}) if $wait_for_children_state->{interations_left}--;
             return $self->render(json => {jobs => {1 => $wait_for_children_state->{state}}});
@@ -85,8 +82,7 @@ $fake_api->get('/mm/children' => sub {
         return $self->render(status => 403, text => 'not authorized') if ($self->tx->req->headers->header('X-API-JobToken') || '') ne 'fake-jobtoken';
         return $self->render(json => {jobs => [1, 2, 3]});
 });
-$fake_api->get('/mm/children/#state' => sub {
-        my ($self) = @_;
+$fake_api->get('/mm/children/#state' => sub ($self) {
         return $self->render(status => 404, json => {jobs => []}) if $self->stash('state') ne 'some-state';
         return $self->render(json => {jobs => [1]});
 });
@@ -102,22 +98,19 @@ $fake_api->get('/workers' => sub {
 });
 $fake_api->post('/mutex' => sub { shift->render_mutex });
 $fake_api->post('/mutex/foo' => sub { shift->render(json => {some => 'mutex'}) });
-$fake_api->post('/mutex/#name' => sub {
-        my ($self) = @_;
+$fake_api->post('/mutex/#name' => sub ($self) {
         my $name = $self->param('name') // '';
         my $action = $self->param('action') // '';
         return $self->render(status => 200, text => 'ok') if ($name eq 'lockable' && $action eq 'lock') || ($name eq 'unlockable' && $action eq 'unlock');
         return $self->render_mutex;
 });
-$fake_api->post('/barrier' => sub {
-        my ($self) = @_;
+$fake_api->post('/barrier' => sub ($self) {
         my $name = $self->param('name') // '';
         my $tasks = $self->param('tasks') // '';
         return $self->render(status => 200, text => 'ok') if $name eq 'lucky_barrier' && $tasks eq '41';
         return $self->render_mutex;
 });
-$fake_api->post('/barrier/#name' => sub {
-        my ($self) = @_;
+$fake_api->post('/barrier/#name' => sub ($self) {
         state $counter = 0;
         my $name = $self->param('name') // '';
         return $self->render(status => (++$counter % 3 == 0) == 0 ? 200 : 409, text => 'ok') if $name eq 'unblocked_next';
@@ -127,8 +120,7 @@ $fake_api->post('/barrier/#name' => sub {
         return $self->render(status => 200, text => 'ok') if $name eq 'check_dead_job_barrier' && ($self->param('check_dead_job') // '' eq '1');
         return $self->render_mutex;
 });
-$fake_api->delete('/barrier/#name' => sub {
-        my ($self) = @_;
+$fake_api->delete('/barrier/#name' => sub ($self) {
         my $name = $self->param('name') // '';
         return $self->render(status => 200, text => 'ok') if $name eq 'deletable';
         return $self->render_mutex;

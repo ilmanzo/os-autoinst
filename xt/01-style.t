@@ -20,7 +20,7 @@ is qx{git grep -I -l '^use \\(Try::Tiny\\|TryCatch\\)'}, '', 'No Try::Tiny or Tr
 is qx{git grep -I -l '\\<spurt\\>' ':!xt/01-style.t'}, '', 'No deprecated "Mojo::File::spurt", use "spew" instead';
 is qx{git grep -I -l '^use testapi' backend/ consoles/}, '', 'No backend or console files use external facing testapi';
 is qx[git grep -l -e '^\\s*sub \\S\\+ [^(]\\+' --and --not -e 'sub [(\{]' --and --not -e 'sub \\S\\+\\s*[:(]' --and --not -e 'sub \\S\\+;' --and --not -e '# no:style:signatures' ':!external/' ':!t/48-testmodules-style.t'], '', 'All files use sub signatures everywhere (nameless and in-place definitions still allowed)';
-is qx[git grep -l -P 'sub\\s*\\{\\s*my\\s*\\(?\\\$' t/], '', 'Anonymous subs in tests should use signatures instead of manual unpacking of @_';
+is qx(perl -0777 -ne 'print "\$ARGV\n" if /sub\\s*\\{(?!\\s*#\\s*no:style:signatures)[^{}]*?\\bmy\\s+[^=]+=\\s*(?:\\x40_|shift\\b)/s' \$(git ls-files | grep -E '\\.(t|pm)\$' | grep -v '^external/')), '', 'All files use signatures in anonymous subroutines (no manual @_ unpacking or shift)';
 is qx{git grep -L '^#!.*perl' t/**.t}, '', 'All test files have shebang';
 is qx{git ls-files -s t/**.t | grep -v ^1007}, '', 'All test modules are executable';
 is qx{git grep -l '^use POSIX;'}, '', 'Use of bare POSIX import is discouraged, see https://perldoc.perl.org/POSIX';

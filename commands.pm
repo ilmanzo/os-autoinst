@@ -264,8 +264,7 @@ sub run_daemon ($port, $isotovideo) {
     # Use same log format as isotovideo
     app->log->format(\&bmwqemu::log_format_callback);
     # process json messages from isotovideo
-    Mojo::IOLoop->singleton->reactor->io($isotovideo => sub {
-            my ($reactor, $writable) = @_;
+    Mojo::IOLoop->singleton->reactor->io($isotovideo => sub ($reactor, $writable) {
 
             my @isotovideo_responses = myjsonrpc::read_json($isotovideo, undef, 1);
             my $clients = app->defaults('clients');
