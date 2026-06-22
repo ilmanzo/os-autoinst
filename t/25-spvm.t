@@ -14,8 +14,7 @@ use testapi qw(set_var power);
 subtest 'SSH credentials in spvm' => sub {
     my $expected_credentials = {username => 'root', password => 'foo', hostname => 'my_foo_hostname'};
     my $mock_spvm = Test::MockModule->new('backend::spvm');
-    $mock_spvm->mock(run_ssh_cmd => sub {
-            my ($self, $cmd, %args) = @_;
+    $mock_spvm->mock(run_ssh_cmd => sub ($self, $cmd, %args) {
             for my $k (keys %{$expected_credentials}) {
                 is $args{$k}, $expected_credentials->{$k}, "Correct $k parameter";
             }
@@ -40,8 +39,7 @@ subtest 'SSH credentials in spvm' => sub {
 
 subtest 'PowerVM power actions' => sub {
     my $mock_spvm = Test::MockModule->new('backend::spvm');
-    $mock_spvm->redefine('run_cmd', sub {
-            my ($self, $cmd) = @_;
+    $mock_spvm->redefine('run_cmd', sub ($self, $cmd) {
             return $cmd;
     });
     my $spvm = backend::spvm->new();

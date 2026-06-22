@@ -103,10 +103,10 @@ sub _mock_svirt_vmware ($cmds_ref, $ssh_cmds_ref) {
     my $backend_mock = Test::MockModule->new('backend::svirt');
     my $console_mock = Test::MockModule->new('consoles::sshVirtsh');
     my $tmp_mock = Test::MockModule->new('File::Temp');
-    $console_mock->redefine(run_cmd => sub ($self, $cmd, %args) { push @$cmds_ref, $cmd; 0 });
-    $console_mock->redefine(get_cmd_output => sub ($self, $cmd, %args) { push @$cmds_ref, $cmd; 0 });
-    $backend_mock->redefine(run_ssh_cmd => sub ($self, $cmd, %args) { push @$cmds_ref, $cmd; 0 });
-    $backend_mock->redefine(run_ssh => sub ($self, $cmd, %args) { push @$ssh_cmds_ref, $cmd; (undef, $chan_mock) });
+    $console_mock->redefine(run_cmd => sub ($self, $cmd, %) { push @$cmds_ref, $cmd; 0 });
+    $console_mock->redefine(get_cmd_output => sub ($self, $cmd, %) { push @$cmds_ref, $cmd; 0 });
+    $backend_mock->redefine(run_ssh_cmd => sub ($self, $cmd, %) { push @$cmds_ref, $cmd; 0 });
+    $backend_mock->redefine(run_ssh => sub ($self, $cmd, %) { push @$ssh_cmds_ref, $cmd; (undef, $chan_mock) });
     $backend_mock->redefine(start_serial_grab => 1);
     $console_mock->redefine(get_ssh_credentials => sub { (hostname => 'foo', username => 'root', password => '123') });
     $tmp_mock->redefine(tempfile => sub { (undef, '/t') });
@@ -442,10 +442,8 @@ subtest 'Method backend::svirt::open_serial_console_via_ssh()' => sub {
     my $test_log_cnt = 0;
     my $grep_return = 1;
     my @deleted_logs;
-    $module->redefine(run_ssh_cmd => sub {
-            my $self = shift;
-            @LAST_ = @_;
-            my $cmd = shift;
+    $module->redefine(run_ssh_cmd => sub ($self, $cmd, @args) {
+            @LAST_ = ($cmd, @args);
             return !!($test_log_cnt > 0 ? --$test_log_cnt : 0) if ($cmd =~ m/^test -e/);
             return $grep_return if ($cmd =~ m/^grep -q/);
             push @deleted_logs, ($cmd =~ /(\S+)$/) if ($cmd =~ / && rm /);
@@ -454,8 +452,7 @@ subtest 'Method backend::svirt::open_serial_console_via_ssh()' => sub {
     });
 
     my $run_ssh_expect = '$a';
-    $module->redefine(run_ssh => sub {
-            my ($self, $cmd, %args) = @_;
+    $module->redefine(run_ssh => sub ($self, $cmd, %) {
             like $cmd, qr/$run_ssh_expect/, "run_ssh() command is like qr/$run_ssh_expect/";
             return ('A', 'B');
     });
@@ -545,8 +542,7 @@ subtest 'Method consoles::sshVirtsh::add_disk()' => sub {
     $console_mock->redefine(which => 1);
 
     my $mock_baseclass = Test::MockModule->new('backend::baseclass');
-    $mock_baseclass->redefine('run_ssh_cmd' => sub {
-            my ($self, $cmd, %args) = @_;
+    $mock_baseclass->redefine('run_ssh_cmd' => sub ($self, $cmd, %args) {
             push @last_ssh_commands, $cmd;
             push @last_ssh_args, [%args];
 

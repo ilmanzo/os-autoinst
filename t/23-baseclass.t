@@ -107,15 +107,13 @@ subtest 'SSH utilities' => sub {
     my @timeouts = ();
     my $net_ssh2 = Test::MockModule->new('Net::SSH2');
     my @agent;
-    $net_ssh2->redefine(new => sub {
-            my ($class, %opts) = @_;
+    $net_ssh2->redefine(new => sub ($class, %opts) {
             my $self = Test::MockObject->new();
             my $id = $self->{my_custom_id} = bmwqemu::random_string(32);
             die 'Identifier not unique' if exists $ssh_obj_data->{$id};
             $ssh_obj_data->{$id} = $self;
 
-            $self->mock(connect => sub {
-                    my ($self, $hostname, $port) = @_;
+            $self->mock(connect => sub ($self, $hostname, $port) {
                     return 0 if $ssh_connect_error;
                     is $hostname, $ssh_expect->{hostname}, 'Connect to correct hostname';
                     # if unspecified, default to port 22
@@ -126,20 +124,17 @@ subtest 'SSH utilities' => sub {
                     return 1;
             });
             $self->mock(hostname => sub { return $ssh_obj_data->{refaddr(shift)}->{hostname} });
-            $self->mock(auth => sub {
-                    my ($self, %args) = @_;
+            $self->mock(auth => sub ($self, %args) {
                     is $args{username}, $ssh_expect->{username}, 'Correct username for ssh connection';
                     is $args{password}, $ssh_expect->{password}, 'Correct password for ssh connection';
                     return 1;
             });
             $self->mock(auth_agent => sub { push @agent, [@_]; return 1 });
-            $self->mock(auth_ok => sub {
-                    my $self = shift;
+            $self->mock(auth_ok => sub ($self) {
                     $self->{connected} = !!$ssh_auth_ok;
                     return $ssh_auth_ok;
             });
-            $self->mock(blocking => sub {
-                    my ($self, $v) = @_;
+            $self->mock(blocking => sub ($self, $v = undef) {
                     $self->{blocking} = $v if defined $v;
                     return $self->{blocking};
             });
@@ -148,8 +143,7 @@ subtest 'SSH utilities' => sub {
                     return 1;
             });
             $self->mock(error => sub { wantarray ? @net_ssh2_error : ($net_ssh2_error[0] // 0) });
-            $self->mock(sock => sub {
-                    my $self = shift;
+            $self->mock(sock => sub ($self) {
                     unless ($self->{sock}) {
                         my $mock_sock = Test::MockObject->new();
                         $mock_sock->{ssh} = $self;
@@ -157,14 +151,12 @@ subtest 'SSH utilities' => sub {
                     }
                     return $self->{sock};
             });
-            $self->mock(channel => sub {
-                    my $self = shift;
+            $self->mock(channel => sub ($self) {
                     die 'Not connected' unless ($self->{connected});
                     return $fail_on_channel_call = undef if $fail_on_channel_call;
                     my $mock_channel = Test::MockObject->new();
                     $mock_channel->{ssh} = $self;
-                    $mock_channel->mock(exec => sub {
-                            my ($self, $cmd) = @_;
+                    $mock_channel->mock(exec => sub ($self, $cmd) {
                             $self->{cmd} = $cmd;
                             $self->{eof} = 0;
                             return 1 unless $cmd =~ /^(echo|test)/;
@@ -321,7 +313,7 @@ subtest 'SSH utilities' => sub {
         $baseclass->truncate_serial_file();
         my $expect_output = "FOO$/" x backend::baseclass::SSH_SERIAL_READ_BUFFER_SIZE;
         my $channel_read_string = $expect_output;
-        $chan->mock(read => sub {
+        $chan->mock(read => sub {    # no:style:signatures
                 my ($self, undef, $max) = @_;
                 return unless (defined $channel_read_string);
                 $max //= backend::baseclass::SSH_SERIAL_READ_BUFFER_SIZE;

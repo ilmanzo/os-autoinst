@@ -124,8 +124,7 @@ subtest parse_serial_output => sub {
     });
     my $basetest = basetest->new('installation');
     my $message;
-    $mock_basetest->redefine(record_resultfile => sub {
-            my ($self, $title, $output, %nargs) = @_;
+    $mock_basetest->redefine(record_resultfile => sub ($self, $title, $output, %nargs) {
             $message = $output;
     });
 

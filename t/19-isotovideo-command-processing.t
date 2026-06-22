@@ -28,8 +28,7 @@ my @last_received_msg_by_fd = (undef, undef, undef);
 
 # mock the json rpc
 my $rpc_mock = Test::MockModule->new('myjsonrpc');
-$rpc_mock->redefine(send_json => sub {
-        my ($fd, $cmd) = @_;
+$rpc_mock->redefine(send_json => sub ($fd, $cmd) {
         if (!defined($fd) || ($fd != $cmd_srv_fd && $fd != $backend_fd && $fd != $answer_fd)) {
             fail 'invalid file descriptor passed to send_json: ' . ($fd ? $fd : 'undef');    # uncoverable statement
             return;    # uncoverable statement

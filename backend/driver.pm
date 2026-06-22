@@ -50,8 +50,7 @@ sub start ($self) {
         blocking_stop => 1,
         separate_err => 0,
         subreaper => 1,
-        code => sub {
-            my $process = shift;
+        code => sub ($process) {
             $0 = "$0: backend";
 
             open STDOUT, '>&', $STDOUTPARENT;

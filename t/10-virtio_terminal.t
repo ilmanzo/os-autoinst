@@ -84,8 +84,7 @@ subtest 'Test open_pipe() error condition' => sub {
     my $size = 1024;
     $file_mock->redefine(slurp => sub { return 65_536; });
     $vterminal_mock->redefine('get_pipe_sz', sub { return 1024; });
-    $vterminal_mock->redefine('set_pipe_sz', sub {
-            my ($self, $fd, $newsize) = @_;
+    $vterminal_mock->redefine('set_pipe_sz', sub ($self, $fd, $newsize) {
             return if ($newsize > 2048);
             return $size = $newsize;
     });
@@ -104,8 +103,7 @@ subtest 'Test open_pipe() error condition' => sub {
     is $size, 1024, "Size didn't changed";
 
     $size = 1024;
-    $vterminal_mock->redefine('set_pipe_sz', sub {
-            my ($self, $fd, $newsize) = @_;
+    $vterminal_mock->redefine('set_pipe_sz', sub ($self, $fd, $newsize) {
             return $size = $newsize;
     });
 
