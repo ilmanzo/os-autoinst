@@ -198,13 +198,15 @@ sub clone_git ($local_path, $clone_url, $clone_depth, $branch, $dir, $dir_variab
     # * https://stackoverflow.com/questions/18515488/how-to-check-if-the-commit-exists-in-a-git-repository-by-its-sha-1
     # * https://stackoverflow.com/questions/26135216/why-isnt-there-a-git-clone-specific-commit-option
     bmwqemu::diag "Fetching more remote objects to ensure availability of '$branch'";
-    while (qx[git -C $local_path cat-file -e $branch^{commit} 2>&1] =~ /Not a valid object/) {
+    my $branch_not_found_err = "Could not find '$branch' in complete history in cloned Git repository \"$dir\"";
+    while (qx{git -C "$local_path" cat-file -e "$branch^{commit}" 2>&1} =~ /Not a valid object/) {
+        die $branch_not_found_err if qx{git -C "$local_path" rev-parse --is-shallow-repository 2>&1} =~ /^false/m;
         $clone_depth *= 2;
-        @out = qx[git -C $local_path fetch --progress --depth=$clone_depth 2>&1];
+        @out = qx{git -C "$local_path" fetch --progress --depth=$clone_depth 2>&1};
         $handle_output->($?, @out);
-        die "Could not find '$branch' in complete history in cloned Git repository \"$dir\"" if grep { /remote: Total 0/ } @out;
+        die $branch_not_found_err if grep { /remote: Total 0/ } @out;
     }
-    @out = qx{git -C $local_path checkout $branch};
+    @out = qx{git -C "$local_path" checkout "$branch"};
     bmwqemu::diag "@out" if @out;
     die "Unable to check out branch '$branch' in cloned Git repository \"$dir\"" unless $? == 0;
     return 1;

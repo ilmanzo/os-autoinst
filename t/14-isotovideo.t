@@ -120,7 +120,7 @@ subtest 'isotovideo with custom git repo parameters specified' => sub {
         my $state = decode_json($base_state->slurp);
         if (is ref $state, 'HASH', 'state file contains object') {
             is $state->{component}, 'isotovideo', 'state file contains component';
-            like $state->{msg}, qr/Unable to clone Git repository/, 'state file contains error message';
+            like $state->{msg}, qr/(?:Unable to clone Git repository|Could not find 'foo' in complete history)/, 'state file contains error message';
         }
     };
 };
