@@ -223,6 +223,8 @@ sub checkout_code ($self) {
     # git repo fail silently, i.e. store an empty variable
 
     ($bmwqemu::vars{TEST_GIT_URL}, $bmwqemu::vars{TEST_GIT_HASH}) = checkout_git_refspec($bmwqemu::vars{CASEDIR} => 'TEST_GIT_REFSPEC');
+    # For the frontend to display links to the source code
+    diag "TEST_GIT_HASH=$bmwqemu::vars{TEST_GIT_HASH} TEST_GIT_URL=$bmwqemu::vars{TEST_GIT_URL}";
 
     checkout_wheels($bmwqemu::vars{CASEDIR}, $bmwqemu::vars{WHEELS_DIR});
 }

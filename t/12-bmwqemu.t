@@ -82,8 +82,8 @@ subtest 'update_line_number' => sub {
     $log::direct_output = 1;
     bmwqemu::init_logger();
     ok !bmwqemu::update_line_number(), 'update_line_number needs current_test defined';
-    $autotest::current_test = {script => 'my/module.pm'};
-    stderr_like { bmwqemu::update_line_number() } qr{bmwqemu.t.*called.*subtest}, 'update_line_number identifies caller scope';
+    $autotest::current_test = {script => 'my/module.pm', name => 'module'};
+    stderr_like { bmwqemu::update_line_number() } qr{\[step:-,module,1\].*bmwqemu.t.*called.*subtest}, 'update_line_number identifies caller scope';
 };
 
 subtest 'CASEDIR is mandatory' => sub {

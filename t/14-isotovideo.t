@@ -132,6 +132,20 @@ subtest 'isotovideo with git refspec specified' => sub {
             opts => "casedir=$data_dir/tests test_git_refspec=deadbeef _exit_after_schedule=1") } qr/Checking.*local.*deadbeef/, 'refspec in local git repository would be checked out';
 };
 
+subtest 'log TEST_GIT_ vars' => sub {
+    my @diags;
+    my $runner_mock = Test::MockModule->new('OpenQA::Isotovideo::Runner');
+    $runner_mock->noop('checkout_wheels');
+    $runner_mock->noop('checkout_git_repo_and_branch');
+    $runner_mock->redefine(checkout_git_refspec => sub { ('url', 'c0ffee') });
+    $runner_mock->redefine(diag => sub { push @diags, $_[0] });
+    my $bmwqemu_mock = Test::MockModule->new('bmwqemu');
+    $bmwqemu_mock->noop('ensure_valid_vars');
+    local $bmwqemu::vars{HDDSIZEGB_1} = 1;
+    OpenQA::Isotovideo::Runner->checkout_code;
+    is $diags[0], 'TEST_GIT_HASH=c0ffee TEST_GIT_URL=url', 'vars are logged';
+};
+
 subtest 'isotovideo with wheels' => sub {
     chdir $pool_dir;
     unlink 'vars.json' if -e 'vars.json';

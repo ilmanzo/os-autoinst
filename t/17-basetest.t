@@ -7,7 +7,7 @@ use FindBin '$Bin';
 use lib "$Bin/../external/os-autoinst-common/lib";
 use OpenQA::Test::TimeLimit '5';
 use Test::MockModule;
-use Test::Output qw(combined_like combined_from);
+use Test::Output qw(combined_like combined_from stderr_like);
 use File::Basename;
 use Mojo::File qw(path tempdir);
 use Mojo::JSON qw(decode_json);
@@ -536,6 +536,17 @@ subtest search_for_expected_serial_failures => sub {
     $mock_basetest->mock(parse_serial_output_qemu => sub { $basetest->{result} = 'successfully called function' });
     $basetest->runtest();
     is $basetest->{result}, 'successfully called function', 'search for expected serial failures is working';
+};
+
+subtest 'record_serialresult log step' => sub {
+    my $basetest = basetest->new();
+    $basetest->{name} = 'test';
+    $basetest->{category} = 'cat';
+    $basetest->{script} = 'foo';
+    local $autotest::current_test = $basetest;
+    my $mock_basetest_local = Test::MockModule->new('basetest');
+    $mock_basetest_local->noop('record_resultfile');
+    stderr_like { $basetest->record_serialresult('regex', 'ok', 'output', command => 'my_command') } qr/\[step:cat,test,2\].*called basetest::record_serialresult/, 'module step is logged';
 };
 
 subtest record_serialresult_with_command => sub {

@@ -461,6 +461,8 @@ sub record_serialresult ($self, $ref, $res, $string = undef, %args) {
     if (defined $captured_val && $args{capture_name}) {
         $output .= "# $args{capture_name}: $captured_val\n";
     }
+    # log every step that is shown in the webui
+    bmwqemu::update_line_number();
     $self->record_resultfile('wait_serial', $output, result => $res);
     return undef;
 }
