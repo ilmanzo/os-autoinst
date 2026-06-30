@@ -47,16 +47,27 @@ sub call ($function_name, @args) {
 }
 
 # test without a server
-subtest 'mmapi: server not reachable' => sub {
-    combined_like { is_deeply call($_), undef, "undef returned ($_)" } qr/Connection error/, "error logged ($_)" for (qw(mmapi::get_children));
-    is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
-};
+{
+    my $ua_mock = Test::MockModule->new('Mojo::UserAgent');
+    $ua_mock->redefine(start => sub ($self, $tx, @args) {
+            $tx->res->code(0)->error({message => 'Connection refused', code => 0});
+            return $tx;
+    });
 
-subtest 'lockapi: server not reachable' => sub {
-    combined_like { is call($_, qw(name where info)), 0, "zero returned $_" } qr/Connection error/, "error logged ($_)"
-      for (qw(lockapi::mutex_create lockapi::mutex_try_lock lockapi::barrier_create lockapi::barrier_try_wait));
-    is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
-};
+    subtest 'mmapi: server not reachable' => sub {
+        combined_like { is_deeply call($_), undef, "undef returned ($_)" } qr/Connection error/, "error logged ($_)" for (qw(mmapi::get_children));
+        is_deeply \@recorded_info, [], 'no info recorded' or always_explain \@recorded_info;
+    };
+
+    subtest 'lockapi: server not reachable' => sub {
+        combined_like { is call($_, qw(name where info)), 0, "zero returned $_" } qr/Connection error/, "error logged ($_)"
+          for (qw(lockapi::mutex_create lockapi::mutex_try_lock lockapi::barrier_create lockapi::barrier_try_wait));
+        combined_like { throws_ok { lockapi::mutex_lock('name') } qr/mydie/, 'mutex_lock throws on connection error'; } qr/failed due to connection error/, 'mutex_lock logs error';
+        combined_like { throws_ok { lockapi::barrier_wait({name => 'name'}) } qr/mydie/, 'barrier_wait throws on connection error'; } qr/failed due to connection error/, 'barrier_wait logs error';
+        is_deeply \@recorded_info, [['Paused', 'Wait for name (on parent job)']], 'info recorded' or always_explain \@recorded_info;
+        @recorded_info = ();
+    };
+}
 
 # setup a fake server
 my $mock_srv = Mojolicious->new;
@@ -64,7 +75,7 @@ $mock_srv->log->unsubscribe('message')->on(
     message => sub ($log, $level, @lines) {
         note "[$level] " . join "\n", @lines, '';
     });
-$mock_srv->helper(render_mutex => sub ($self, %) {
+$mock_srv->helper(render_mutex => sub ($self, %args) {
         my $name = $self->param('name') // '';
         return $self->render(status => 200, text => 'ok') if $name eq 'lucky_lock';
         return $self->render(status => 404, text => 'error') if $name eq 'prone_lock';

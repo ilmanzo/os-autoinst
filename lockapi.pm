@@ -22,20 +22,20 @@ use constant POLL_INTERVAL => $ENV{OS_AUTOINST_LOCKAPI_POLL_INTERVAL} // 5;
 sub _try_lock ($type, $name, $param) {
     my $log_ctx = "acquiring $type '$name'";
     my %expected_return_codes = (200 => 1, 409 => 1, 410 => 1);
-    my $actual_return_code;
     for (1 .. RETRY_COUNT) {
         my $tx = api_call_2(post => "$type/$name", $param, \%expected_return_codes);
-        $actual_return_code = $tx->res->code;
-        last unless mmapi::handle_api_error($tx, $log_ctx, \%expected_return_codes);
-        last unless ($actual_return_code // 0) == 410;
+        my $code = $tx->res->code;
+        if (mmapi::handle_api_error($tx, $log_ctx, \%expected_return_codes)) {
+            return undef if !$code;
+            return 0;
+        }
+        return 1 if $code == 200;
+        return 0 if $code == 409;
+
         bmwqemu::fctinfo("Retry $_ of " . RETRY_COUNT);    # uncoverable statement
         sleep RETRY_INTERVAL;    # uncoverable statement
     }
-    if ($actual_return_code) {
-        return 1 if $actual_return_code == 200;
-        bmwqemu::mydie "$log_ctx: lock owner already finished" if $actual_return_code == 410;
-    }
-    return 0;
+    bmwqemu::mydie "$log_ctx: lock owner already finished";
 }
 
 sub _lock_action ($name, $where = undef) {
@@ -72,6 +72,7 @@ sub mutex_lock ($name, $where = undef) {
     while (1) {
         my $res = _lock_action($name, $where);
         return 1 if $res;
+        bmwqemu::mydie("mutex lock '$name' failed due to connection error") unless defined $res;
         bmwqemu::diag("mutex lock '$name' unavailable, sleeping " . POLL_INTERVAL . ' seconds');    # uncoverable statement
         sleep POLL_INTERVAL;    # uncoverable statement
     }
@@ -80,7 +81,7 @@ sub mutex_lock ($name, $where = undef) {
 sub mutex_try_lock ($name, $where = undef, @) {
     bmwqemu::mydie('missing lock name') unless $name;
     bmwqemu::diag("mutex try lock '$name'");
-    return _lock_action($name, $where);
+    return _lock_action($name, $where) // 0;
 }
 
 sub mutex_unlock ($name, $where = undef) {
@@ -123,7 +124,7 @@ sub _wait_action ($name, $where = undef, $check_dead_job = undef) {
 sub barrier_try_wait ($name, $where = undef, @) {
     bmwqemu::mydie('missing barrier name') unless $name;
     bmwqemu::diag("barrier try wait '$name'");
-    return _wait_action($name, $where);
+    return _wait_action($name, $where) // 0;
 }
 
 sub barrier_wait (@args) {
@@ -142,6 +143,7 @@ sub barrier_wait (@args) {
             _log $name, where => $where, amend => time - $start;
             return 1;
         }
+        bmwqemu::mydie("barrier '$name' wait failed due to connection error") unless defined $res;
 
         my $poll_interval = POLL_INTERVAL;
         if ($timeout != -1) {
