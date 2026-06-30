@@ -346,6 +346,25 @@ Further notes:
   `WITH_COVER_OPTIONS`, …) can be combined and can also be used with the
   `coverage` target.
 
+# Testing os-autoinst modifications within openQA
+
+To easily test your `os-autoinst` modifications within an existing openQA
+setup, openQA provides support for building os-autoinst dynamically in a container.
+
+When scheduling a job (e.g. via `openqa-clone-job`), provide the following
+variables:
+* `OS_AUTOINST_GIT_REPO`: The URL of your fork (e.g.,
+  `https://github.com/$USER/os-autoinst.git`)
+* `OS_AUTOINST_GIT_BRANCH`: The branch to test (default: `master`)
+* `OS_AUTOINST_CONTAINER_IMAGE`: The container image to use (default:
+  `registry.opensuse.org/devel/openqa/containers/os-autoinst_dev:latest`)
+
+When `OS_AUTOINST_GIT_REPO` is set, the openQA worker will automatically use
+rootless Podman to fetch your repository, compile it, and use it to execute the test run
+within the container specified via `OS_AUTOINST_CONTAINER_IMAGE`. Additional dependencies
+(e.g. `os-autoinst-distri-opensuse-deps`) must be provided by that container image rather
+than the worker host.
+
 # Running isotovideo as CI check
 
 We provide a container to run `isotovideo` which can be used to run
